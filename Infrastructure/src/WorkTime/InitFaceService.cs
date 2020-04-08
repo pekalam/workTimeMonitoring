@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Infrastructure.src.WorkTime;
 using OpenCvSharp;
 
 namespace Infrastructure.WorkTime
@@ -23,6 +24,7 @@ namespace Infrastructure.WorkTime
         FaceNotDetected,
         FaceRecognitionError,
         ProfileFaceNotDetected,
+        FaceNotStraight,
     }
 
     public class InitFaceService
@@ -32,17 +34,20 @@ namespace Infrastructure.WorkTime
         private readonly IHcFaceDetection _faceDetection;
         private readonly ILbphFaceRecognition _lbphFaceRecognition;
         private readonly ICaptureService _captureService;
+        private readonly IHeadPositionService _headPositionService;
 
         private int _progress;
 
         public InitFaceService(ITestImageRepository testImageRepository, IDnFaceRecognition dnFaceRecognition,
-            IHcFaceDetection faceDetection, ILbphFaceRecognition lbphFaceRecognition, ICaptureService captureService)
+            IHcFaceDetection faceDetection, ILbphFaceRecognition lbphFaceRecognition, ICaptureService captureService,
+            IHeadPositionService headPositionService)
         {
             _testImageRepository = testImageRepository;
             _dnFaceRecognition = dnFaceRecognition;
             _faceDetection = faceDetection;
             _lbphFaceRecognition = lbphFaceRecognition;
             _captureService = captureService;
+            _headPositionService = headPositionService;
         }
 
         public IProgress<InitFaceProgressArgs> InitFaceProgress { get; set; }
@@ -75,6 +80,7 @@ namespace Infrastructure.WorkTime
                 {
                     _progress = 100;
                 }
+
                 ReportInitFaceProgress(null);
             }, ct);
         }
@@ -103,8 +109,13 @@ namespace Infrastructure.WorkTime
                     if (faces.Length != 1)
                     {
                         ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.FaceNotDetected);
+                        continue;
+                    }
 
-
+                    var (hRot, vRot) = _headPositionService.GetHeadPosition(frame, faceRects.First());
+                    if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
+                    {
+                        ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -115,6 +126,14 @@ namespace Infrastructure.WorkTime
                     {
                         ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.ProfileFaceNotDetected);
 
+                        continue;
+                    }
+                    var (hRot, vRot) = _headPositionService.GetHeadPosition(frame, faceRects.First());
+                    HeadRotation hTarget = toCapture.Count == 1 ? HeadRotation.Left : HeadRotation.Right;
+                    HeadRotation vInvalid = toCapture.Count == 1 ? HeadRotation.Right : HeadRotation.Left;
+                    if (hRot != hTarget || vRot == vInvalid)
+                    {
+                        ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }

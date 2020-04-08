@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Infrastructure.src.WorkTime;
 using OpenCvSharp;
 
 namespace Infrastructure.WorkTime
@@ -22,7 +23,7 @@ namespace Infrastructure.WorkTime
             _lbphFaceRecognition = new LbphFaceRecognition(_testImageRepository);
             _faceDetection = new HcFaceDetection();
             _initFaceService = new InitFaceService(_testImageRepository, _dnFaceRecognition, _faceDetection,
-                _lbphFaceRecognition, _captureService);
+                _lbphFaceRecognition, _captureService, new HeadPositionService());
             InitStateMachine();
         }
 

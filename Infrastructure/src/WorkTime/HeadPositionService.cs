@@ -9,12 +9,20 @@ using Point = FaceRecognitionDotNet.Point;
 
 namespace Infrastructure.src.WorkTime
 {
-    public enum HeadPosition
+    public enum HeadRotation
     {
-        Front, Left, Right, Unknown
+        Front,
+        Left,
+        Right,
+        Unknown
     }
 
-    public class HeadPositionService
+    public interface IHeadPositionService
+    {
+        (HeadRotation hRotation, HeadRotation vRotation) GetHeadPosition(Mat frame, Rect face);
+    }
+
+    public class HeadPositionService : IHeadPositionService
     {
         private FaceRecognition _recognition;
 
@@ -23,26 +31,52 @@ namespace Infrastructure.src.WorkTime
             _recognition = FaceRecognition.Create(".");
         }
 
-        
-
-        private HeadPosition EstimatePose(IDictionary<FacePart, IEnumerable<Point>> landmarks, Rect face)
+        private HeadRotation EstimateHorizontalPose(IDictionary<FacePart, IEnumerable<Point>> landmarks, Rect face, Mat frame)
         {
-            
             var noseTop = landmarks[FacePart.NoseBridge].First();
+#if DEBUG
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(noseTop.X, noseTop.Y), new Size2f(2, 2), 0), Scalar.Yellow);
+#endif
 
-            Point center = new Point(face.Location.X + face.Width/2, face.Location.Y + face.Height / 2);
+            Point center = new Point(face.Location.X + face.Width / 2, face.Location.Y + face.Height / 2);
 
-            if (Math.Abs(center.Y - noseTop.Y) == 0)
+            int dist = (center.X - noseTop.X);
+
+            if (Math.Abs(dist) < 0.05 * face.Width)
             {
-                return HeadPosition.Front;
+                return HeadRotation.Front;
             }
-            double a = (center.X - noseTop.X) / (double)(center.Y - noseTop.Y);
-            double tg = Math.Atan(a);
 
-            return HeadPosition.Left;
+            return dist > 0 ? HeadRotation.Left : HeadRotation.Right;
         }
 
-        public HeadPosition GetHeadPosition(Mat frame, Rect face)
+        private HeadRotation EstimateVerticalPose(IDictionary<FacePart, IEnumerable<Point>> landmarks, Rect face, Mat frame)
+        {
+            var leftEye = landmarks[FacePart.LeftEyebrow].First();
+            var rightEye = landmarks[FacePart.RightEyebrow].Last();
+
+#if DEBUG
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(leftEye.X, leftEye.Y), new Size2f(2, 2), 0), Scalar.Red);
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(rightEye.X, rightEye.Y), new Size2f(2, 2), 0), Scalar.Red);
+#endif
+
+            if (leftEye.X - rightEye.X == 0)
+            {
+                throw new Exception("Cyclope exception");
+            }
+            double a = (leftEye.Y - rightEye.Y) / (double)(leftEye.X - rightEye.X);
+            double angle = Math.Atan(a) * 180.0 / Math.PI;
+
+            //todo to rad
+            if (Math.Abs(angle) < 10)
+            {
+                return HeadRotation.Front;
+            }
+
+            return angle > 0 ? HeadRotation.Left : HeadRotation.Right;
+        }
+
+        public (HeadRotation hRotation, HeadRotation vRotation) GetHeadPosition(Mat frame, Rect face)
         {
             var bytes = new byte[frame.Rows * frame.Cols * frame.ElemSize()];
             Marshal.Copy(frame.Data, bytes, 0, bytes.Length);
@@ -54,10 +88,22 @@ namespace Infrastructure.src.WorkTime
 
             if (landmarks == null)
             {
-                return HeadPosition.Unknown;
+                return (HeadRotation.Unknown, HeadRotation.Unknown);
             }
+#if DEBUG
+            foreach (var facePart in Enum.GetValues(typeof(FacePart)).Cast<FacePart>())
+            {
+                foreach (var landmark in landmarks)
+                {
+                    foreach (var p in landmark.Value.ToArray()) 
+                        Cv2.Ellipse(frame, new RotatedRect(new Point2f(p.X, p.Y), new Size2f(2, 2), 0), Scalar.Aqua);
+                }
+            }
+#endif
 
-            return EstimatePose(landmarks, face);
+
+
+            return (EstimateHorizontalPose(landmarks, face, frame), EstimateVerticalPose(landmarks, face, frame));
         }
     }
 }

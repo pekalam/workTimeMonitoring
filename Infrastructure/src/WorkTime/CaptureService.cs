@@ -40,7 +40,14 @@ namespace Infrastructure.WorkTime
             while (!ct.IsCancellationRequested)
             {
                 //todo
-                await Task.Delay(34, ct).ConfigureAwait(false);
+                try
+                {
+                    await Task.Delay(34, ct).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
                 var frame = _cap.RetrieveMat();
                 yield return frame;
             }

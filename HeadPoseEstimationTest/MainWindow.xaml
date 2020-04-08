@@ -7,6 +7,31 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Image x:Name="image"/>
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock Text="Width" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBox x:Name="width" Width="80" VerticalAlignment="Center" Text="{Binding CamWidth, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+                <TextBlock Text="Height" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBox x:Name="height" Width="80" VerticalAlignment="Center" Text="{Binding CamHeight, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Click="Button_Click" IsEnabled="{Binding Started}">Stop</Button>
+                <Button Click="Button_Click_1" Margin="20,0,0,0" IsEnabled="{Binding Stopped}">Start</Button>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock VerticalAlignment="Center" Text="{Binding RotationState}"  Foreground="{Binding RotationStateBrush, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"/>
+            </StackPanel>
+        </Grid>
+        
     </Grid>
 </Window>

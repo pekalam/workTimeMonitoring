@@ -23,6 +23,27 @@ namespace Tests
         }
     }
 
+    static class HcFaceDetectionTestHelpers
+    {
+        public static void ReturnFace(this Mock<IHcFaceDetection> mHcFaceDetection, ImageTestUtils testUtils, string imgName)
+        {
+            mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns(() =>
+            {
+                var ret = testUtils.GetFaceImg(imgName);
+                return (new[] { ret.faceRect }, new[] { ret.faceImg });
+            });
+        }
+
+        public static void ReturnFrontProfileFace(this Mock<IHcFaceDetection> mHcFaceDetection, ImageTestUtils testUtils, string imgName)
+        {
+            mHcFaceDetection.Setup(f => f.DetectFrontalThenProfileFaces(It.IsAny<Mat>())).Returns(() =>
+            {
+                var ret = testUtils.GetFaceImg(imgName);
+                return (new[] { ret.faceRect }, new[] { ret.faceImg });
+            });
+        }
+    }
+
     class ImageTestUtils
     {
         public ImageTestUtils()
@@ -119,6 +140,13 @@ namespace Tests
             return mCaptureService;
         }
 
+        private Mock<IHeadPositionService> SetupHeadPositionService()
+        {
+            var mHeadPositionService = new Mock<IHeadPositionService>();
+            _mocker.Use<IHeadPositionService>(mHeadPositionService.Object);
+            return mHeadPositionService;
+        }
+
         private Expression<Func<InitFaceProgressArgs, bool>> FaceNotDetected()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
@@ -149,6 +177,14 @@ namespace Tests
                              !args.Stoped;
         }
 
+        private Expression<Func<InitFaceProgressArgs, bool>> FaceNotStraight()
+        {
+            return (args) => args.Frame == _nonEmptyFrame &&
+                             args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.FaceNotStraight &&
+                             !args.Stoped;
+        }
+
+
 
         [Fact]
         public async Task InitFace_when_faces_not_captured_and_interrupted_throws()
@@ -159,6 +195,7 @@ namespace Tests
             var mLbphFaceRecognition = SetupLbphFaceRecognition();
             var mCaptureService = SetupCaptureService();
             var mDnFaceRecognition = SetupDnFaceRecognition();
+            SetupHeadPositionService();
 
             async IAsyncEnumerable<Mat> InterruptedCapture()
             {
@@ -192,6 +229,8 @@ namespace Tests
             var mLbphFaceRecognition = SetupLbphFaceRecognition();
             var mCaptureService = SetupCaptureService();
             var mDnFaceRecognition = SetupDnFaceRecognition();
+            var mHeadPositionService = SetupHeadPositionService();
+
 
             mDnFaceRecognition.Setup(f => f.CompareFaces(It.IsAny<Mat>(), It.IsAny<Mat>())).Returns(true);
 
@@ -202,12 +241,17 @@ namespace Tests
 
                 mProgress.Verify(f => f.Report(It.Is(FaceNotDetected())), Times.Once());
 
+                mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
+                    .Returns(() => (HeadRotation.Front, HeadRotation.Left));
+                mHcFaceDetection.ReturnFace(_testUtils, "frontrotleft");
+                yield return _nonEmptyFrame;
 
-                mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns(() =>
-                {
-                    var ret = _testUtils.GetFaceImg("front");
-                    return (new[] { ret.faceRect }, new[] { ret.faceImg });
-                });
+                mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Once());
+
+
+                mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
+                    .Returns(() => (HeadRotation.Front, HeadRotation.Front));
+                mHcFaceDetection.ReturnFace(_testUtils, "front");
                 yield return _nonEmptyFrame;
                 
                 mProgress.Verify(f => f.Report(It.Is(InitFaceProgress())), Times.Once());
@@ -222,11 +266,9 @@ namespace Tests
 
 
 
-                mHcFaceDetection.Setup(f => f.DetectFrontalThenProfileFaces(It.IsAny<Mat>())).Returns(() =>
-                {
-                    var ret = _testUtils.GetFaceImg("left");
-                    return (new[] { ret.faceRect }, new[] { ret.faceImg });
-                });
+                mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
+                    .Returns(() => (HeadRotation.Left, HeadRotation.Left));
+                mHcFaceDetection.ReturnFrontProfileFace(_testUtils, "left");
                 yield return _nonEmptyFrame;
 
                 mProgress.Verify(f => f.Report(It.Is(InitFaceProgress())), Times.AtLeast(2));
@@ -237,11 +279,9 @@ namespace Tests
 
                 mProgress.Verify(f => f.Report(It.Is(ProfileFaceNotDetected())), Times.Exactly(2));
 
-                mHcFaceDetection.Setup(f => f.DetectFrontalThenProfileFaces(It.IsAny<Mat>())).Returns(() =>
-                {
-                    var ret = _testUtils.GetFaceImg("right");
-                    return (new[] { ret.faceRect }, new[] { ret.faceImg });
-                });
+                mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
+                    .Returns(() => (HeadRotation.Right, HeadRotation.Right));
+                mHcFaceDetection.ReturnFrontProfileFace(_testUtils, "right");
                 yield return _nonEmptyFrame;
 
                 mProgress.Verify(f => f.Report(It.Is(InitFaceProgress())), Times.AtLeast(3));
