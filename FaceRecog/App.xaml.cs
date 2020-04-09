@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using Infrastructure;
 using NotifyBarUI;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
-using Serilog;
 using WindowUI;
 
-namespace FaceRecog
+namespace Application
 {
     /// <summary>
     /// Interaction logic for App.xaml

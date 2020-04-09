@@ -33,7 +33,7 @@ namespace Infrastructure.WorkTime
                 .CreateState(States.FaceInit)
                 .Enter(async _ =>
                 {
-                    await _initFaceService.InitFace(new CancellationTokenSource()).ConfigureAwait(false);
+                    // await _initFaceService.InitFace(new CancellationTokenSource()).ConfigureAwait(false);
                 })
                 .End()
 

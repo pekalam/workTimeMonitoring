@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using FaceRecognitionDotNet;
@@ -9,7 +10,7 @@ namespace Infrastructure.WorkTime
     public interface IDnFaceRecognition
     {
         bool RecognizeFace(Mat photo);
-        bool CompareFaces(Mat photo1, Mat photo2);
+        bool CompareFaces(Mat photo1, Mat photo2, Rect? face1 = null, Rect? face2 = null);
     }
 
     public class DnFaceRecognition : IDnFaceRecognition
@@ -43,19 +44,26 @@ namespace Infrastructure.WorkTime
             return std < 50.0d;
         }
 
-        private double InternalCompareFaces(Mat photo1, Mat photo2, IEnumerable<Location> knownFaceLocation = null)
+        private double InternalCompareFaces(Mat photo1, Mat photo2, Location? knownFaceLocation1 = null,
+            Location? knownFaceLocation2 = null)
         {
             using var img = LoadImage(photo1);
             FaceRecognition faceRecognition = FaceRecognition.Create(".");
 
-            var imgEncodings = faceRecognition.FaceEncodings(img);
+            var imgEncodings = faceRecognition.FaceEncodings(img, new []{knownFaceLocation1}, model: PredictorModel.Large);
+
+            if (!imgEncodings.Any())
+            {
+                return double.MaxValue;
+            }
 
             using var test = LoadImage(photo2);
-            var testEncodings = faceRecognition.FaceEncodings(test, knownFaceLocation);
+            var testEncodings = faceRecognition.FaceEncodings(test, new []{knownFaceLocation2}, model: PredictorModel.Large);
 
             if (testEncodings.Any())
             {
                 var distance = FaceRecognition.FaceDistance(imgEncodings.First(), testEncodings.First());
+                Debug.WriteLine($"faces dist {distance}");
                 return distance;
             }
             else
@@ -67,12 +75,22 @@ namespace Infrastructure.WorkTime
         private double InternalCompareFaces(Mat photo1, FaceImg faceImg)
         {
             return InternalCompareFaces(photo1, faceImg.Img,
-                new[] {new Location(0, 0, faceImg.Img.Width, faceImg.Img.Height),});
+                knownFaceLocation2: new Location(0, 0, faceImg.Img.Width, faceImg.Img.Height));
         }
 
-        public bool CompareFaces(Mat photo1, Mat photo2)
+        private Location? RectToLocation(Rect? rect)
         {
-            return InternalCompareFaces(photo1, photo2) < 50.0d;
+            if (!rect.HasValue)
+            {
+                return null;
+            }
+            return new Location(rect.Value.Left, rect.Value.Top, rect.Value.Right, rect.Value.Bottom);
+        }
+
+        public bool CompareFaces(Mat photo1, Mat photo2, Rect? face1 = null, Rect? face2 = null)
+        {
+            return InternalCompareFaces(photo1, photo2, knownFaceLocation1: RectToLocation(face1),
+                knownFaceLocation2: RectToLocation(face2)) < 50.0d;
         }
     }
 }

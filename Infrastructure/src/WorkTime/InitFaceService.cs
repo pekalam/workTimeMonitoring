@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Infrastructure.src.WorkTime;
 using OpenCvSharp;
 
 namespace Infrastructure.WorkTime
 {
     public class InitFaceProgressArgs
     {
-        public Mat Frame { get; set; }
+        public Mat? Frame { get; set; }
         public Rect? FaceRect { get; set; }
         public InitFaceProgress ProgressState { get; set; }
         public int ProgressPercentage { get; set; }
@@ -20,11 +20,11 @@ namespace Infrastructure.WorkTime
     public enum InitFaceProgress
     {
         Progress,
-        InvalidFacePos,
         FaceNotDetected,
         FaceRecognitionError,
         ProfileFaceNotDetected,
         FaceNotStraight,
+        CancelledByUser,
     }
 
     public class InitFaceService
@@ -33,26 +33,24 @@ namespace Infrastructure.WorkTime
         private readonly IDnFaceRecognition _dnFaceRecognition;
         private readonly IHcFaceDetection _faceDetection;
         private readonly ILbphFaceRecognition _lbphFaceRecognition;
-        private readonly ICaptureService _captureService;
         private readonly IHeadPositionService _headPositionService;
 
-        private int _progress;
+        private double _progress;
 
         public InitFaceService(ITestImageRepository testImageRepository, IDnFaceRecognition dnFaceRecognition,
-            IHcFaceDetection faceDetection, ILbphFaceRecognition lbphFaceRecognition, ICaptureService captureService,
+            IHcFaceDetection faceDetection, ILbphFaceRecognition lbphFaceRecognition,
             IHeadPositionService headPositionService)
         {
             _testImageRepository = testImageRepository;
             _dnFaceRecognition = dnFaceRecognition;
             _faceDetection = faceDetection;
             _lbphFaceRecognition = lbphFaceRecognition;
-            _captureService = captureService;
             _headPositionService = headPositionService;
         }
 
-        public IProgress<InitFaceProgressArgs> InitFaceProgress { get; set; }
+        public IProgress<InitFaceProgressArgs>? InitFaceProgress { get; set; }
 
-        private void ReportInitFaceProgress(Mat img, Rect? face = null,
+        private void ReportInitFaceProgress(Mat? img, Rect? face = null,
             InitFaceProgress exception = WorkTime.InitFaceProgress.Progress,
             bool stopped = false)
         {
@@ -61,45 +59,53 @@ namespace Infrastructure.WorkTime
                 ProgressState = exception,
                 FaceRect = face,
                 Frame = img,
-                ProgressPercentage = _progress,
+                ProgressPercentage = (int)_progress,
                 Stoped = stopped,
             });
         }
 
-        private Task CreateFaceValidationTask(FaceImg face1, FaceImg face2, CancellationToken ct)
+        private Task CreateFaceValidationTask(FaceImg face1, Rect face1Location, FaceImg face2, Rect face2Location,
+            CancellationToken ct)
         {
             return Task.Factory.StartNew(() =>
             {
-                if (!_dnFaceRecognition.CompareFaces(face1.Img, face2.Img))
+                if (!_dnFaceRecognition.CompareFaces(face1.Img, face2.Img, face1Location, face2Location))
                 {
                     throw new ArgumentException("Invalid faces");
                 }
 
-                _progress += 25 / 3;
-                if (_progress == 99)
-                {
-                    _progress = 100;
-                }
-
+                _progress += 6;
                 ReportInitFaceProgress(null);
             }, ct);
         }
 
-        public async Task InitFace(CancellationTokenSource cts)
+        private Task CreateLpbhTrainingTask(List<TestImage> toCapture, CancellationToken ct)
         {
-            var capCts =
-                CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource().Token, cts.Token);
-            var vcts = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource().Token, cts.Token);
+            return Task.Factory.StartNew(() =>
+            {
+                foreach (var testImage in toCapture)
+                {
+                    _lbphFaceRecognition.Train(testImage.FaceGrayscale);
+                    _testImageRepository.Add(testImage);
+                    _progress += 6;
+                    ReportInitFaceProgress(null);
+                }
+            }, ct);
+        }
+
+        public async Task<Task> InitFace(IAsyncEnumerator<Mat> camEnumerator, CancellationToken ct)
+        {
             bool interrupted = true;
 
             var toCapture = new List<TestImage>();
-            var validationTasks = new List<Task>();
+            var faceLocations = new List<Rect>();
+            var tasks = new List<Task>();
 
             _progress = 0;
             ResetLearned();
-
-            await foreach (var frame in _captureService.CaptureFrames(capCts.Token).ConfigureAwait(false))
+            while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
             {
+                var frame = camEnumerator.Current;
                 Rect[] faceRects;
                 Mat[] faces;
 
@@ -115,7 +121,8 @@ namespace Infrastructure.WorkTime
                     var (hRot, vRot) = _headPositionService.GetHeadPosition(frame, faceRects.First());
                     if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
                     {
-                        ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.FaceNotStraight);
+                        ReportInitFaceProgress(frame, face: faceRects.First(),
+                            exception: WorkTime.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -128,20 +135,23 @@ namespace Infrastructure.WorkTime
 
                         continue;
                     }
+
                     var (hRot, vRot) = _headPositionService.GetHeadPosition(frame, faceRects.First());
                     HeadRotation hTarget = toCapture.Count == 1 ? HeadRotation.Left : HeadRotation.Right;
                     HeadRotation vInvalid = toCapture.Count == 1 ? HeadRotation.Right : HeadRotation.Left;
                     if (hRot != hTarget || vRot == vInvalid)
                     {
-                        ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.FaceNotStraight);
+                        ReportInitFaceProgress(frame, face: faceRects.First(),
+                            exception: WorkTime.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
 
                 var testImg = TestImage.CreateFromFace(faces.First());
                 toCapture.Add(testImg);
+                faceLocations.Add(faceRects.First());
 
-                _progress += 20;
+                _progress += 21.34;
 
                 ReportInitFaceProgress(frame, faceRects.First());
 
@@ -149,56 +159,40 @@ namespace Infrastructure.WorkTime
                 {
                     var face1 = toCapture[^2];
                     var face2 = toCapture[^1];
-                    validationTasks.Add(CreateFaceValidationTask(face1.FaceColor, face2.FaceColor, vcts.Token));
+                    tasks.Add(CreateFaceValidationTask(face1.FaceColor, faceLocations[^2], face2.FaceColor,
+                        faceLocations[^1], ct));
                 }
 
                 if (toCapture.Count == 3)
                 {
                     interrupted = false;
-                    capCts.Cancel();
+                    break;
                 }
             }
 
-            if (toCapture.Count != 3 || interrupted)
+            if (interrupted)
             {
                 ResetLearned();
-                throw new Exception();
+                ReportInitFaceProgress(null, exception: WorkTime.InitFaceProgress.CancelledByUser, stopped: true);
+                return Task.CompletedTask;
             }
 
-            validationTasks.Add(CreateFaceValidationTask(toCapture[0].FaceColor, toCapture[^1].FaceColor, vcts.Token));
+            tasks.Add(CreateFaceValidationTask(toCapture[0].FaceColor, faceLocations[0],
+                toCapture[^1].FaceColor, faceLocations[^1], ct));
 
-            foreach (var testImage in toCapture)
+            tasks.Add(CreateLpbhTrainingTask(toCapture, ct));
+
+
+            return Task.WhenAll(tasks).ContinueWith((t) =>
             {
-                try
+                if (t.Exception != null)
                 {
-                    _lbphFaceRecognition.Train(testImage.FaceGrayscale);
-                    _testImageRepository.Add(testImage);
-                    _progress += 5;
-                    ReportInitFaceProgress(null);
-                }
-                catch (Exception e)
-                {
-                    vcts.Cancel();
                     _progress = 0;
                     ReportInitFaceProgress(null, exception: WorkTime.InitFaceProgress.FaceRecognitionError,
                         stopped: true);
-                    _testImageRepository.Clear();
-                    return;
+                    ResetLearned();
                 }
-            }
-
-
-            try
-            {
-                await Task.WhenAll(validationTasks);
-            }
-            catch (Exception e)
-            {
-                _progress = 0;
-                ReportInitFaceProgress(null, exception: WorkTime.InitFaceProgress.FaceRecognitionError, stopped: true);
-                ResetLearned();
-                return;
-            }
+            }, ct);
         }
 
         private void ResetLearned()

@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using FaceRecognitionDotNet;
 using OpenCvSharp;
 using Point = FaceRecognitionDotNet.Point;
 
-namespace Infrastructure.src.WorkTime
+namespace Infrastructure.WorkTime
 {
     public enum HeadRotation
     {

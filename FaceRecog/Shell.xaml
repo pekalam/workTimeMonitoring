@@ -1,0 +1,16 @@
+﻿<mah:MetroWindow x:Class="Application.Shell"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:regions="http://prismlibrary.com/"
+             xmlns:infrastructure="clr-namespace:Infrastructure;assembly=Infrastructure"
+             AllowsTransparency="True"
+             mc:Ignorable="d"
+             Title="Shell" Height="800" Width="1200">
+    <Grid>
+        <ContentControl
+            regions:RegionManager.RegionName="{x:Static infrastructure:ShellRegions.MainRegion}" />
+    </Grid>
+</mah:MetroWindow>

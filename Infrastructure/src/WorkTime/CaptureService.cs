@@ -13,7 +13,7 @@ namespace Infrastructure.WorkTime
     public interface ICaptureService
     {
         Mat CaptureSingleFrame();
-        IAsyncEnumerable<Mat> CaptureFrames([EnumeratorCancellation] CancellationToken ct);
+        IAsyncEnumerable<Mat> CaptureFrames(CancellationToken ct);
     }
 
     public class CaptureService : ICaptureService
@@ -34,25 +34,24 @@ namespace Infrastructure.WorkTime
 
         public async IAsyncEnumerable<Mat> CaptureFrames([EnumeratorCancellation] CancellationToken ct)
         {
-            //todo RX?
-            VideoCapture _cap = new VideoCapture(0);
+            VideoCapture cap = new VideoCapture(0);
 
             while (!ct.IsCancellationRequested)
             {
                 //todo
                 try
                 {
-                    await Task.Delay(34, ct).ConfigureAwait(false);
+                    await Task.Delay(34, ct).ConfigureAwait(true);
                 }
                 catch (TaskCanceledException)
                 {
                     break;
                 }
-                var frame = _cap.RetrieveMat();
+                var frame = cap.RetrieveMat();
                 yield return frame;
             }
 
-            _cap.Release();
+            cap.Release();
         }
     }
 }

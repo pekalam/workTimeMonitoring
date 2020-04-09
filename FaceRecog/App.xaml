@@ -1,7 +1,6 @@
-﻿<prism:PrismApplication x:Class="FaceRecog.App"
+﻿<prism:PrismApplication x:Class="Application.App"
                         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                        xmlns:local="clr-namespace:FaceRecog"
                         xmlns:prism="http://prismlibrary.com/">
     <Application.Resources>
         <ResourceDictionary>
