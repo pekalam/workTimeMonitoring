@@ -35,12 +35,14 @@ namespace Infrastructure.WorkTime
 
         public static FaceImg CreateColor(Mat mat)
         {
+            mat = mat.Clone();
             ResizeIfVaries(mat);
             return new FaceImg(mat);
         }
 
         public static FaceImg CreateGrayscale(Mat mat)
         {
+            mat = mat.Clone();
             ResizeIfVaries(mat);
             Cv2.CvtColor(mat, mat, ColorConversionCodes.BGR2GRAY);
             Cv2.EqualizeHist(mat, mat);

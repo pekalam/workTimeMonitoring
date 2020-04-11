@@ -473,22 +473,4 @@ namespace UnitTests
             mLbphFaceRecognition.Verify(f => f.Reset(), Times.Once());
         }
     }
-
-
-    public class HeadPositionServiceTests
-    {
-        [Fact]
-        public void f()
-        {
-            //TODO img
-            // var servicee = new HeadPositionService();
-            //
-            // var img = new ImageTestUtils().GetFaceImg("front");
-            //
-            // var position = servicee.GetHeadPosition(img.faceImg, img.faceRect);
-
-            // position.vRotation.Should().Be(HeadRotation.Front);
-            // position.hRotation.Should().Be(HeadRotation.Front);
-        }
-    }
 }

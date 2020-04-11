@@ -8,7 +8,7 @@ namespace Infrastructure.WorkTime
 
     public partial class WMonitorAlghorithm
     {
-        private readonly TestImageRepository _testImageRepository;
+        private readonly ITestImageRepository _testImageRepository;
         private readonly DnFaceRecognition _dnFaceRecognition;
         private readonly HcFaceDetection _faceDetection;
         private readonly LbphFaceRecognition _lbphFaceRecognition;
@@ -17,7 +17,7 @@ namespace Infrastructure.WorkTime
 
         public WMonitorAlghorithm()
         {
-            _testImageRepository = new TestImageRepository();
+            _testImageRepository = new DefaultTestImageRepository();
             _dnFaceRecognition = new DnFaceRecognition(_testImageRepository);
             _lbphFaceRecognition = new LbphFaceRecognition(_testImageRepository);
             _faceDetection = new HcFaceDetection();

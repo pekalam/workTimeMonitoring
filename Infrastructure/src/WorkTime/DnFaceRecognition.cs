@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using FaceRecognitionDotNet;
 using OpenCvSharp;
+using Point = FaceRecognitionDotNet.Point;
 
 namespace Infrastructure.WorkTime
 {
@@ -13,11 +15,30 @@ namespace Infrastructure.WorkTime
         bool CompareFaces(Mat photo1, Mat photo2, Rect? face1 = null, Rect? face2 = null);
     }
 
+    public static class FaceRecognitionModel
+    {
+        private static object _lck = new object();
+        private static FaceRecognition _model = FaceRecognition.Create(".");
+
+        public static List<FaceEncoding> FaceEncodingsSync(Image image,
+            IEnumerable<Location> knownFaceLocation = null,
+            int numJitters = 1,
+            PredictorModel model = PredictorModel.Small)
+        {
+            lock (_lck)
+            {
+                return _model.FaceEncodings(image, knownFaceLocation, numJitters, model).ToList();
+            }
+        }
+
+        public static FaceRecognition Model => _model;
+    }
+
     public class DnFaceRecognition : IDnFaceRecognition
     {
-        private readonly TestImageRepository _testImageRepository;
+        private readonly ITestImageRepository _testImageRepository;
 
-        public DnFaceRecognition(TestImageRepository testImageRepository)
+        public DnFaceRecognition(ITestImageRepository testImageRepository)
         {
             _testImageRepository = testImageRepository;
         }
@@ -48,9 +69,12 @@ namespace Infrastructure.WorkTime
             Location? knownFaceLocation2 = null)
         {
             using var img = LoadImage(photo1);
-            FaceRecognition faceRecognition = FaceRecognition.Create(".");
 
-            var imgEncodings = faceRecognition.FaceEncodings(img, new []{knownFaceLocation1}, model: PredictorModel.Large);
+            var imgEncodings = FaceRecognitionModel.FaceEncodingsSync(img, null, model: PredictorModel.Small);
+            if (!imgEncodings.Any())
+            {
+                imgEncodings = FaceRecognitionModel.FaceEncodingsSync(img, new[] { knownFaceLocation1 }, model: PredictorModel.Small);
+            }
 
             if (!imgEncodings.Any())
             {
@@ -58,10 +82,17 @@ namespace Infrastructure.WorkTime
             }
 
             using var test = LoadImage(photo2);
-            var testEncodings = faceRecognition.FaceEncodings(test, new []{knownFaceLocation2}, model: PredictorModel.Large);
+            var testEncodings = FaceRecognitionModel.FaceEncodingsSync(test, null, model: PredictorModel.Small);
+            if (!testEncodings.Any())
+            {
+                testEncodings = FaceRecognitionModel.FaceEncodingsSync(test, new []{knownFaceLocation2}, model: PredictorModel.Small);
+            }
 
             if (testEncodings.Any())
             {
+                var c = testEncodings.Count();
+                var c2 = imgEncodings.Count();
+                var x = FaceRecognition.CompareFace(imgEncodings.First(), testEncodings.First());
                 var distance = FaceRecognition.FaceDistance(imgEncodings.First(), testEncodings.First());
                 Debug.WriteLine($"faces dist {distance}");
                 return distance;
@@ -90,7 +121,7 @@ namespace Infrastructure.WorkTime
         public bool CompareFaces(Mat photo1, Mat photo2, Rect? face1 = null, Rect? face2 = null)
         {
             return InternalCompareFaces(photo1, photo2, knownFaceLocation1: RectToLocation(face1),
-                knownFaceLocation2: RectToLocation(face2)) < 50.0d;
+                       knownFaceLocation2: RectToLocation(face2)) < 0.55;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Infrastructure.WorkTime
         void Clear();
     }
 
-    public class TestImageRepository : ITestImageRepository
+    public class DefaultTestImageRepository : ITestImageRepository
     {
         private readonly List<TestImage> _imgs = new List<TestImage>();
 
@@ -55,6 +55,10 @@ namespace Infrastructure.WorkTime
 
         public void Add(TestImage img)
         {
+            if (img == null)
+            {
+                throw new NullReferenceException("Null testImage");
+            }
             if (_imgs.Count > 0)
             {
                 ValidateWithPrevious(img);
@@ -65,6 +69,10 @@ namespace Infrastructure.WorkTime
 
         public void Remove(TestImage img)
         {
+            if (img == null)
+            {
+                throw new NullReferenceException("Null testImage");
+            }
             if (!_imgs.Remove(img))
             {
                 throw new Exception("");

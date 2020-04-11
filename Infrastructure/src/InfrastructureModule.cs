@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Infrastructure.Services;
 using Infrastructure.WorkTime;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -16,6 +17,12 @@ namespace Infrastructure
 
         }
 
+        private object SettingsFactory<T>(IUnityContainer container) where T : new()
+        {
+            var conf = container.Resolve<ConfigurationService>();
+            return conf.Get<T>(nameof(T));
+        }
+
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             Log.Logger = new LoggerConfiguration()
@@ -25,27 +32,29 @@ namespace Infrastructure
 
             containerRegistry.RegisterInstance<ILogger>(Log.Logger);
 
+            containerRegistry.RegisterInstance(typeof(ConfigurationService), new ConfigurationService("settings.json"));
+            containerRegistry.GetContainer()
+                .RegisterFactory<HeadPositionServiceSettings>(SettingsFactory<HeadPositionServiceSettings>);
+
             containerRegistry.GetContainer().RegisterType<ICaptureService, CaptureService>();
             containerRegistry.GetContainer().RegisterType<IHeadPositionService, HeadPositionService>();
             containerRegistry.GetContainer().RegisterType<IHcFaceDetection, HcFaceDetection>();
             containerRegistry.GetContainer().RegisterType<IDnFaceRecognition, DnFaceRecognition>();
-            containerRegistry.GetContainer().RegisterType<ITestImageRepository, TestImageRepository>();
+            containerRegistry.GetContainer().RegisterSingleton<ITestImageRepository, DefaultTestImageRepository>();
             containerRegistry.GetContainer().RegisterType<ILbphFaceRecognition, LbphFaceRecognition>();
 
-            //AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
         }
 
         private void TaskSchedulerOnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             Log.Logger.Fatal(e.Exception, "Unhandled exception");
-            throw e.Exception;
         }
 
         private void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Log.Logger.Fatal(e.ExceptionObject as Exception, "Unhandled exception");
-            throw e.ExceptionObject as Exception;
         }
     }
 }

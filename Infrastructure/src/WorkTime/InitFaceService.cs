@@ -64,12 +64,12 @@ namespace Infrastructure.WorkTime
             });
         }
 
-        private Task CreateFaceValidationTask(FaceImg face1, Rect face1Location, FaceImg face2, Rect face2Location,
+        private Task CreateFaceValidationTask(Mat face1, Rect face1Location, Mat face2, Rect face2Location,
             CancellationToken ct)
         {
             return Task.Factory.StartNew(() =>
             {
-                if (!_dnFaceRecognition.CompareFaces(face1.Img, face2.Img, face1Location, face2Location))
+                if (!_dnFaceRecognition.CompareFaces(face1, face2, face1Location, face2Location))
                 {
                     throw new ArgumentException("Invalid faces");
                 }
@@ -97,8 +97,9 @@ namespace Infrastructure.WorkTime
         {
             bool interrupted = true;
 
-            var toCapture = new List<TestImage>();
+            var testImages = new List<TestImage>();
             var faceLocations = new List<Rect>();
+            var capturedFrames = new List<Mat>();
             var tasks = new List<Task>();
 
             _progress = 0;
@@ -109,7 +110,7 @@ namespace Infrastructure.WorkTime
                 Rect[] faceRects;
                 Mat[] faces;
 
-                if (toCapture.Count == 0)
+                if (testImages.Count == 0)
                 {
                     (faceRects, faces) = _faceDetection.DetectFrontalFaces(frame);
                     if (faces.Length != 1)
@@ -137,8 +138,8 @@ namespace Infrastructure.WorkTime
                     }
 
                     var (hRot, vRot) = _headPositionService.GetHeadPosition(frame, faceRects.First());
-                    HeadRotation hTarget = toCapture.Count == 1 ? HeadRotation.Left : HeadRotation.Right;
-                    HeadRotation vInvalid = toCapture.Count == 1 ? HeadRotation.Right : HeadRotation.Left;
+                    HeadRotation hTarget = testImages.Count == 1 ? HeadRotation.Left : HeadRotation.Right;
+                    HeadRotation vInvalid = testImages.Count == 1 ? HeadRotation.Right : HeadRotation.Left;
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
@@ -148,22 +149,23 @@ namespace Infrastructure.WorkTime
                 }
 
                 var testImg = TestImage.CreateFromFace(faces.First());
-                toCapture.Add(testImg);
+                testImages.Add(testImg);
                 faceLocations.Add(faceRects.First());
+                capturedFrames.Add(frame.Clone());
 
                 _progress += 21.34;
 
                 ReportInitFaceProgress(frame, faceRects.First());
 
-                if (toCapture.Count > 1)
+                if (testImages.Count > 1)
                 {
-                    var face1 = toCapture[^2];
-                    var face2 = toCapture[^1];
-                    tasks.Add(CreateFaceValidationTask(face1.FaceColor, faceLocations[^2], face2.FaceColor,
+                    var face1 = capturedFrames[^2];
+                    var face2 = capturedFrames[^1];
+                    tasks.Add(CreateFaceValidationTask(face1, faceLocations[^2], face2,
                         faceLocations[^1], ct));
                 }
 
-                if (toCapture.Count == 3)
+                if (testImages.Count == 3)
                 {
                     interrupted = false;
                     break;
@@ -177,10 +179,10 @@ namespace Infrastructure.WorkTime
                 return Task.CompletedTask;
             }
 
-            tasks.Add(CreateFaceValidationTask(toCapture[0].FaceColor, faceLocations[0],
-                toCapture[^1].FaceColor, faceLocations[^1], ct));
+            tasks.Add(CreateFaceValidationTask(capturedFrames[0], faceLocations[0], capturedFrames[^1],
+                faceLocations[^1], ct));
 
-            tasks.Add(CreateLpbhTrainingTask(toCapture, ct));
+            tasks.Add(CreateLpbhTrainingTask(testImages, ct));
 
 
             return Task.WhenAll(tasks).ContinueWith((t) =>

@@ -38,7 +38,7 @@ namespace HeadPoseEstimationTest
     {
         private CaptureService _cap = new CaptureService();
         private HcFaceDetection _faceDetection = new HcFaceDetection();
-        private HeadPositionService _headPosition = new HeadPositionService();
+        private HeadPositionService _headPosition = new HeadPositionService(new HeadPositionServiceSettings());
         private CancellationTokenSource _cts;
 
         public MainWindow()

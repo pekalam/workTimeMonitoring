@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8BA6BD0F-7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeadPoseEstimationTest", "HeadPoseEstimationTest\HeadPoseEstimationTest.csproj", "{B71774FE-CC34-4F2E-B2B3-B4B86BA4AAD7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LpbhFaceRecognitionTest", "LpbhFaceRecognitionTest\LpbhFaceRecognitionTest.csproj", "{BBE758EA-EB25-483C-BD6C-61F20201C263}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,14 @@ Global
 		{B71774FE-CC34-4F2E-B2B3-B4B86BA4AAD7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B71774FE-CC34-4F2E-B2B3-B4B86BA4AAD7}.Release|x64.ActiveCfg = Release|Any CPU
 		{B71774FE-CC34-4F2E-B2B3-B4B86BA4AAD7}.Release|x64.Build.0 = Release|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Debug|x64.Build.0 = Debug|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Release|x64.ActiveCfg = Release|Any CPU
+		{BBE758EA-EB25-483C-BD6C-61F20201C263}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +97,7 @@ Global
 		{DEE4BAAE-82F5-4BD0-9021-71BA4C931D0B} = {ABF1F3CB-DBAD-4EEF-A655-2D4ECBB64D53}
 		{A9A983ED-4C30-459D-ACF8-2CBD5CC24168} = {ABF1F3CB-DBAD-4EEF-A655-2D4ECBB64D53}
 		{B71774FE-CC34-4F2E-B2B3-B4B86BA4AAD7} = {8BA6BD0F-78B2-4CFA-A7EE-98D79042B184}
+		{BBE758EA-EB25-483C-BD6C-61F20201C263} = {8BA6BD0F-78B2-4CFA-A7EE-98D79042B184}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB954E96-268E-43F3-B57E-4B6ED14B0AC3}

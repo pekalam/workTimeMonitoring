@@ -23,6 +23,7 @@
             </StackPanel>
         </Grid>
         <DockPanel LastChildFill="False">
+            
             <Grid DockPanel.Dock="Bottom" Panel.ZIndex="100" Visibility="{c:Binding StepInfoPanelVisible, FalseToVisibility=Collapsed}" Background="{Binding StepInfoPanelBrush}" Height="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -34,6 +35,11 @@
                     <Button Command="{Binding StepInfoContinueClick}" Visibility="{c:Binding StepInfoContinueVisible, FalseToVisibility=Hidden}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,0,0">Continue</Button>
                 </StackPanel>
             </Grid>
+            <StackPanel HorizontalAlignment="Center" Visibility="{c:Binding PhotoPreviewVisible, FalseToVisibility=Collapsed}" DockPanel.Dock="Bottom" Orientation="Horizontal" Height="120">
+                <Image Source="{Binding Photo1}"/>
+                <Image Source="{Binding Photo2}"/>
+                <Image Source="{Binding Photo3}"/>
+            </StackPanel>
         </DockPanel>
     </Grid>
 

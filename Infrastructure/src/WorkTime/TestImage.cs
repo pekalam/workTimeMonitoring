@@ -17,7 +17,7 @@ namespace Infrastructure.WorkTime
         public static TestImage CreateFromFace(Mat colorImg)
         {
             var faceColor = FaceImg.CreateColor(colorImg);
-            var faceGrayscale = FaceImg.CreateGrayscale(faceColor.Img);
+            var faceGrayscale = FaceImg.CreateGrayscale(colorImg);
             return new TestImage(faceGrayscale, faceColor);
         }
     }

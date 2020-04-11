@@ -33,6 +33,10 @@ namespace WindowUI.FaceInitialization
         private string _stepInfoPanelText;
         private bool _stepInfoContinueVisible;
         private bool _stepInfoRetryVisible;
+        private bool _photoPreviewVisible;
+        private ImageSource _photo2;
+        private ImageSource _photo1;
+        private ImageSource _photo3;
 
         public FaceInitializationViewModel(IFaceInitializationController controller)
         {
@@ -96,6 +100,30 @@ namespace WindowUI.FaceInitialization
         {
             get => _stepInfoRetryVisible;
             set => SetProperty(ref _stepInfoRetryVisible, value);
+        }
+
+        public bool PhotoPreviewVisible
+        {
+            get => _photoPreviewVisible;
+            set => SetProperty(ref _photoPreviewVisible, value);
+        }
+
+        public ImageSource Photo1
+        {
+            get => _photo1;
+            set => SetProperty(ref _photo1, value);
+        }
+
+        public ImageSource Photo2
+        {
+            get => _photo2;
+            set => SetProperty(ref _photo2, value);
+        }
+
+        public ImageSource Photo3
+        {
+            get => _photo3;
+            set => SetProperty(ref _photo3, value);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)

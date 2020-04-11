@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using OpenCvSharp;
 using OpenCvSharp.Face;
 
@@ -9,7 +10,7 @@ namespace Infrastructure.WorkTime
     {
         bool Trained { get; }
         double ConfidenceThreshold { get; }
-        void Train(FaceImg grayscaleFaceImg);
+        void Train(FaceImg grayscaleFaceImg, int label = 1);
         void Update(Mat photo);
         bool RecognizeFace(Mat photo);
         void Reset();
@@ -17,16 +18,16 @@ namespace Infrastructure.WorkTime
 
     public class LbphFaceRecognition : ILbphFaceRecognition
     {
-        private const double MinConfidenceThreshold = 60.0d;
+        private const double MinConfidenceThreshold = 200;
 
         private readonly LBPHFaceRecognizer _recognizer;
-        private readonly TestImageRepository _testImageRepository;
+        private readonly ITestImageRepository _testImageRepository;
 
         private double _confidenceThreshold;
         private int _trainingSetSize = 0;
         private double _stdSum;
 
-        public LbphFaceRecognition(TestImageRepository testImageRepository)
+        public LbphFaceRecognition(ITestImageRepository testImageRepository)
         {
             _recognizer = LBPHFaceRecognizer.Create();
             _testImageRepository = testImageRepository;
@@ -54,6 +55,8 @@ namespace Infrastructure.WorkTime
             var testImage = _testImageRepository.GetRandomImage();
             _recognizer.Predict(testImage.FaceGrayscale.Img, out var label, out var confidence);
 
+            Debug.WriteLine($"Checked confidende: {confidence}");
+
             if (label == 0)
             {
                 ResetStateVars();
@@ -63,29 +66,33 @@ namespace Infrastructure.WorkTime
             if (confidence > MinConfidenceThreshold)
             {
                 ResetStateVars();
-                throw new Exception("Too high confidence");
+                throw new Exception($"Too high confidence: {confidence}");
             }
 
             return confidence;
         }
 
-        public void Train(FaceImg grayscaleFaceImg)
+        public void Train(FaceImg grayscaleFaceImg, int label = 1)
         {
-            _recognizer.Train(new[] { grayscaleFaceImg.Img }, new[] { 1 });
+            _recognizer.Train(new[] { grayscaleFaceImg.Img }, new[] { label });
 
-            _trainingSetSize++;
-            if (_testImageRepository.Count > 0)
+            if (label == 1)
             {
-                var confidence = CheckConfidenceAfterTraining();
-                _stdSum += confidence;
-            }
-            else
-            {
-                _stdSum = MinConfidenceThreshold;
-            }
+                _trainingSetSize++;
+                if (_testImageRepository.Count > 0)
+                {
+                    var confidence = CheckConfidenceAfterTraining();
+                    _stdSum += confidence;
+                }
+                else
+                {
+                    _stdSum = MinConfidenceThreshold;
+                }
 
 
-            _confidenceThreshold = _stdSum / _trainingSetSize;
+                _confidenceThreshold = _stdSum / _trainingSetSize;
+            }
+
         }
 
 
@@ -110,8 +117,16 @@ namespace Infrastructure.WorkTime
             CheckIsTrained();
 
             _recognizer.Predict(photo, out var label, out var confidence);
-
+            Debug.WriteLine($"RecognizeFace confidende: {confidence}");
             return confidence <= _confidenceThreshold;
+        }
+
+        public double RecognizeFace2(Mat photo)
+        {
+            CheckIsTrained();
+
+            _recognizer.Predict(photo, out var label, out var confidence);
+            return confidence;
         }
 
         public void Reset() => ResetStateVars();

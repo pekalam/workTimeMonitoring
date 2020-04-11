@@ -16,16 +16,18 @@ namespace WindowUI.FaceInitialization
         private FaceInitializationViewModel _vm;
         private readonly ICaptureService _captureService;
         private readonly IHcFaceDetection _faceDetection;
+        private readonly ITestImageRepository _testImageRepository;
         private readonly InitFaceService _initFaceService;
         private bool _stepError = false;
         private bool _stepCompleted = false;
         private bool _firstRun = true;
 
-        public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection, InitFaceService initFaceService)
+        public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection, InitFaceService initFaceService, ITestImageRepository testImageRepository)
         {
             _captureService = captureService;
             _faceDetection = faceDetection;
             _initFaceService = initFaceService;
+            _testImageRepository = testImageRepository;
             StepInfoContinueClick = new DelegateCommand(OnStepInfoContinueClick);
             StepInfoRetryClick = new DelegateCommand(OnStepInfoRetryClick);
         }
@@ -91,10 +93,7 @@ namespace WindowUI.FaceInitialization
                 }
 
 
-                if (stepEndTask != null && stepEndTask.IsCompleted)
-                {
-                    ShowSuccessStepInfo("Profile initialized");
-                }
+                
             }
 
             if (stepEndTask != null)
@@ -123,9 +122,15 @@ namespace WindowUI.FaceInitialization
                     HideStepInfo();
                     if (obj.ProgressPercentage == 100)
                     {
+                        ShowSuccessStepInfo("Profile initialized");
                         _stepCompleted = true;
                         _vm.StepInfoContinueVisible = true;
                         _vm.StepInfoRetryVisible = true;
+                        _vm.PhotoPreviewVisible = true;
+                        var photos = _testImageRepository.GetAll();
+                        _vm.Photo1 = photos[0].FaceColor.Img.ToBitmapImage();
+                        _vm.Photo2 = photos[1].FaceColor.Img.ToBitmapImage();
+                        _vm.Photo3 = photos[2].FaceColor.Img.ToBitmapImage();
                     }
                     break;
             }
