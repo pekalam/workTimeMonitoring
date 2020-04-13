@@ -18,7 +18,7 @@ namespace Infrastructure.WorkTime
 
     public class LbphFaceRecognition : ILbphFaceRecognition
     {
-        private const double MinConfidenceThreshold = 200;
+        private const double MinConfidenceThreshold = 1000;
 
         private readonly LBPHFaceRecognizer _recognizer;
         private readonly ITestImageRepository _testImageRepository;
@@ -29,7 +29,7 @@ namespace Infrastructure.WorkTime
 
         public LbphFaceRecognition(ITestImageRepository testImageRepository)
         {
-            _recognizer = LBPHFaceRecognizer.Create();
+            _recognizer = LBPHFaceRecognizer.Create(gridX: 16, gridY: 16);
             _testImageRepository = testImageRepository;
         }
 
@@ -74,6 +74,16 @@ namespace Infrastructure.WorkTime
 
         public void Train(FaceImg grayscaleFaceImg, int label = 1)
         {
+            if (_trainingSetSize > 0)
+            {
+                _recognizer.Predict(grayscaleFaceImg.Img, out _, out var confidence);
+                if (confidence > _confidenceThreshold)
+                {
+                    Debug.WriteLine($"ignoring {confidence}");
+                    return;
+                }
+            }
+
             _recognizer.Train(new[] { grayscaleFaceImg.Img }, new[] { label });
 
             if (label == 1)
@@ -87,6 +97,7 @@ namespace Infrastructure.WorkTime
                 else
                 {
                     _stdSum = MinConfidenceThreshold;
+                    //_stdSum = 0;
                 }
 
 

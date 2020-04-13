@@ -35,20 +35,23 @@ namespace Infrastructure.WorkTime
         public async IAsyncEnumerable<Mat> CaptureFrames([EnumeratorCancellation] CancellationToken ct)
         {
             VideoCapture cap = new VideoCapture(0);
-
+            
             while (!ct.IsCancellationRequested)
             {
                 //todo
                 try
                 {
-                    await Task.Delay(34, ct).ConfigureAwait(true);
+                    await Task.Delay(34, ct).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
                     break;
                 }
                 var frame = cap.RetrieveMat();
-                yield return frame;
+                if (frame != null)
+                {
+                    yield return frame;
+                }
             }
 
             cap.Release();

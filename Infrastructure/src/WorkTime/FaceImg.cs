@@ -6,8 +6,8 @@ namespace Infrastructure.WorkTime
 
     public class FaceImg
     {
-        public const int Width = 92;
-        public const int Height = 112;
+        public const int Width = 64;
+        public const int Height = 64;
 
         public Mat Img { get; }
 

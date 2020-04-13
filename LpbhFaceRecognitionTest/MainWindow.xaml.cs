@@ -33,6 +33,7 @@ namespace LpbhFaceRecognitionTest
         private ITestImageRepository _repo = new DefaultTestImageRepository();
         private LbphFaceRecognition _recognition;
         private HcFaceDetection _faceDetection = new HcFaceDetection();
+        private HeadPoseNormalization _norm = new HeadPoseNormalization();
 
         private FaceImg _currentFace;
         private FaceImg _photo;
@@ -41,6 +42,7 @@ namespace LpbhFaceRecognitionTest
         private int _frames = 0;
         private int _trained = 0;
         private bool _stop = true;
+        private bool _autoPredict = false;
 
         public MainWindow()
         {
@@ -56,18 +58,25 @@ namespace LpbhFaceRecognitionTest
             {
                 _currentFrame = frame.Clone();
                 var (rects, faces) = _faceDetection.DetectFrontalThenProfileFaces(frame);
-
+                
                 if (rects.Length == 1)
                 {
-                    _currentFace = FaceImg.CreateGrayscale(faces.First());
+                    //_currentFace = FaceImg.CreateGrayscale(faces.First());
                     Cv2.Rectangle(frame, rects.First(), Scalar.Green);
-
+                
                     _frames++;
                     if (_frames == 5 && !_stop)
                     {
                         photoBtn_Click(null, null);
                         trainBtn_Click(null, null);
                         trained.Text = _trained.ToString();
+                        _frames = 0;
+                    }
+
+                    if (_frames == 2 && _autoPredict)
+                    {
+                        photoBtn_Click(null, null);
+                        predictBtn_Click(null, null);
                         _frames = 0;
                     }
                 }
@@ -124,25 +133,35 @@ namespace LpbhFaceRecognitionTest
 
         private void photoBtn_Click(object sender, RoutedEventArgs e)
         {
-            var f= Preprocces(_currentFrame);
+            // Cv2.Resize(f,f, new Size(FaceImg.Width, FaceImg.Height));
+            // Cv2.CvtColor(f, f, ColorConversionCodes.BGR2GRAY);
+            // var clahe = Cv2.CreateCLAHE();
+            // clahe.Apply(f,f);
+
+            var f = _currentFrame.Clone();
+            var (rects, _) = _faceDetection.DetectFrontalThenProfileFaces(f);
+            if (rects.Length != 1)
+            {
+                return;
+            }
+
+            f = _norm.NormalizePosition(f, rects[0]);
+
             Cv2.Resize(f,f, new Size(FaceImg.Width, FaceImg.Height));
             Cv2.CvtColor(f, f, ColorConversionCodes.BGR2GRAY);
-
-            var k = Cv2.GetGaborKernel(new Size(40, 40), 5, 2, 1.0, 1, Math.PI/2.0, MatType.CV_32F);
-            Cv2.Filter2D(f,f,MatType.CV_8U, k);
-            Cv2.ImShow("x", f);
-            // _currentFace = new FaceImg(f);
-            // _photo = _currentFace;
-            // preview.Source = _photo.Img.ToBitmapImage();
+            var clahe = Cv2.CreateCLAHE();
+            clahe.Apply(f, f);
+            
+            _currentFace = new FaceImg(f);
+            //_currentFace = FaceImg.CreateGrayscale(f);
+            _photo = _currentFace;
+            preview.Source = _photo.Img.ToBitmapImage();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
-
-
-
             _stop = !_stop;
+            _autoPredict = false;
             _frames = 0;
         }
 
@@ -164,6 +183,8 @@ namespace LpbhFaceRecognitionTest
             {
                 Cv2.Resize(m, m, new Size(FaceImg.Width, FaceImg.Height));
                 Cv2.CvtColor(m, m, ColorConversionCodes.BGR2GRAY);
+                var clahe = Cv2.CreateCLAHE();
+                clahe.Apply(m, m);
                 return new FaceImg(m);
             });
 
@@ -171,6 +192,13 @@ namespace LpbhFaceRecognitionTest
             {
                 _recognition.Train(img, 0);
             }
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            _stop = true;
+            _autoPredict = !_autoPredict;
+            _frames = 0;
         }
     }
 }
