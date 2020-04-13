@@ -18,16 +18,22 @@ namespace Infrastructure.WorkTime
 
     public class CaptureService : ICaptureService
     {
+        private void ValidateMat(Mat mat)
+        {
+            if (mat.Empty() || mat.Width <= 0 || mat.Height <= 0)
+            {
+                throw new Exception("Invalid photo");
+            }
+
+        }
+
         public Mat CaptureSingleFrame()
         {
             VideoCapture cap = new VideoCapture(0);
             var mat = cap.RetrieveMat();
             cap.Release();
 
-            if (mat.Empty() || mat.Width <= 0 || mat.Height <= 0)
-            {
-                throw new Exception("Invalid photo");
-            }
+            ValidateMat(mat);
 
             return mat;
         }
@@ -41,7 +47,7 @@ namespace Infrastructure.WorkTime
                 //todo
                 try
                 {
-                    await Task.Delay(34, ct).ConfigureAwait(false);
+                    await Task.Delay(34, ct).ConfigureAwait(true);
                 }
                 catch (TaskCanceledException)
                 {
@@ -50,6 +56,7 @@ namespace Infrastructure.WorkTime
                 var frame = cap.RetrieveMat();
                 if (frame != null)
                 {
+                    ValidateMat(frame);
                     yield return frame;
                 }
             }

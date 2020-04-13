@@ -128,18 +128,18 @@ namespace HeadPoseNormalizationTest
 
             await foreach (var frame in cap.CaptureFrames(CancellationToken.None))
             {
-                var (rects, faces) = hc.DetectFrontalThenProfileFaces(frame);
+                var rects = hc.DetectFrontalThenProfileFaces(frame);
 
 
                 if (rects.Length == 1)
                 {
-                    var landmarks = FaceRecognitionModel.Model.FaceLandmark(LoadImage(frame)).ToList();
+                    var landmarks = SharedFaceRecognitionModel.Model.FaceLandmark(LoadImage(frame)).ToList();
                     if (landmarks.Count > 0)
                     {
                         var fc = frame.Clone();
 
 
-                        norm.NormalizePosition(fc, fc, rects[0], landmarks);
+                        fc  = norm.NormalizePosition(fc, rects[0], landmarks);
 
 
                         Cv2.Resize(fc, fc, new Size(96, 96));

@@ -83,7 +83,7 @@ namespace Infrastructure.WorkTime
 
         private List<IDictionary<FacePart, IEnumerable<Point>>> GetLandmarks(Mat src)
         {
-            var landmarks = FaceRecognitionModel.Model.FaceLandmark(src.ToImage()).ToList();
+            var landmarks = SharedFaceRecognitionModel.Model.FaceLandmark(src.ToImage()).ToList();
             return landmarks;
         }
 

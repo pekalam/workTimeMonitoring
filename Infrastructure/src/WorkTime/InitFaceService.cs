@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FaceRecognitionDotNet;
+using Infrastructure.Repositories;
 using OpenCvSharp;
 
 namespace Infrastructure.WorkTime
@@ -32,19 +35,17 @@ namespace Infrastructure.WorkTime
         private readonly ITestImageRepository _testImageRepository;
         private readonly IDnFaceRecognition _dnFaceRecognition;
         private readonly IHcFaceDetection _faceDetection;
-        private readonly ILbphFaceRecognition _lbphFaceRecognition;
         private readonly IHeadPositionService _headPositionService;
 
         private double _progress;
 
         public InitFaceService(ITestImageRepository testImageRepository, IDnFaceRecognition dnFaceRecognition,
-            IHcFaceDetection faceDetection, ILbphFaceRecognition lbphFaceRecognition,
+            IHcFaceDetection faceDetection,
             IHeadPositionService headPositionService)
         {
             _testImageRepository = testImageRepository;
             _dnFaceRecognition = dnFaceRecognition;
             _faceDetection = faceDetection;
-            _lbphFaceRecognition = lbphFaceRecognition;
             _headPositionService = headPositionService;
         }
 
@@ -59,17 +60,21 @@ namespace Infrastructure.WorkTime
                 ProgressState = exception,
                 FaceRect = face,
                 Frame = img,
-                ProgressPercentage = (int)_progress,
+                ProgressPercentage = (int) _progress,
                 Stoped = stopped,
             });
         }
 
-        private Task CreateFaceValidationTask(Mat face1, Rect face1Location, Mat face2, Rect face2Location,
+        private Task CreateFaceValidationTask(Mat face1, Mat face2, Task<FaceEncodingData?> faceEncoding1,
+            Task<FaceEncodingData?> faceEncoding2,
             CancellationToken ct)
         {
             return Task.Factory.StartNew(() =>
             {
-                if (!_dnFaceRecognition.CompareFaces(face1, face2, face1Location, face2Location))
+                var fe1 = faceEncoding1.GetAwaiter().GetResult();
+                var fe2 = faceEncoding2.GetAwaiter().GetResult();
+
+                if (!_dnFaceRecognition.CompareFaces(face1, fe1, face2, fe2))
                 {
                     throw new ArgumentException("Invalid faces");
                 }
@@ -79,47 +84,51 @@ namespace Infrastructure.WorkTime
             }, ct);
         }
 
-        private Task CreateLpbhTrainingTask(List<TestImage> toCapture, CancellationToken ct)
+        private Task<FaceEncodingData?> CreateFaceEncodingTask(Mat photo)
         {
-            return Task.Factory.StartNew(() =>
+            return Task.Factory.StartNew<FaceEncodingData?>(() =>
             {
-                foreach (var testImage in toCapture)
+                var encoding = _dnFaceRecognition.GetFaceEncodings(photo);
+                if (encoding == null)
                 {
-                    _lbphFaceRecognition.Train(testImage.FaceGrayscale);
-                    _testImageRepository.Add(testImage);
-                    _progress += 6;
-                    ReportInitFaceProgress(null);
+                    throw new ArgumentException("Cannot find face encodings");
                 }
-            }, ct);
+                _progress += 6;
+                ReportInitFaceProgress(null);
+                return encoding;
+            });
         }
 
         public async Task<Task> InitFace(IAsyncEnumerator<Mat> camEnumerator, CancellationToken ct)
         {
             bool interrupted = true;
 
-            var testImages = new List<TestImage>();
-            var faceLocations = new List<Rect>();
-            var capturedFrames = new List<Mat>();
+            var testImages = new List<TestImageBuilder>();
             var tasks = new List<Task>();
+            var faceEncodings = new List<Task<FaceEncodingData?>>();
 
             _progress = 0;
             ResetLearned();
+
+
             while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
             {
                 var frame = camEnumerator.Current;
+
                 Rect[] faceRects;
-                Mat[] faces;
+                HeadRotation targetRotation;
 
                 if (testImages.Count == 0)
                 {
-                    (faceRects, faces) = _faceDetection.DetectFrontalFaces(frame);
-                    if (faces.Length != 1)
+                    faceRects = _faceDetection.DetectFrontalFaces(frame);
+                    if (faceRects.Length != 1)
                     {
                         ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.FaceNotDetected);
                         continue;
                     }
 
                     var (hRot, vRot) = _headPositionService.GetHeadPosition(frame, faceRects.First());
+                    targetRotation = hRot;
                     if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
@@ -129,8 +138,8 @@ namespace Infrastructure.WorkTime
                 }
                 else
                 {
-                    (faceRects, faces) = _faceDetection.DetectFrontalThenProfileFaces(frame);
-                    if (faces.Length != 1)
+                    faceRects = _faceDetection.DetectFrontalThenProfileFaces(frame);
+                    if (faceRects.Length != 1)
                     {
                         ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.ProfileFaceNotDetected);
 
@@ -140,6 +149,7 @@ namespace Infrastructure.WorkTime
                     var (hRot, vRot) = _headPositionService.GetHeadPosition(frame, faceRects.First());
                     HeadRotation hTarget = testImages.Count == 1 ? HeadRotation.Left : HeadRotation.Right;
                     HeadRotation vInvalid = testImages.Count == 1 ? HeadRotation.Right : HeadRotation.Left;
+                    targetRotation = hTarget;
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
@@ -148,21 +158,26 @@ namespace Infrastructure.WorkTime
                     }
                 }
 
-                var testImg = TestImage.CreateFromFace(faces.First());
-                testImages.Add(testImg);
-                faceLocations.Add(faceRects.First());
-                capturedFrames.Add(frame.Clone());
+                var faceImg = frame.Clone();
+                var testImageBldr = TestImageBuilderFactory.Create();
+                testImageBldr.AddImg(faceImg)
+                    .AddDateCreated(DateTime.UtcNow)
+                    .AddFaceLocation(faceRects.First())
+                    .AddHeadRotation(targetRotation)
+                    .SetIsReferenceImg(true);
+                testImages.Add(testImageBldr);
 
-                _progress += 21.34;
+                faceEncodings.Add(CreateFaceEncodingTask(faceImg));
+
+                _progress += 20.34;
 
                 ReportInitFaceProgress(frame, faceRects.First());
 
                 if (testImages.Count > 1)
                 {
-                    var face1 = capturedFrames[^2];
-                    var face2 = capturedFrames[^1];
-                    tasks.Add(CreateFaceValidationTask(face1, faceLocations[^2], face2,
-                        faceLocations[^1], ct));
+                    var face1 = testImages[^2].Img;
+                    var face2 = testImages[^1].Img;
+                    tasks.Add(CreateFaceValidationTask(face1, face2, faceEncodings[^2], faceEncodings[^1], ct));
                 }
 
                 if (testImages.Count == 3)
@@ -179,10 +194,8 @@ namespace Infrastructure.WorkTime
                 return Task.CompletedTask;
             }
 
-            tasks.Add(CreateFaceValidationTask(capturedFrames[0], faceLocations[0], capturedFrames[^1],
-                faceLocations[^1], ct));
-
-            tasks.Add(CreateLpbhTrainingTask(testImages, ct));
+            tasks.Add(CreateFaceValidationTask(testImages[0].Img, testImages[^1].Img, faceEncodings[0],
+                faceEncodings[^1], ct));
 
 
             return Task.WhenAll(tasks).ContinueWith((t) =>
@@ -194,13 +207,23 @@ namespace Infrastructure.WorkTime
                         stopped: true);
                     ResetLearned();
                 }
+                else
+                {
+                    for (int i = 0; i < testImages.Count; i++)
+                    {
+                        testImages[i].AddFaceEncoding(faceEncodings[i].Result);
+                        _testImageRepository.Add(testImages[i].Build());
+                    }
+
+                    _progress = 100;
+                    ReportInitFaceProgress(null);
+                }
             }, ct);
         }
 
         private void ResetLearned()
         {
             _testImageRepository.Clear();
-            _lbphFaceRecognition.Reset();
         }
     }
 }

@@ -1,8 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using AutoMapper;
+using Dapper;
+using DlibDotNet;
+using FaceRecognitionDotNet;
 using FluentAssertions;
+using Infrastructure.Db;
+using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.WorkTime;
 using OpenCvSharp;
@@ -47,6 +55,39 @@ namespace UnitTests
         }
     }
 
+    public class SqliteTestImageRepositoryTests : TestImageRepositoryTests, IDisposable
+    {
+        private static FaceEncodingData? FaceEncodings;
+
+        static SqliteTestImageRepositoryTests()
+        {
+            var utils = new ImageTestUtils();
+            var (rect, face) = utils.GetFaceImg("front");
+
+            FaceEncodings = new DnFaceRecognition().GetFaceEncodings(face);
+        }
+
+        public override ITestImageRepository GetTestImageRepository()
+        {
+            return new SqLiteTestImageRepository(new ConfigurationService(""),
+                MapperConfigFactory.Create().CreateMapper());
+        }
+
+        protected override TestImage CreateTestImage(bool isReferenceImg = true)
+        {
+            var utils = new ImageTestUtils();
+            var (rect, face) = utils.GetFaceImg("front");
+
+            return new TestImage(FaceEncodings, rect, face, HeadRotation.Front, DateTime.UtcNow, isReferenceImg);
+        }
+
+        public void Dispose()
+        {
+            using var connection = new SQLiteConnection(new ConfigurationService("").Get<SqliteSettings>("sqlite").ConnectionString);
+            connection.Execute($"DELETE FROM {SqLiteTestImageRepository.TestImageTable};");
+        }
+    }
+
     public abstract class TestImageRepositoryTests
     {
         private ITestImageRepository _repository;
@@ -58,10 +99,9 @@ namespace UnitTests
 
         public abstract ITestImageRepository GetTestImageRepository();
 
-        private TestImage CreateTestImage()
+        protected  virtual TestImage CreateTestImage(bool isReferenceImg = true)
         {
-            return new TestImage(FaceImg.CreateGrayscale(Mat.Zeros(type: MatType.CV_8UC3,rows: 200,cols: 200)),
-                FaceImg.CreateColor(Mat.Zeros(type: MatType.CV_8UC3, rows: 200, cols: 200)));
+            return new TestImage( new Rect(0, 0, 20, 20), Mat.Zeros(4, 4, MatType.CV_8UC1), HeadRotation.Left, DateTime.UtcNow, isReferenceImg);
         }
 
         [Fact]
@@ -83,7 +123,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public void f()
+        public void Remove_removes_existing_img()
         {
             var t1 = CreateTestImage();
             var t2 = CreateTestImage();
@@ -96,7 +136,7 @@ namespace UnitTests
 
 
         [Fact]
-        public void f2()
+        public void Remove_if_does_not_exist_throws()
         {
             var t1 = CreateTestImage();
 
@@ -104,7 +144,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public void f3()
+        public void Remove_if_null_param_throws()
         {
             var t1 = CreateTestImage();
             _repository.Add(t1);
@@ -112,7 +152,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public void g()
+        public void GetAll_returns_all_imgs()
         {
             var t1 = CreateTestImage();
             var t2 = CreateTestImage();
@@ -120,8 +160,57 @@ namespace UnitTests
             _repository.Add(t2);
 
             _repository.GetAll().Count.Should().Be(2);
-            _repository.GetAll().First().Should().Be(t1);
-            _repository.GetAll().Last().Should().Be(t2);
+            var x = _repository.GetAll();
+            _repository.GetAll().First().Id.Should().Be(t1.Id);
+            _repository.GetAll().Last().Id.Should().Be(t2.Id);
+        }
+
+        [Fact]
+        public void Clear_removes_all_data()
+        {
+            var t1 = CreateTestImage();
+            var t2 = CreateTestImage();
+            _repository.Add(t1);
+            _repository.Add(t2);
+
+            _repository.Clear();
+
+            _repository.Count.Should().Be(0);
+        }
+
+        [Fact]
+        public void GetReferenceImgs_returns_only_referenceImgs()
+        {
+            var t1 = CreateTestImage(false);
+            var t2 = CreateTestImage(true);
+            _repository.Add(t1);
+            _repository.Add(t2);
+
+
+            var result = _repository.GetReferenceImages();
+
+            result.Count.Should().Be(1);
+            result.First().Id.Should().Be(t2.Id);
+        }
+
+
+        [Fact]
+        public async Task GetRecentImgs_returns_only_recent()
+        {
+            DateTime now = DateTime.UtcNow;
+
+            var t1 = CreateTestImage(false);
+            await Task.Delay(200);
+            var t2 = CreateTestImage(true);
+            _repository.Add(t1);
+            _repository.Add(t2);
+
+            await Task.Delay(500);
+
+            var result = _repository.GetMostRecentImages(now, 1);
+
+            result.Count.Should().Be(1);
+            result.First().Id.Should().Be(t2.Id);
         }
     }
 }

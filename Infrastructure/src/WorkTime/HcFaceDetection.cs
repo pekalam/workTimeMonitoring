@@ -5,9 +5,9 @@ namespace Infrastructure.WorkTime
 {
     public interface IHcFaceDetection
     {
-        (Rect[] rects, Mat[] faceImgs) DetectFrontalFaces(Mat frame);
-        (Rect[] rects, Mat[] faceImgs) DetectProfileFaces(Mat frame);
-        (Rect[] rects, Mat[] faceImgs) DetectFrontalThenProfileFaces(Mat frame);
+        Rect[] DetectFrontalFaces(Mat frame);
+        Rect[] DetectProfileFaces(Mat frame);
+        Rect[] DetectFrontalThenProfileFaces(Mat frame);
     }
 
     public class HcFaceDetection : IHcFaceDetection
@@ -21,41 +21,28 @@ namespace Infrastructure.WorkTime
             _profileClassifier = new CascadeClassifier("haarcascade_profileface.xml");
         }
 
-        private Mat[] GetFaceImgs(Rect[] faceRects, Mat frame)
-        {
-            var faceImgs = new Mat[faceRects.Length];
-            for (int i = 0; i < faceRects.Length; i++)
-            {
-                faceImgs[i] = frame.SubMat(faceRects[i]);
-            }
-
-            return faceImgs;
-        }
-
-        public (Rect[] rects, Mat[] faceImgs) DetectFrontalFaces(Mat frame)
+        public Rect[] DetectFrontalFaces(Mat frame)
         {
             var faceRects = _frontClassifier.DetectMultiScale(frame);
-            var faceImgs = GetFaceImgs(faceRects, frame);
-            return (faceRects, faceImgs);
+            return faceRects;
         }
 
-        public (Rect[] rects, Mat[] faceImgs) DetectProfileFaces(Mat frame)
+        public Rect[] DetectProfileFaces(Mat frame)
         {
             var faceRects = _profileClassifier.DetectMultiScale(frame);
-            var faceImgs = GetFaceImgs(faceRects, frame);
-            return (faceRects, faceImgs);
+            return faceRects;
         }
 
 
-        public (Rect[] rects, Mat[] faceImgs) DetectFrontalThenProfileFaces(Mat frame)
+        public Rect[] DetectFrontalThenProfileFaces(Mat frame)
         {
-            var faces = DetectFrontalFaces(frame);
-            if (faces.rects.Length == 0)
+            var faceRects = DetectFrontalFaces(frame);
+            if (faceRects.Length == 0)
             {
-                faces = DetectProfileFaces(frame);
+                faceRects = DetectProfileFaces(frame);
             }
 
-            return faces;
+            return faceRects;
         }
     }
 }

@@ -114,7 +114,7 @@ namespace HeadPoseEstimationTest
                     Cv2.Resize(frame, frame, new Size(_camWidth, _camHeight));
                 }
 
-                var (rects, faces) = _faceDetection.DetectFrontalThenProfileFaces(frame);
+                var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);
 
                 int i = 0;
                 foreach (var rect in rects)

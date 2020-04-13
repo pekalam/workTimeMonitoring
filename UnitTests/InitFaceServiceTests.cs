@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using FaceRecognitionDotNet;
 using FluentAssertions;
+using Infrastructure.Repositories;
 using Infrastructure.WorkTime;
 using Moq;
 using Moq.AutoMock;
@@ -14,6 +14,14 @@ using Xunit;
 
 namespace UnitTests
 {
+    public class TTestImageBuilder : TestImageBuilder
+    {
+        public override TestImage Build()
+        {
+            return new TestImage(FaceLocation, Img, Rotation, DateCreated, true);
+        }
+    }
+
     static class TestUtilsHelpers
     {
         public static int AsInt(this string str)
@@ -30,7 +38,7 @@ namespace UnitTests
             mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns(() =>
             {
                 var ret = testUtils.GetFaceImg(imgName);
-                return (new[] {ret.faceRect}, new[] {ret.faceImg});
+                return new[] {ret.faceRect};
             });
         }
 
@@ -40,62 +48,8 @@ namespace UnitTests
             mHcFaceDetection.Setup(f => f.DetectFrontalThenProfileFaces(It.IsAny<Mat>())).Returns(() =>
             {
                 var ret = testUtils.GetFaceImg(imgName);
-                return (new[] {ret.faceRect}, new[] {ret.faceImg});
+                return new[] {ret.faceRect};
             });
-        }
-    }
-
-    class ImageTestUtils
-    {
-        public ImageTestUtils()
-        {
-            TestImgDir = Environment.GetEnvironmentVariable(nameof(TestImgDir));
-            if (!Directory.Exists(TestImgDir))
-            {
-                throw new Exception($"Directory {TestImgDir} doesn't exist");
-            }
-        }
-
-        public string TestImgDir { get; }
-
-        public (Rect faceRect, Mat faceImg) GetFaceImg(string imgName)
-        {
-            var fileName = Directory.EnumerateFiles(TestImgDir).FirstOrDefault(n => n.Contains(imgName));
-            if (fileName == null)
-            {
-                throw new Exception($"Invalid imgName: {imgName}");
-            }
-
-            var parts = fileName.Split('_', StringSplitOptions.RemoveEmptyEntries);
-            parts[^1] = parts[^1].Split('.', StringSplitOptions.RemoveEmptyEntries).First();
-
-            if (parts.Length != 5)
-            {
-                throw new Exception($"Invalid filename: {fileName}");
-            }
-
-            var rect = new Rect(parts[1].AsInt(), parts[2].AsInt(), parts[3].AsInt(), parts[4].AsInt());
-            var faceImg = Cv2.ImRead(fileName);
-
-            return (rect, faceImg);
-        }
-
-        public TestImage GetTestImage(string imgName)
-        {
-            var img = GetFaceImg(imgName);
-            var testImg = TestImage.CreateFromFace(img.faceImg);
-            return testImg;
-        }
-
-        public Mat GetImage(string imgName)
-        {
-            var fileName = Directory.EnumerateFiles(TestImgDir).FirstOrDefault(n => n.Contains(imgName));
-            if (fileName == null)
-            {
-                throw new Exception($"Invalid imgName: {imgName}");
-            }
-
-            return Cv2.ImRead(fileName);
         }
     }
 
@@ -104,6 +58,11 @@ namespace UnitTests
         private ImageTestUtils _testUtils = new ImageTestUtils();
         private AutoMocker _mocker = new AutoMocker();
         private readonly Mat _nonEmptyFrame = Mat.Zeros(600, 800, MatType.CV_32FC3);
+
+        public InitFaceServiceTests()
+        {
+            TestImageBuilderFactory.Create = () => new TTestImageBuilder();
+        }
 
         private Mock<IHcFaceDetection> SetupHcFaceDetection()
         {
@@ -125,13 +84,6 @@ namespace UnitTests
             var mDnFaceRecognition = new Mock<IDnFaceRecognition>();
             _mocker.Use<IDnFaceRecognition>(mDnFaceRecognition.Object);
             return mDnFaceRecognition;
-        }
-
-        private Mock<ILbphFaceRecognition> SetupLbphFaceRecognition()
-        {
-            var mLbphFaceRecognition = new Mock<ILbphFaceRecognition>();
-            _mocker.Use<ILbphFaceRecognition>(mLbphFaceRecognition.Object);
-            return mLbphFaceRecognition;
         }
 
         private Mock<ICaptureService> SetupCaptureService()
@@ -199,40 +151,6 @@ namespace UnitTests
                                    && args.Stoped;
         }
 
-        //
-        // [Fact]
-        // public async Task InitFace_when_faces_not_captured_and_interrupted_throws()
-        // {
-        //     var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
-        //     var mHcFaceDetection = SetupHcFaceDetection();
-        //     var mTestImageRepository = SetupTestImageRepository();
-        //     var mLbphFaceRecognition = SetupLbphFaceRecognition();
-        //     var mCaptureService = SetupCaptureService();
-        //     var mDnFaceRecognition = SetupDnFaceRecognition();
-        //     SetupHeadPositionService();
-        //
-        //     async IAsyncEnumerable<Mat> InterruptedCapture()
-        //     {
-        //         mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns((new Rect[0], new Mat[0]));
-        //         yield return _nonEmptyFrame;
-        //         yield return _nonEmptyFrame;
-        //     }
-        //
-        //     mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(InterruptedCapture);
-        //     mTestImageRepository.SetupGet(f => f.Count).Returns(0);
-        //
-        //     var initTestService = _mocker.CreateInstance<InitFaceService>();
-        //
-        //     initTestService.InitFaceProgress = mProgress.Object;
-        //
-        //     await Assert.ThrowsAnyAsync<Exception>(async () =>
-        //         await initTestService.InitFace(mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
-        //             CancellationToken.None));
-        //
-        //     mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
-        //     mLbphFaceRecognition.Verify(f => f.Reset(), Times.Exactly(2));
-        // }
-
 
         [Fact]
         public async Task InitFace_when_faces_not_captured_and_interrupted_returns_cancelled_progress()
@@ -240,14 +158,13 @@ namespace UnitTests
             var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
-            var mLbphFaceRecognition = SetupLbphFaceRecognition();
             var mCaptureService = SetupCaptureService();
             var mDnFaceRecognition = SetupDnFaceRecognition();
             SetupHeadPositionService();
 
             async IAsyncEnumerable<Mat> InterruptedCapture()
             {
-                mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns((new Rect[0], new Mat[0]));
+                mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns(new Rect[0]);
                 yield return _nonEmptyFrame;
                 yield return _nonEmptyFrame;
             }
@@ -268,7 +185,6 @@ namespace UnitTests
             mProgress.Verify(f => f.Report(It.Is(CancelledByUser())), Times.Once());
 
             mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
-            mLbphFaceRecognition.Verify(f => f.Reset(), Times.Exactly(2));
         }
 
         [Fact]
@@ -277,13 +193,14 @@ namespace UnitTests
             var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
-            var mLbphFaceRecognition = SetupLbphFaceRecognition();
             var mCaptureService = SetupCaptureService();
             var mDnFaceRecognition = SetupDnFaceRecognition();
             var mHeadPositionService = SetupHeadPositionService();
 
+
+            mDnFaceRecognition.Setup(f => f.GetFaceEncodings(It.IsAny<Mat>())).Returns(FaceEncodingData.ValidFaceEncodingData);
             mDnFaceRecognition
-                .Setup(f => f.CompareFaces(It.IsAny<Mat>(), It.IsAny<Mat>(), It.IsAny<Rect?>(), It.IsAny<Rect?>()))
+                .Setup(f => f.CompareFaces(It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>(), It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>()))
                 .Returns(false);
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
             var initTestService = _mocker.CreateInstance<InitFaceService>();
@@ -296,21 +213,18 @@ namespace UnitTests
             mProgress.Verify(f => f.Report(It.Is(FaceRecognitionError())), Times.Once());
 
             mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
-            mLbphFaceRecognition.Verify(f => f.Reset(), Times.Exactly(2));
         }
 
         [Fact]
-        public async Task InitFace_when_lpbh_train_throws_returns_error_progress()
+        public async Task InitFace_when_gen_encoding_throws_returns_error_progress()
         {
             var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
-            var mLbphFaceRecognition = SetupLbphFaceRecognition();
             var mCaptureService = SetupCaptureService();
             var mDnFaceRecognition = SetupDnFaceRecognition();
             var mHeadPositionService = SetupHeadPositionService();
 
-            mLbphFaceRecognition.Setup(f => f.Train(It.IsAny<FaceImg>())).Throws(new Exception());
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
             var initTestService = _mocker.CreateInstance<InitFaceService>();
             initTestService.InitFaceProgress = mProgress.Object;
@@ -322,7 +236,6 @@ namespace UnitTests
             mProgress.Verify(f => f.Report(It.Is(FaceRecognitionError())), Times.Once());
 
             mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
-            mLbphFaceRecognition.Verify(f => f.Reset(), Times.Exactly(2));
         }
 
 
@@ -332,14 +245,13 @@ namespace UnitTests
             var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
-            var mLbphFaceRecognition = SetupLbphFaceRecognition();
             var mCaptureService = SetupCaptureService();
             var mDnFaceRecognition = SetupDnFaceRecognition();
             var mHeadPositionService = SetupHeadPositionService();
 
             async IAsyncEnumerable<Mat> InvalidCapture()
             {
-                mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns((new Rect[0], new Mat[0]));
+                mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns(new Rect[0]);
                 yield return _nonEmptyFrame;
                 mProgress.Verify(f => f.Report(It.Is(FaceNotDetected())), Times.Once());
 
@@ -361,9 +273,9 @@ namespace UnitTests
                 yield return _nonEmptyFrame;
 
 
-                mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns((new Rect[0], new Mat[0]));
+                mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns(new Rect[0]);
                 mHcFaceDetection.Setup(f => f.DetectFrontalThenProfileFaces(It.IsAny<Mat>()))
-                    .Returns((new Rect[2], new Mat[2]));
+                    .Returns(new Rect[2]);
                 yield return _nonEmptyFrame;
                 mProgress.Verify(f => f.Report(It.Is(ProfileFaceNotDetected())), Times.Once());
 
@@ -398,12 +310,13 @@ namespace UnitTests
                 yield return _nonEmptyFrame;
                 mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Exactly(6));
 
-                mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
-                    .Returns(() => (HeadRotation.Right, HeadRotation.Front));
-                yield return _nonEmptyFrame;
-                mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Exactly(6));
             }
 
+
+            mDnFaceRecognition.Setup(f => f.GetFaceEncodings(It.IsAny<Mat>())).Returns(FaceEncodingData.ValidFaceEncodingData);
+            mDnFaceRecognition
+                .Setup(f => f.CompareFaces(It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>(), It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>()))
+                .Returns(true);
 
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(InvalidCapture);
             var initTestService = _mocker.CreateInstance<InitFaceService>();
@@ -412,7 +325,6 @@ namespace UnitTests
                 CancellationToken.None);
 
             mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
-            mLbphFaceRecognition.Verify(f => f.Reset(), Times.Exactly(2));
         }
 
         private IAsyncEnumerable<Mat> SuccessfulFaceCapturingScenario(Mock<IHcFaceDetection> mHcFaceDetection, Mock<IProgress<InitFaceProgressArgs>> mProgress, Mock<IHeadPositionService> mHeadPositionService)
@@ -444,21 +356,22 @@ namespace UnitTests
             return SuccessfulCapture();
         }
 
-        [Fact]
         //success scenario
+        [Fact]
         public async Task InitFace_when_faces_captured_returns_valid_reports()
         {
             var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
-            var mLbphFaceRecognition = SetupLbphFaceRecognition();
             var mCaptureService = SetupCaptureService();
             var mDnFaceRecognition = SetupDnFaceRecognition();
             var mHeadPositionService = SetupHeadPositionService();
 
             mDnFaceRecognition
-                .Setup(f => f.CompareFaces(It.IsAny<Mat>(), It.IsAny<Mat>(), It.IsAny<Rect?>(), It.IsAny<Rect?>()))
+                .Setup(f => f.CompareFaces(It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>(), It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>()))
                 .Returns(true);
+
+            mDnFaceRecognition.Setup(f => f.GetFaceEncodings(It.IsAny<Mat>())).Returns(FaceEncodingData.ValidFaceEncodingData);
 
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
             mTestImageRepository.SetupGet(f => f.Count).Returns(0);
@@ -470,7 +383,6 @@ namespace UnitTests
 
             mProgress.Verify(f => f.Report(It.Is(InitFaceProgress(null, 100))), Times.Once());
             mTestImageRepository.Verify(f => f.Clear(), Times.Once());
-            mLbphFaceRecognition.Verify(f => f.Reset(), Times.Once());
         }
     }
 }

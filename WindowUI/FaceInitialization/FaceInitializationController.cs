@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using Infrastructure;
+using Infrastructure.Repositories;
 using Infrastructure.WorkTime;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Commands;
@@ -67,7 +68,7 @@ namespace WindowUI.FaceInitialization
                 var frame = camEnumerator.Current;
                 _vm.OnFrameChanged?.Invoke(frame.ToBitmapImage());
 
-                var (rects, faces) = _faceDetection.DetectFrontalThenProfileFaces(frame);
+                var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);
 
                 foreach (var rect in rects)
                 {
@@ -128,9 +129,9 @@ namespace WindowUI.FaceInitialization
                         _vm.StepInfoRetryVisible = true;
                         _vm.PhotoPreviewVisible = true;
                         var photos = _testImageRepository.GetAll();
-                        _vm.Photo1 = photos[0].FaceColor.Img.ToBitmapImage();
-                        _vm.Photo2 = photos[1].FaceColor.Img.ToBitmapImage();
-                        _vm.Photo3 = photos[2].FaceColor.Img.ToBitmapImage();
+                        _vm.Photo1 = photos[0].Img.ToBitmapImage();
+                        _vm.Photo2 = photos[1].Img.ToBitmapImage();
+                        _vm.Photo3 = photos[2].Img.ToBitmapImage();
                     }
                     break;
             }

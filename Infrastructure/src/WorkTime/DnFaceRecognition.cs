@@ -4,18 +4,18 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using FaceRecognitionDotNet;
+using Infrastructure.Repositories;
 using OpenCvSharp;
-using Point = FaceRecognitionDotNet.Point;
 
 namespace Infrastructure.WorkTime
 {
     public interface IDnFaceRecognition
     {
-        bool RecognizeFace(Mat photo);
-        bool CompareFaces(Mat photo1, Mat photo2, Rect? face1 = null, Rect? face2 = null);
+        bool CompareFaces(Mat photo1, FaceEncodingData? faceEncoding1, Mat photo2, FaceEncodingData? faceEncoding2);
+        FaceEncodingData? GetFaceEncodings(Mat photo);
     }
 
-    public static class FaceRecognitionModel
+    public static class SharedFaceRecognitionModel
     {
         private static object _lck = new object();
         private static FaceRecognition _model = FaceRecognition.Create(".");
@@ -36,12 +36,7 @@ namespace Infrastructure.WorkTime
 
     public class DnFaceRecognition : IDnFaceRecognition
     {
-        private readonly ITestImageRepository _testImageRepository;
-
-        public DnFaceRecognition(ITestImageRepository testImageRepository)
-        {
-            _testImageRepository = testImageRepository;
-        }
+        private const double RecognitionThreshold = 0.55;
 
         private Image LoadImage(Mat photo)
         {
@@ -52,48 +47,33 @@ namespace Infrastructure.WorkTime
             return img;
         }
 
-        public bool RecognizeFace(Mat photo)
+        private FaceEncodingData? InternalGetFaceEncoding(Image img)
         {
-            double sum = 0;
-            foreach (var testImg in _testImageRepository.GetAll())
+            var imgEncodings = SharedFaceRecognitionModel.FaceEncodingsSync(img, new[] { new Location(0, 0, img.Width, img.Height) }, model: PredictorModel.Small);
+
+            if (imgEncodings.Count != 1)
             {
-                var distance = InternalCompareFaces(photo, testImg.FaceColor);
-                sum += distance;
+                return null;
             }
 
-            double std = sum / _testImageRepository.GetAll().Count;
-            return std < 50.0d;
+            return new FaceEncodingData(imgEncodings.First());
         }
 
-        private double InternalCompareFaces(Mat photo1, Mat photo2, Location? knownFaceLocation1 = null,
-            Location? knownFaceLocation2 = null)
+        private double InternalCompareFaces(Mat photo1, FaceEncodingData? faceEncoding1, Mat photo2, FaceEncodingData? faceEncoding2)
         {
-            using var img = LoadImage(photo1);
+            using var img1 = LoadImage(photo1);
 
-            var imgEncodings = FaceRecognitionModel.FaceEncodingsSync(img, null, model: PredictorModel.Small);
-            if (!imgEncodings.Any())
-            {
-                imgEncodings = FaceRecognitionModel.FaceEncodingsSync(img, new[] { knownFaceLocation1 }, model: PredictorModel.Small);
-            }
 
-            if (!imgEncodings.Any())
+            if (faceEncoding1 == null)
             {
                 return double.MaxValue;
             }
 
-            using var test = LoadImage(photo2);
-            var testEncodings = FaceRecognitionModel.FaceEncodingsSync(test, null, model: PredictorModel.Small);
-            if (!testEncodings.Any())
-            {
-                testEncodings = FaceRecognitionModel.FaceEncodingsSync(test, new []{knownFaceLocation2}, model: PredictorModel.Small);
-            }
+            using var img2 = LoadImage(photo2);
 
-            if (testEncodings.Any())
+            if (faceEncoding2 != null)
             {
-                var c = testEncodings.Count();
-                var c2 = imgEncodings.Count();
-                var x = FaceRecognition.CompareFace(imgEncodings.First(), testEncodings.First());
-                var distance = FaceRecognition.FaceDistance(imgEncodings.First(), testEncodings.First());
+                var distance = FaceRecognition.FaceDistance(faceEncoding1.Value, faceEncoding2.Value);
                 Debug.WriteLine($"faces dist {distance}");
                 return distance;
             }
@@ -103,25 +83,15 @@ namespace Infrastructure.WorkTime
             }
         }
 
-        private double InternalCompareFaces(Mat photo1, FaceImg faceImg)
+        public bool CompareFaces(Mat photo1, FaceEncodingData? faceEncoding1, Mat photo2, FaceEncodingData? faceEncoding2)
         {
-            return InternalCompareFaces(photo1, faceImg.Img,
-                knownFaceLocation2: new Location(0, 0, faceImg.Img.Width, faceImg.Img.Height));
+            return InternalCompareFaces(photo1, faceEncoding1, photo2, faceEncoding2) < RecognitionThreshold;
         }
 
-        private Location? RectToLocation(Rect? rect)
+        public FaceEncodingData? GetFaceEncodings(Mat photo)
         {
-            if (!rect.HasValue)
-            {
-                return null;
-            }
-            return new Location(rect.Value.Left, rect.Value.Top, rect.Value.Right, rect.Value.Bottom);
-        }
-
-        public bool CompareFaces(Mat photo1, Mat photo2, Rect? face1 = null, Rect? face2 = null)
-        {
-            return InternalCompareFaces(photo1, photo2, knownFaceLocation1: RectToLocation(face1),
-                       knownFaceLocation2: RectToLocation(face2)) < 0.55;
+            using var img1 = LoadImage(photo);
+            return InternalGetFaceEncoding(img1);
         }
     }
 }

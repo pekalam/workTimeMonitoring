@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AutoMapper;
+using Infrastructure.Db;
+using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.WorkTime;
 using Prism.Ioc;
@@ -14,7 +17,7 @@ namespace Infrastructure
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel).TypeHandle);
         }
 
         private object SettingsFactory<T>(IUnityContainer container) where T : new()
@@ -32,6 +35,8 @@ namespace Infrastructure
 
             containerRegistry.RegisterInstance<ILogger>(Log.Logger);
 
+            containerRegistry.RegisterInstance<IMapper>(new MapperConfiguration(cfg => cfg.AddProfile<DbTestImageProfile>()).CreateMapper());
+
             containerRegistry.RegisterInstance(typeof(ConfigurationService), new ConfigurationService("settings.json"));
             containerRegistry.GetContainer()
                 .RegisterFactory<HeadPositionServiceSettings>(SettingsFactory<HeadPositionServiceSettings>);
@@ -41,7 +46,6 @@ namespace Infrastructure
             containerRegistry.GetContainer().RegisterType<IHcFaceDetection, HcFaceDetection>();
             containerRegistry.GetContainer().RegisterType<IDnFaceRecognition, DnFaceRecognition>();
             containerRegistry.GetContainer().RegisterSingleton<ITestImageRepository, DefaultTestImageRepository>();
-            containerRegistry.GetContainer().RegisterType<ILbphFaceRecognition, LbphFaceRecognition>();
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;

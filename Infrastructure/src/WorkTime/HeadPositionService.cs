@@ -92,7 +92,7 @@ namespace Infrastructure.WorkTime
             var bytes = new byte[frame.Rows * frame.Cols * frame.ElemSize()];
             Marshal.Copy(frame.Data, bytes, 0, bytes.Length);
             var img = FaceRecognition.LoadImage(bytes, frame.Rows, frame.Cols, frame.ElemSize());
-            var allLandmarks = FaceRecognitionModel.Model.FaceLandmark(img,
+            var allLandmarks = SharedFaceRecognitionModel.Model.FaceLandmark(img,
                 new[] {new Location(face.Left, face.Top, face.Right, face.Bottom),}, PredictorModel.Large);
 
             var landmarks = allLandmarks.FirstOrDefault();
