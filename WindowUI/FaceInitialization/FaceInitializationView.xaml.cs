@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
+using Rect = OpenCvSharp.Rect;
 
 namespace WindowUI.FaceInitialization
 {
@@ -18,8 +20,9 @@ namespace WindowUI.FaceInitialization
         {
             InitializeComponent();
 
-            (DataContext as FaceInitializationViewModel).OnFrameChanged = OnFrameChanged;
-            (DataContext as FaceInitializationViewModel).OnFaceDetected = OnFaceDetected;
+            var vm = (DataContext as FaceInitializationViewModel);
+            vm.OnFrameChanged += OnFrameChanged;
+            vm.OnFaceDetected += OnFaceDetected;
         }
 
         private void OnFaceDetected(Rect obj)
@@ -31,15 +34,23 @@ namespace WindowUI.FaceInitialization
             loadingRect.Width = (int)(obj.Width * sw);
             loadingRect.Height = (int)(obj.Height * sh);
 
+            faceRect.Width = startStepButton.Width = loadingRect.Width;
+            faceRect.Height = startStepButton.Height = loadingRect.Height;
 
-            faceRect.Width = loadingRect.Width;
-            faceRect.Height = loadingRect.Height;
+            var faceX = obj.Location.X * sw;
+            var faceY = obj.Location.Y * sh;
+
+            faceRect.SetValue(Canvas.TopProperty, faceY);
+            faceRect.SetValue(Canvas.LeftProperty, faceX);
             
+            loadingRect.SetValue(Canvas.TopProperty, faceY);
+            loadingRect.SetValue(Canvas.LeftProperty, faceX);
 
-            faceRect.SetValue(Canvas.TopProperty, (double)obj.Location.Y * sh);
-            faceRect.SetValue(Canvas.LeftProperty, (double)obj.Location.X * sw);
-            loadingRect.SetValue(Canvas.TopProperty, (double)obj.Location.Y * sh);
-            loadingRect.SetValue(Canvas.LeftProperty, (double)obj.Location.X * sw);
+            startStepButton.SetValue(Canvas.TopProperty, faceY);
+            startStepButton.SetValue(Canvas.LeftProperty, faceX);
+
+            percentageText.SetValue(Canvas.TopProperty, faceY - percentageText.DesiredSize.Height - 4);
+            percentageText.SetValue(Canvas.LeftProperty, faceX + faceRect.Width / 2 - percentageText.DesiredSize.Width/2);
         }
 
         private void OnFrameChanged(BitmapSource obj)

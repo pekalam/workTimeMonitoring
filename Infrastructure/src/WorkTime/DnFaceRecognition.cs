@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using FaceRecognitionDotNet;
 using Infrastructure.Repositories;
 using OpenCvSharp;
@@ -18,7 +19,12 @@ namespace Infrastructure.WorkTime
     public static class SharedFaceRecognitionModel
     {
         private static object _lck = new object();
-        private static FaceRecognition _model = FaceRecognition.Create(".");
+        private static Task<FaceRecognition> _loadTask;
+
+        static SharedFaceRecognitionModel()
+        {
+            _loadTask = Task.Factory.StartNew<FaceRecognition>(() => FaceRecognition.Create("."));
+        }
 
         public static List<FaceEncoding> FaceEncodingsSync(Image image,
             IEnumerable<Location> knownFaceLocation = null,
@@ -27,11 +33,11 @@ namespace Infrastructure.WorkTime
         {
             lock (_lck)
             {
-                return _model.FaceEncodings(image, knownFaceLocation, numJitters, model).ToList();
+                return _loadTask.Result.FaceEncodings(image, knownFaceLocation, numJitters, model).ToList();
             }
         }
 
-        public static FaceRecognition Model => _model;
+        public static FaceRecognition Model => _loadTask.Result;
     }
 
     public class DnFaceRecognition : IDnFaceRecognition

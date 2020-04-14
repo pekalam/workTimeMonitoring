@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Infrastructure;
 using Infrastructure.Repositories;
 using Infrastructure.WorkTime;
@@ -12,6 +14,14 @@ using Prism.Commands;
 
 namespace WindowUI.FaceInitialization
 {
+    public interface IFaceInitializationController
+    {
+        Task Init(FaceInitializationViewModel vm);
+        ICommand StepInfoContinueClick { get; }
+        ICommand StepInfoRetryClick { get; }
+        ICommand StartFaceInitCommand { get; }
+    }
+
     public class FaceInitializationController : IFaceInitializationController
     {
         private FaceInitializationViewModel _vm;
@@ -19,11 +29,12 @@ namespace WindowUI.FaceInitialization
         private readonly IHcFaceDetection _faceDetection;
         private readonly ITestImageRepository _testImageRepository;
         private readonly InitFaceService _initFaceService;
-        private bool _stepError = false;
-        private bool _stepCompleted = false;
-        private bool _firstRun = true;
+        private bool _startStep;
+        private bool _stepCompleted;
+        private CancellationTokenSource _camCts;
 
-        public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection, InitFaceService initFaceService, ITestImageRepository testImageRepository)
+        public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection,
+            InitFaceService initFaceService, ITestImageRepository testImageRepository)
         {
             _captureService = captureService;
             _faceDetection = faceDetection;
@@ -31,70 +42,87 @@ namespace WindowUI.FaceInitialization
             _testImageRepository = testImageRepository;
             StepInfoContinueClick = new DelegateCommand(OnStepInfoContinueClick);
             StepInfoRetryClick = new DelegateCommand(OnStepInfoRetryClick);
+            StartFaceInitCommand = new DelegateCommand(OnStartFaceInit);
+            _initFaceService.InitFaceProgress = new Progress<InitFaceProgressArgs>(OnInitFaceProgress);
+        }
+
+        private void OnStartFaceInit()
+        {
+            _startStep = true;
         }
 
         private void OnStepInfoRetryClick()
         {
-            _firstRun = true;
+            _vm.HidePhotoPreview();
+            _vm.StepStarted = false;
+            _stepCompleted = false;
         }
 
         private void OnStepInfoContinueClick()
         {
-
+            _camCts.Cancel();
         }
 
-        public async void Init(FaceInitializationViewModel vm)
+        public async Task Init(FaceInitializationViewModel vm)
         {
             _vm = vm;
+            _vm.ShowOverlay("Initializing camera...");
 
-            _vm.LoadingOverlayText = "Initializing camera...";
-            _vm.LoadingOverlayVisible = true;
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
+                .TypeHandle);
+
 
             await StartInitFaceStep();
         }
 
         public ICommand StepInfoContinueClick { get; }
         public ICommand StepInfoRetryClick { get; }
+        public ICommand StartFaceInitCommand { get; }
 
         private async Task StartInitFaceStep()
         {
-            var cts = new CancellationTokenSource();
+            _camCts = new CancellationTokenSource();
             var stepCts = new CancellationTokenSource();
-            var camEnumerator = _captureService.CaptureFrames(cts.Token).GetAsyncEnumerator(cts.Token);
+            var camEnumerator = _captureService.CaptureFrames(_camCts.Token).GetAsyncEnumerator(_camCts.Token);
             Task stepEndTask = null;
 
-            while(await camEnumerator.MoveNextAsync().ConfigureAwait(true))
+            while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
             {
                 var frame = camEnumerator.Current;
-                _vm.OnFrameChanged?.Invoke(frame.ToBitmapImage());
+                _vm.CallOnFrameChanged(frame.ToBitmapImage());
 
                 var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);
 
-                foreach (var rect in rects)
-                {
-                    _vm.OnFaceDetected?.Invoke(rect);
-                }
-
-                if (_firstRun)
+                if (_startStep)
                 {
                     if (rects.Length == 1)
                     {
-                        HideOverlay();
-                        if (ShowInitFaceStepDialog())
-                        {
-                            _initFaceService.InitFaceProgress = new Progress<InitFaceProgressArgs>(OnInitFaceProgress);
-                            stepEndTask = await _initFaceService.InitFace(camEnumerator, stepCts.Token).ConfigureAwait(true);
-                        }
-                        _firstRun = false;
+                        _vm.HideOverlay();
+                        _vm.StepStarted = true;
+                        stepEndTask = await _initFaceService.InitFace(camEnumerator, stepCts.Token)
+                            .ConfigureAwait(true);
+
+                        _startStep = false;
                     }
                     else
                     {
-                        ShowOverlay("Waiting for face...");
+                        _vm.ShowOverlay("Waiting for face...");
                     }
                 }
 
 
-                
+                if (rects.Length == 1)
+                {
+                    _vm.HideOverlay();
+                    _vm.CallOnFaceDetected(rects.First());
+                }
+                else
+                {
+                    if (!_stepCompleted)
+                    {
+                        _vm.ShowOverlay("Waiting for face...");
+                    }
+                }
             }
 
             if (stepEndTask != null)
@@ -108,31 +136,24 @@ namespace WindowUI.FaceInitialization
             switch (obj.ProgressState)
             {
                 case InitFaceProgress.FaceNotDetected:
-                    ShowErrorStepInfo("Face not detected");
+                    _vm.ShowErrorStepInfo("Face not detected");
                     break;
                 case InitFaceProgress.FaceNotStraight:
-                    ShowInformationStepInfo("Invalid face position");
+                    _vm.ShowInformationStepInfo("Invalid face position");
                     break;
                 case InitFaceProgress.FaceRecognitionError:
-                    ShowErrorStepInfo("Invalid face");
-                    _vm.StepInfoContinueVisible = false;
-                    _vm.StepInfoRetryVisible = true;
-                    _stepError = true;
+                    _vm.ShowErrorStepInfo("Invalid face");
                     break;
                 case InitFaceProgress.Progress:
-                    HideStepInfo();
+                    _vm.HideStepInfo();
                     if (obj.ProgressPercentage == 100)
                     {
-                        ShowSuccessStepInfo("Profile initialized");
+                        _vm.ShowSuccessStepInfo("Profile initialized");
+                        _vm.ShowPhotoPreview(_testImageRepository.GetAll().Select(p => p.Img.ToBitmapImage())
+                            .ToArray());
                         _stepCompleted = true;
-                        _vm.StepInfoContinueVisible = true;
-                        _vm.StepInfoRetryVisible = true;
-                        _vm.PhotoPreviewVisible = true;
-                        var photos = _testImageRepository.GetAll();
-                        _vm.Photo1 = photos[0].Img.ToBitmapImage();
-                        _vm.Photo2 = photos[1].Img.ToBitmapImage();
-                        _vm.Photo3 = photos[2].Img.ToBitmapImage();
                     }
+
                     break;
             }
         }
@@ -147,57 +168,16 @@ namespace WindowUI.FaceInitialization
 
             if (obj.Frame != null)
             {
-                _vm.OnFrameChanged.Invoke(obj.Frame.ToBitmapImage());
+                _vm.CallOnFrameChanged(obj.Frame.ToBitmapImage());
+                if (obj.FaceRect.HasValue)
+                {
+                    _vm.CallOnFaceDetected(obj.FaceRect.Value);
+                }
+                else
+                {
+                    _vm.CallOnNoFaceDetected();
+                }
             }
-
-            if (obj.FaceRect.HasValue)
-            {
-                _vm.OnFaceDetected.Invoke(obj.FaceRect.Value);
-            }
-        }
-
-        private void ShowOverlay(string text)
-        {
-            _vm.LoadingOverlayVisible = true;
-            _vm.LoadingOverlayText = text;
-        }
-
-        private void HideOverlay() => _vm.LoadingOverlayVisible = false;
-
-        private void HideStepInfo() => _vm.StepInfoPanelVisible = false;
-
-        private void ShowErrorStepInfo(string msg)
-        {
-            _vm.StepInfoPanelBrush = Brushes.Red;
-            _vm.StepInfoPanelText = msg;
-            _vm.StepInfoPanelVisible = true;
-        }
-
-        private void ShowInformationStepInfo(string msg)
-        {
-            _vm.StepInfoPanelBrush = Brushes.Gray;
-            _vm.StepInfoPanelText = msg;
-            _vm.StepInfoPanelVisible = true;
-        }
-
-        private void ShowSuccessStepInfo(string msg)
-        {
-            _vm.StepInfoPanelBrush = Brushes.Green;
-            _vm.StepInfoPanelText = msg;
-            _vm.StepInfoPanelVisible = true;
-        }
-
-        private bool ShowInitFaceStepDialog()
-        {
-            var mySettings = new MetroDialogSettings()
-            {
-                AffirmativeButtonText = "Start",
-                NegativeButtonText = "Cancel",
-            };
-            var result = WindowModuleStartupService.ShellWindow.ShowModalMessageExternal("Action required", "You must go through profile initialization step.",
-                MessageDialogStyle.AffirmativeAndNegative, mySettings);
-
-            return true;
         }
     }
 }

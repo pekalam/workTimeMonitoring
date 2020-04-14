@@ -9,6 +9,7 @@ using Prism.Regions;
 using Prism.Unity;
 using Unity;
 using WindowUI.FaceInitialization;
+using WindowUI.MainWindow;
 
 namespace WindowUI
 {
@@ -29,7 +30,7 @@ namespace WindowUI
         private void OnAppStarted(MetroWindow shellWindow)
         {
             ShellWindow = shellWindow;
-            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(MainWindowView));
         }
     }
 
@@ -41,9 +42,14 @@ namespace WindowUI
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterForNavigation<MainWindowView>();
             containerRegistry.RegisterForNavigation<FaceInitializationView>();
             containerRegistry.GetContainer()
                 .RegisterType<IFaceInitializationController, FaceInitializationController>();
+
+            containerRegistry.GetContainer()
+                .RegisterType<IMainViewController, MainViewController>();
+
             containerRegistry.GetContainer().RegisterInstance(ServiceLocator.Current.GetInstance<WindowModuleStartupService>());
         }
     }

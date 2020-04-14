@@ -17,7 +17,6 @@ namespace Infrastructure
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel).TypeHandle);
         }
 
         private object SettingsFactory<T>(IUnityContainer container) where T : new()

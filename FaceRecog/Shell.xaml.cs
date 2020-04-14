@@ -9,7 +9,7 @@ namespace Application
     /// <summary>
     /// Interaction logic for Shell.xaml
     /// </summary>
-    public partial class Shell : MetroWindow
+    public partial class Shell : AcrylicWindow
     {
         public Shell()
         {

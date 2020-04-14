@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -11,20 +12,14 @@ using Prism.Regions;
 
 namespace WindowUI.FaceInitialization
 {
-    public interface IFaceInitializationController
-    {
-        void Init(FaceInitializationViewModel vm);
-        ICommand StepInfoContinueClick { get; }
-        ICommand StepInfoRetryClick { get; }
-    }
-
     public class FaceInitializationViewModel : BindableBase, INavigationAware
     {
         private int _progress;
         private IFaceInitializationController _controller;
 
-        public Action<BitmapSource> OnFrameChanged;
-        public Action<Rect> OnFaceDetected;
+        public event Action<BitmapSource> OnFrameChanged;
+        public event Action<Rect> OnFaceDetected;
+        public event Action OnNoFaceDetected; 
         private Brush _stepInfoPanelBrush = Brushes.Green;
         private Brush _faceRectBrush = Brushes.Blue;
         private bool _loadingOverlayVisible;
@@ -37,16 +32,96 @@ namespace WindowUI.FaceInitialization
         private ImageSource _photo2;
         private ImageSource _photo1;
         private ImageSource _photo3;
+        private bool _faceDetected;
+        private bool _stepStarted;
 
         public FaceInitializationViewModel(IFaceInitializationController controller)
         {
             _controller = controller;
             StepInfoContinueClick = _controller.StepInfoContinueClick;
             StepInfoRetryClick = _controller.StepInfoRetryClick;
+            StartFaceInitCommand = _controller.StartFaceInitCommand;
         }
 
         public ICommand StepInfoContinueClick { get; }
         public ICommand StepInfoRetryClick { get; }
+        public ICommand StartFaceInitCommand { get; }
+
+        public void CallOnFrameChanged(BitmapSource bmp)
+        {
+            OnFrameChanged?.Invoke(bmp);
+        }
+
+        public void CallOnFaceDetected(Rect rect)
+        {
+            FaceDetected = true;
+            OnFaceDetected?.Invoke(rect);
+        }
+
+        public void CallOnNoFaceDetected()
+        {
+            FaceDetected = false;
+            OnNoFaceDetected?.Invoke();
+        }
+
+        public void ShowErrorStepInfo(string msg)
+        {
+            StepInfoPanelBrush = Brushes.Red;
+            StepInfoPanelText = msg;
+            StepInfoPanelVisible = true;
+            StepInfoContinueVisible = false;
+            StepInfoRetryVisible = true;
+        }
+
+        public void ShowInformationStepInfo(string msg)
+        {
+            StepInfoPanelBrush = Brushes.Gray;
+            StepInfoPanelText = msg;
+            StepInfoPanelVisible = true;
+            StepInfoContinueVisible = false;
+            StepInfoRetryVisible = false;
+        }
+
+        public void ShowSuccessStepInfo(string msg)
+        {
+            StepInfoPanelBrush = Brushes.Green;
+            StepInfoPanelText = msg;
+            StepInfoPanelVisible = true;
+            StepInfoRetryVisible = true;
+            StepInfoContinueVisible = true;
+        }
+
+        public void ShowOverlay(string text)
+        {
+            LoadingOverlayVisible = true;
+            LoadingOverlayText = text;
+        }
+
+        public void HideOverlay() => LoadingOverlayVisible = false;
+
+        public void HideStepInfo() => StepInfoPanelVisible = false;
+
+        public void ShowPhotoPreview(BitmapImage[] photos)
+        {
+            Photo1 = photos[0];
+            Photo2 = photos[1];
+            Photo3 = photos[2];
+            PhotoPreviewVisible = true;
+        }
+
+        public void HidePhotoPreview() => PhotoPreviewVisible = false;
+
+        public bool StepStarted
+        {
+            get => _stepStarted;
+            set =>  SetProperty(ref _stepStarted, value);
+        }
+
+        public bool FaceDetected
+        {
+            get => _faceDetected;
+            set =>  SetProperty(ref _faceDetected, value);
+        }
 
         public int Progress
         {
