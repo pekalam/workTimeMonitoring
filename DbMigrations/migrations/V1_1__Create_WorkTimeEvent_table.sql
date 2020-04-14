@@ -1,0 +1,8 @@
+﻿CREATE TABLE WorkTimeEvent (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+    AggregateId INTEGER NOT NULL,
+    EventName CHAR (15) NOT NULL,
+    Date DATETIME NOT NULL,
+    Data TEXT NOT NULL,
+    AggregateVersion BIGINT NOT NULL
+);

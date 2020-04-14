@@ -19,7 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using HeadPoseEstimationTest.Annotations;
 using Infrastructure;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using Brush = System.Drawing.Brush;

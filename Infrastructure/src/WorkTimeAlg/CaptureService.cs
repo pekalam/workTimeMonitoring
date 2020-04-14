@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using OpenCvSharp;
 
-namespace Infrastructure.WorkTime
+namespace Infrastructure.WorkTimeAlg
 {
     public interface ICaptureService
     {

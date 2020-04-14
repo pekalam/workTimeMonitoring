@@ -1,96 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Dapper;
 using DlibDotNet;
 using FaceRecognitionDotNet;
 using FluentAssertions;
-using Infrastructure.Db;
 using Infrastructure.Repositories;
-using Infrastructure.Services;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 using OpenCvSharp;
 using Xunit;
 
 namespace UnitTests
 {
-    public class ConfigurationServiceTests
-    {
-        [Fact]
-        public void f()
-        {
-            var service = new ConfigurationService("");
-            var settings = service.Get<HeadPositionServiceSettings>("");
-            settings.Should().NotBeNull();
-            settings.GetType().Should().Be<HeadPositionServiceSettings>();
-        }
-
-        [Fact]
-        public void g()
-        {
-            var service = new ConfigurationService("settings.json");
-            var settings = service.Get<HeadPositionServiceSettings>(nameof(HeadPositionServiceSettings));
-
-            settings.Should().NotBeNull();
-            settings.HorizontalPoseThreshold.Should().Be(1);
-        }
-
-        [Fact]
-        public void n()
-        {
-            var service = new ConfigurationService("settings.json");
-            Assert.Throws<NullReferenceException>(() => service.Get<HeadPositionServiceSettings>("x"));
-        }
-    }
-
-    public class DefaultTestImageRepositoryTests : TestImageRepositoryTests
-    {
-        public override ITestImageRepository GetTestImageRepository()
-        {
-            return new DefaultTestImageRepository();
-        }
-    }
-
-    public class SqliteTestImageRepositoryTests : TestImageRepositoryTests, IDisposable
-    {
-        private static FaceEncodingData? FaceEncodings;
-
-        static SqliteTestImageRepositoryTests()
-        {
-            var utils = new ImageTestUtils();
-            var (rect, face) = utils.GetFaceImg("front");
-
-            FaceEncodings = new DnFaceRecognition().GetFaceEncodings(face);
-        }
-
-        public override ITestImageRepository GetTestImageRepository()
-        {
-            return new SqLiteTestImageRepository(new ConfigurationService(""),
-                MapperConfigFactory.Create().CreateMapper());
-        }
-
-        protected override TestImage CreateTestImage(bool isReferenceImg = true)
-        {
-            var utils = new ImageTestUtils();
-            var (rect, face) = utils.GetFaceImg("front");
-
-            return new TestImage(FaceEncodings, rect, face, HeadRotation.Front, DateTime.UtcNow, isReferenceImg);
-        }
-
-        public void Dispose()
-        {
-            using var connection = new SQLiteConnection(new ConfigurationService("").Get<SqliteSettings>("sqlite").ConnectionString);
-            connection.Execute($"DELETE FROM {SqLiteTestImageRepository.TestImageTable};");
-        }
-    }
-
     public abstract class TestImageRepositoryTests
     {
-        private ITestImageRepository _repository;
+        private readonly ITestImageRepository _repository;
 
         public TestImageRepositoryTests()
         {
@@ -160,7 +86,6 @@ namespace UnitTests
             _repository.Add(t2);
 
             _repository.GetAll().Count.Should().Be(2);
-            var x = _repository.GetAll();
             _repository.GetAll().First().Id.Should().Be(t1.Id);
             _repository.GetAll().Last().Id.Should().Be(t2.Id);
         }

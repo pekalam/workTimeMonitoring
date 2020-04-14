@@ -6,7 +6,7 @@ using FaceRecognitionDotNet;
 using OpenCvSharp;
 using Point = FaceRecognitionDotNet.Point;
 
-namespace Infrastructure.WorkTime
+namespace Infrastructure.WorkTimeAlg
 {
     public enum HeadRotation
     {

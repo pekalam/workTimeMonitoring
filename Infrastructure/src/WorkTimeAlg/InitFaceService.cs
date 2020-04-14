@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FaceRecognitionDotNet;
 using Infrastructure.Repositories;
 using OpenCvSharp;
 
-namespace Infrastructure.WorkTime
+namespace Infrastructure.WorkTimeAlg
 {
     public class InitFaceProgressArgs
     {
@@ -52,7 +49,7 @@ namespace Infrastructure.WorkTime
         public IProgress<InitFaceProgressArgs>? InitFaceProgress { get; set; }
 
         private void ReportInitFaceProgress(Mat? img, Rect? face = null,
-            InitFaceProgress exception = WorkTime.InitFaceProgress.Progress,
+            InitFaceProgress exception = WorkTimeAlg.InitFaceProgress.Progress,
             bool stopped = false)
         {
             InitFaceProgress?.Report(new InitFaceProgressArgs()
@@ -123,7 +120,7 @@ namespace Infrastructure.WorkTime
                     faceRects = _faceDetection.DetectFrontalFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.FaceNotDetected);
+                        ReportInitFaceProgress(frame, exception: WorkTimeAlg.InitFaceProgress.FaceNotDetected);
                         continue;
                     }
 
@@ -132,7 +129,7 @@ namespace Infrastructure.WorkTime
                     if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            exception: WorkTime.InitFaceProgress.FaceNotStraight);
+                            exception: WorkTimeAlg.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -141,7 +138,7 @@ namespace Infrastructure.WorkTime
                     faceRects = _faceDetection.DetectFrontalThenProfileFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, exception: WorkTime.InitFaceProgress.ProfileFaceNotDetected);
+                        ReportInitFaceProgress(frame, exception: WorkTimeAlg.InitFaceProgress.ProfileFaceNotDetected);
 
                         continue;
                     }
@@ -153,7 +150,7 @@ namespace Infrastructure.WorkTime
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            exception: WorkTime.InitFaceProgress.FaceNotStraight);
+                            exception: WorkTimeAlg.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -190,7 +187,7 @@ namespace Infrastructure.WorkTime
             if (interrupted)
             {
                 ResetLearned();
-                ReportInitFaceProgress(null, exception: WorkTime.InitFaceProgress.CancelledByUser, stopped: true);
+                ReportInitFaceProgress(null, exception: WorkTimeAlg.InitFaceProgress.CancelledByUser, stopped: true);
                 return Task.CompletedTask;
             }
 
@@ -203,7 +200,7 @@ namespace Infrastructure.WorkTime
                 if (t.Exception != null)
                 {
                     _progress = 0;
-                    ReportInitFaceProgress(null, exception: WorkTime.InitFaceProgress.FaceRecognitionError,
+                    ReportInitFaceProgress(null, exception: WorkTimeAlg.InitFaceProgress.FaceRecognitionError,
                         stopped: true);
                     ResetLearned();
                 }

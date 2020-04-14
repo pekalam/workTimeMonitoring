@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 using OpenCvSharp;
 
 namespace Infrastructure.Db

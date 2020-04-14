@@ -1,43 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using FaceRecognitionDotNet;
-using Infrastructure.Repositories;
 using OpenCvSharp;
 
-namespace Infrastructure.WorkTime
+namespace Infrastructure.WorkTimeAlg
 {
     public interface IDnFaceRecognition
     {
         bool CompareFaces(Mat photo1, FaceEncodingData? faceEncoding1, Mat photo2, FaceEncodingData? faceEncoding2);
         FaceEncodingData? GetFaceEncodings(Mat photo);
-    }
-
-    public static class SharedFaceRecognitionModel
-    {
-        private static object _lck = new object();
-        private static Task<FaceRecognition> _loadTask;
-
-        static SharedFaceRecognitionModel()
-        {
-            _loadTask = Task.Factory.StartNew<FaceRecognition>(() => FaceRecognition.Create("."));
-        }
-
-        public static List<FaceEncoding> FaceEncodingsSync(Image image,
-            IEnumerable<Location> knownFaceLocation = null,
-            int numJitters = 1,
-            PredictorModel model = PredictorModel.Small)
-        {
-            lock (_lck)
-            {
-                return _loadTask.Result.FaceEncodings(image, knownFaceLocation, numJitters, model).ToList();
-            }
-        }
-
-        public static FaceRecognition Model => _loadTask.Result;
     }
 
     public class DnFaceRecognition : IDnFaceRecognition

@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Infrastructure;
 using Infrastructure.Repositories;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Commands;
 
@@ -68,8 +68,7 @@ namespace WindowUI.FaceInitialization
             _vm = vm;
             _vm.ShowOverlay("Initializing camera...");
 
-            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
-                .TypeHandle);
+
 
 
             await StartInitFaceStep();
@@ -88,7 +87,7 @@ namespace WindowUI.FaceInitialization
 
             while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
             {
-                var frame = camEnumerator.Current;
+                using var frame = camEnumerator.Current;
                 _vm.CallOnFrameChanged(frame.ToBitmapImage());
 
                 var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);

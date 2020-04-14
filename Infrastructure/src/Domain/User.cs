@@ -59,35 +59,14 @@ namespace Infrastructure.Domain
         public static implicit operator Username(string username) => new Username(username);
     }
 
-    public class Password : DomainPrimitive<string, Password>
-    {
-        public const int MinLength = 3;
-
-        public Password(string value) : base(value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new Exception();
-            }
-
-            if (value.Length < MinLength)
-            {
-                throw new Exception();
-            }
-        }
-    }
 
     public class User
     {
-        public User(Username username, Password password, bool isAdmin)
+        public User(Username username)
         {
             Username = username;
-            Password = password;
-            IsAdmin = isAdmin;
         }
 
         public Username Username { get; }
-        public Password Password { get; }
-        public bool IsAdmin { get; }
     }
 }

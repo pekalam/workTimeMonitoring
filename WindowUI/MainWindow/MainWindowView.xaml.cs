@@ -83,14 +83,14 @@ namespace WindowUI.MainWindow
 
             if (_testImageRepository.Count != 3)
             {
-                if (ShowInitFaceStepDialog())
-                {
-                    _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
-                }
-                else
-                {
-                    Application.Current.Shutdown();
-                }
+                // if (ShowInitFaceStepDialog())
+                // {
+                //     _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+                // }
+                // else
+                // {
+                //     Application.Current.Shutdown();
+                // }
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 
 namespace Infrastructure.Repositories
 {

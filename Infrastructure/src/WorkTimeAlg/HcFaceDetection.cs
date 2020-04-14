@@ -1,7 +1,6 @@
-﻿using System.Linq;
-using OpenCvSharp;
+﻿using OpenCvSharp;
 
-namespace Infrastructure.WorkTime
+namespace Infrastructure.WorkTimeAlg
 {
     public interface IHcFaceDetection
     {

@@ -8,8 +8,10 @@
              xmlns:infrastructure="clr-namespace:Infrastructure;assembly=Infrastructure"
              xmlns:application="clr-namespace:Application"
              AllowsTransparency="True"
+             ResizeMode="CanResize"
+             IgnoreTaskbarOnMaximize="False"
              mc:Ignorable="d"
-             Title="Shell" Height="800" Width="1200" Background="{x:Null}">
+             Title="Shell" Height="800" Width="1200" Background="{x:Null}" >
     <Grid>
         <ContentControl
             regions:RegionManager.RegionName="{x:Static infrastructure:ShellRegions.MainRegion}" />

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FaceRecognitionDotNet;
 using FluentAssertions;
 using Infrastructure.Repositories;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 using Moq;
 using Moq.AutoMock;
 using OpenCvSharp;
@@ -103,14 +103,14 @@ namespace UnitTests
         private Expression<Func<InitFaceProgressArgs, bool>> FaceNotDetected()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.FaceNotDetected &&
+                             args.ProgressState == Infrastructure.WorkTimeAlg.InitFaceProgress.FaceNotDetected &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> ProfileFaceNotDetected()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.ProfileFaceNotDetected &&
+                             args.ProgressState == Infrastructure.WorkTimeAlg.InitFaceProgress.ProfileFaceNotDetected &&
                              !args.Stoped;
         }
 
@@ -118,7 +118,7 @@ namespace UnitTests
         {
             return (args) => args.Frame == _nonEmptyFrame &&
                              args.ProgressPercentage > 0 &&
-                             args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.Progress &&
+                             args.ProgressState == Infrastructure.WorkTimeAlg.InitFaceProgress.Progress &&
                              !args.Stoped;
         }
 
@@ -126,28 +126,28 @@ namespace UnitTests
         {
             return (args) => args.Frame == frame &&
                              args.ProgressPercentage == progress &&
-                             args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.Progress &&
+                             args.ProgressState == Infrastructure.WorkTimeAlg.InitFaceProgress.Progress &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> FaceNotStraight()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.FaceNotStraight &&
+                             args.ProgressState == Infrastructure.WorkTimeAlg.InitFaceProgress.FaceNotStraight &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> CancelledByUser()
         {
             return (args) =>
-                args.Frame == null && args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.CancelledByUser
+                args.Frame == null && args.ProgressState == Infrastructure.WorkTimeAlg.InitFaceProgress.CancelledByUser
                                    && args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> FaceRecognitionError()
         {
             return (args) =>
-                args.Frame == null && args.ProgressState == Infrastructure.WorkTime.InitFaceProgress.FaceRecognitionError
+                args.Frame == null && args.ProgressState == Infrastructure.WorkTimeAlg.InitFaceProgress.FaceRecognitionError
                                    && args.Stoped;
         }
 

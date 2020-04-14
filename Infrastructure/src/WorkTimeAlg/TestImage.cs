@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using FaceRecognitionDotNet;
 using OpenCvSharp;
 
 [assembly: InternalsVisibleTo("UnitTests")]
-namespace Infrastructure.WorkTime
+namespace Infrastructure.WorkTimeAlg
 {
     internal static class TestImageBuilderFactory
     {

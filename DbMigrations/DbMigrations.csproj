@@ -20,6 +20,22 @@
 
   <ItemGroup>
     <None Remove="migrations\V1_0__Create_TestImage_table.sql" />
+    <None Remove="migrations\V1_1__Create_WorkTimeEvent_table.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="migrations\V1_1__Create_WorkTimeEvent_table.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>V1_1__Create_WorkTimeEvent_table.sql</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="migrations\V1_1__Create_WorkTimeEvent_table.sql">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>V1_1__Create_WorkTimeEvent_table.Designer.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
 
 </Project>

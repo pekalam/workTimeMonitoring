@@ -6,7 +6,7 @@ using AutoMapper;
 using Dapper;
 using Infrastructure.Db;
 using Infrastructure.Services;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 
 namespace Infrastructure.Repositories
 {

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using FaceRecognitionDotNet;
 using Infrastructure;
-using Infrastructure.WorkTime;
+using Infrastructure.WorkTimeAlg;
 using OpenCvSharp;
 using Image = FaceRecognitionDotNet.Image;
 using Point = FaceRecognitionDotNet.Point;
