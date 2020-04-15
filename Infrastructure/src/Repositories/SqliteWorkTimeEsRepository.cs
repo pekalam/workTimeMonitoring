@@ -34,6 +34,12 @@ namespace Infrastructure.src.Repositories
             return c;
         }
 
+        public int CountForUser(User user)
+        {
+            var sql = $@"SELECT COUNT(*) FROM {TableName} WHERE";
+            return 0;
+        }
+
         public void Save(WorkTime workTime)
         {
             var sql = $@"INSERT INTO {TableName} (Id,AggregateId,EventName,Date,Data,AggregateVersion) VALUES ( NULL, @AggregateId, @EventName, @Date, @Data, @AggregateVersion )";
@@ -49,26 +55,34 @@ namespace Infrastructure.src.Repositories
                 });
                 conn.Execute(sql, new
                 {
-                    ev.AggregateId, EventName="ev1", Date = ev.OccurrenceDate, Data, AggregateVersion=0
+                    ev.AggregateId, EventName="ev1", Date = ev.Date, Data, AggregateVersion=0
                 }, trans);
             }
 
             trans.Commit();
         }
 
-        public void Rollback(WorkTimeSnapshotCreated snapshotEvent)
+        public WorkTime Rollback(WorkTimeSnapshotCreated snapshotEvent)
         {
-            throw new NotImplementedException();
+            var sql = $@"DELETE * FROM {TableName} WHERE AggregateVersion > @SnapshotAggVersion";
+
+            using var conn = CreateConnection(false);
+
+
+            return null;
         }
 
-        public WorkTime? Find(DateTime startDate, DateTime endDate)
+        public WorkTime? Find(User user, DateTime startDate, DateTime endDate)
         {
-            var sql = $@"SELECT Data FROM {TableName} WHERE json_extract(Data, @Qu) >= @Val";
+            var sql = $@"SELECT Data FROM {TableName} WHERE json_extract(Data, @Q1) = @Username AND json_extract(Data, @Q2) >= @Val";
             using var conn = CreateConnection(true);
 
             var events = conn.Query<string>(sql, new
             {
-                Qu = "$.OccurrenceDate", Val= startDate
+                Q1 = "$.User.Username.Value",
+                Username = user.Username.Value,
+                Q2 = "$.Date", 
+                Val= startDate, 
             })
                 .Select(json =>
                 {
@@ -89,9 +103,9 @@ namespace Infrastructure.src.Repositories
             return workTime;
         }
 
-        public WorkTime? FindFromSnapshot(DateTime? startDate)
+        public WorkTime? FindFromLastSnapshot(User user)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }

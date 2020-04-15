@@ -9,8 +9,8 @@ namespace Infrastructure.Domain
 {
     public class WorkTime
     {
-        private List<Event> _pendingEvents = new List<Event>();
-        private List<Event> _actionEvents = new List<Event>();
+        private readonly List<Event> _pendingEvents = new List<Event>();
+        private readonly List<Event> _actionEvents = new List<Event>();
 
         public WorkTime() { }
 
@@ -36,7 +36,7 @@ namespace Infrastructure.Domain
         {
             StartDate = DateTime.UtcNow;
             User = user;
-            AddEvent(new WorkTimeStarted(AggregateId, StartDate, User));
+            AddEvent(new WorkTimeStarted(AggregateId, DateTime.UtcNow, StartDate, User));
         }
 
         private void CheckIsStarted()
@@ -51,7 +51,7 @@ namespace Infrastructure.Domain
         {
             CheckIsStarted();
 
-            var ev = new MouseAction(AggregateId);
+            var ev = new MouseAction(AggregateId, DateTime.UtcNow, 0);
             _actionEvents.Add(ev);
             AddEvent(ev);
         }
@@ -60,7 +60,7 @@ namespace Infrastructure.Domain
         {
             CheckIsStarted();
 
-            var ev = new KeyboardAction(AggregateId);
+            var ev = new KeyboardAction(AggregateId, DateTime.UtcNow, 0);
             _actionEvents.Add(ev);
             AddEvent(ev);
         }
@@ -73,9 +73,11 @@ namespace Infrastructure.Domain
             var snapshot = new WorkTimeSnapshot()
             {
                 StartDate = StartDate,
+                User = User,
+                EndDate = EndDate,
             };
 
-            var ev = new WorkTimeSnapshotCreated(AggregateId, snapshot);
+            var ev = new WorkTimeSnapshotCreated(AggregateId, DateTime.UtcNow, snapshot);
             AddEvent(ev);
             return ev;
         }
@@ -138,34 +140,44 @@ namespace Infrastructure.Domain
     {
         public int AggregateId { get; private set; }
         public long AggregateVersion { get; internal set; }
-        public DateTime OccurrenceDate { get; }
-
-        public Event(int aggregateId)
-        {
-            AggregateId = aggregateId;
-            OccurrenceDate = DateTime.UtcNow;
-        }
+        public DateTime Date { get; }
+        public EventName EventName { get; }
 
         [JsonConstructor]
-        public Event(int aggregateId, DateTime occurrenceDate)
+        public Event(int aggregateId, DateTime date, EventName eventName)
         {
             AggregateId = aggregateId;
-            OccurrenceDate = occurrenceDate;
+            Date = date;
+            EventName = eventName;
         }
     }
 
     public class MouseAction : Event
     {
-        public MouseAction(int aggregateId) : base(aggregateId)
+        public MouseAction(int aggregateId, DateTime date, int totalSeconds) : base(aggregateId, date, EventName.MouseAction)
         {
+            TotalSeconds = totalSeconds;
         }
+
+        public int TotalSeconds { get; }
     }
-    
-    public class KeyboardAction : Event {
-        public KeyboardAction(int aggregateId) : base(aggregateId)
+
+    public class KeyboardAction : Event 
+    {
+        public KeyboardAction(int aggregateId, DateTime date, int totalSeconds) : base(aggregateId, date, EventName.KeyboardAction)
         {
+            TotalSeconds = totalSeconds;
         }
+
+        public int TotalSeconds { get; }
     }
+
+
+    public enum EventName
+    {
+        KeyboardAction, MouseAction, WorkTimeStarted, WorkTimeSnapshotCreated
+    }
+
     //
     // public class NoAction : Event { }
     //
@@ -173,7 +185,7 @@ namespace Infrastructure.Domain
 
     public class WorkTimeStarted : Event
     {
-        public WorkTimeStarted(int aggregateId, DateTime startDate, User user) : base(aggregateId)
+        public WorkTimeStarted(int aggregateId, DateTime date, DateTime startDate, User user) : base(aggregateId, date, EventName.WorkTimeStarted)
         {
             StartDate = startDate;
             User = user;
@@ -185,7 +197,7 @@ namespace Infrastructure.Domain
 
     public class WorkTimeSnapshotCreated : Event
     {
-        public WorkTimeSnapshotCreated(int aggregateId, WorkTimeSnapshot snapshot) : base(aggregateId)
+        public WorkTimeSnapshotCreated(int aggregateId, DateTime date, WorkTimeSnapshot snapshot) : base(aggregateId, date, EventName.WorkTimeSnapshotCreated)
         {
             Snapshot = snapshot;
         }
@@ -196,7 +208,7 @@ namespace Infrastructure.Domain
     public class WorkTimeSnapshot
     {
         public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; private set; }
-        public User User { get; private set; }
+        public DateTime EndDate { get; set; }
+        public User User { get; set; }
     }
 }

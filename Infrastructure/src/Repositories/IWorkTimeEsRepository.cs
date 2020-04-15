@@ -5,9 +5,10 @@ namespace Infrastructure.Repositories
 {
     public interface IWorkTimeEsRepository
     {
+        public int CountForUser(User user);
         public void Save(WorkTime workTime);
-        public void Rollback(WorkTimeSnapshotCreated snapshotEvent);
-        public WorkTime? Find(DateTime startDate, DateTime endDate);
-        public WorkTime? FindFromSnapshot(DateTime? startDate);
+        public WorkTime Rollback(WorkTimeSnapshotCreated snapshotEvent);
+        public WorkTime? Find(User user, DateTime startDate, DateTime endDate);
+        public WorkTime? FindFromLastSnapshot(User user);
     }
 }

@@ -23,9 +23,6 @@ namespace Infrastructure.WorkTimeAlg
             _captureService = captureService;
             _mouseKeyboardMonitorService = mouseKeyboardMonitorService;
 
-            _mouseKeyboardMonitorService.MouseAction.Subscribe(OnMouseAction);
-            _mouseKeyboardMonitorService.KeyboardAction.Subscribe(OnKeyboardAction);
-
             InitStateMachine();
         }
 
