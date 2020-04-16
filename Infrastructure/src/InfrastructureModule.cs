@@ -36,7 +36,11 @@ namespace Infrastructure
 
             containerRegistry.RegisterInstance<ILogger>(Log.Logger);
 
-            containerRegistry.RegisterInstance<IMapper>(new MapperConfiguration(cfg => cfg.AddProfile<DbTestImageProfile>()).CreateMapper());
+            containerRegistry.RegisterInstance<IMapper>(new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfile<DbTestImageProfile>();
+                    cfg.AddProfile<DbEventProfile>();
+                }).CreateMapper());
 
             containerRegistry.RegisterInstance(typeof(ConfigurationService), new ConfigurationService("settings.json"));
             containerRegistry.GetContainer()

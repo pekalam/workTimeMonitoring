@@ -13,11 +13,11 @@ namespace UnitTests
     {
         private const int WindowSz = 60_000;
 
-        private MouseKeyboardEventReducerService _service;
+        private MouseKeyboardEventBuilder _service;
 
         public MouseKeyboardEventReducerServiceTest()
         {
-            _service= new MouseKeyboardEventReducerService( 60_000, 1000);
+            _service= new MouseKeyboardEventBuilder( 60_000, 1000);
         }
 
 

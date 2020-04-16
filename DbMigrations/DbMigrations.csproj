@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="migrations\V1_0__Create_TestImage_table.sql" />
-    <None Remove="migrations\V1_1__Create_WorkTimeEvent_table.sql" />
+    <Content Remove="migrations\V1_0__Create_TestImage_table.sql" />
+    <Content Remove="migrations\V1_1__Create_WorkTimeEvent_table.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,10 +32,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="migrations\V1_1__Create_WorkTimeEvent_table.sql">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>V1_1__Create_WorkTimeEvent_table.Designer.cs</LastGenOutput>
-    </Content>
+    <None Update="migrations\V1_0__Create_TestImage_table.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="migrations\V1_1__Create_WorkTimeEvent_table.sql">
+      <Generator></Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

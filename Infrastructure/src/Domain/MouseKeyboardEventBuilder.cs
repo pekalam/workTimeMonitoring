@@ -5,18 +5,18 @@ using Infrastructure.WorkTimeAlg;
 
 namespace Infrastructure.Domain
 {
-    internal class MouseKeyboardEventReducerService
+    internal class MouseKeyboardEventBuilder
     {
         private readonly List<MonitorEvent> _currentTimeLineEvents = new List<MonitorEvent>();
         private readonly List<int> _timeline = new List<int>();
 
-        private int _windowSizeMs;
-        private int _monitorEventWindowSizeMs;
+        private readonly int _windowSizeMs;
+        private readonly int _monitorEventWindowSizeMs;
 
         private int? _currentTimeLineStart;
         private DateTime? _start;
 
-        public MouseKeyboardEventReducerService(int windowSizeMs, int monitorEventWindowSizeMs)
+        public MouseKeyboardEventBuilder(int windowSizeMs, int monitorEventWindowSizeMs)
         {
             _windowSizeMs = windowSizeMs;
             _monitorEventWindowSizeMs = monitorEventWindowSizeMs;
