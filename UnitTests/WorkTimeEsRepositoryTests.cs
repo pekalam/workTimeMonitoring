@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Domain;
+using Domain.Repositories;
+using DomainTestUtils;
 using FluentAssertions;
-using Infrastructure.Domain;
-using Infrastructure.Repositories;
 using Xunit;
 
-namespace UnitTests
+namespace Infrastructure.Tests
 {
     public abstract class WorkTimeEsRepositoryTests
     {
@@ -39,8 +39,8 @@ namespace UnitTests
                 return options.Excluding(time => time.StartDate).Excluding(time => time.EndDate)
                     .Excluding(time => time.ActionEvents);
             });
-            found.StartDate.Value.SafeCompare(workTime.StartDate.Value);
-            found.EndDate.SafeCompare(workTime.EndDate);
+            DateTimeTestExtentsions.SafeCompare(found.StartDate.Value, workTime.StartDate.Value);
+            DateTimeTestExtentsions.SafeCompare(found.EndDate, workTime.EndDate);
             //todo
             found.ActionEvents.Count.Should().Be(workTime.ActionEvents.Count);
         }

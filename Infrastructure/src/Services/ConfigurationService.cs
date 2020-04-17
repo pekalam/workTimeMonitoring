@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
+using Domain;
+using Domain.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 
 namespace Infrastructure.Services
 {
-    public class ConfigurationService
+    public class ConfigurationService : IConfigurationService
     {
         private readonly IConfigurationRoot? _root;
 

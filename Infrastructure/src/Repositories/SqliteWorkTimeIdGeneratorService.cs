@@ -1,5 +1,7 @@
 ﻿using System.Data.SQLite;
 using Dapper;
+using Domain;
+using Domain.Services;
 using Infrastructure.Db;
 
 namespace Infrastructure.Repositories

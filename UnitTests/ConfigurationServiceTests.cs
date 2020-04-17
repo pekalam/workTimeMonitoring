@@ -1,11 +1,12 @@
 ﻿using System;
 using FluentAssertions;
 using Infrastructure.Services;
-using Infrastructure.WorkTimeAlg;
+using WorkTimeAlghorithm;
 using Xunit;
 
-namespace UnitTests
+namespace Infrastructure.Tests
 {
+    [Trait("Category", "Integration")]
     public class ConfigurationServiceTests
     {
         [Fact]

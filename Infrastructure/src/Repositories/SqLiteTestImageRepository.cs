@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using AutoMapper;
 using Dapper;
+using Domain;
+using Domain.Services;
 using Infrastructure.Db;
 using Infrastructure.Services;
-using Infrastructure.WorkTimeAlg;
+using WorkTimeAlghorithm;
 
+[assembly: InternalsVisibleTo("Infrastructure.Tests")]
 namespace Infrastructure.Repositories
 {
     internal class SqLiteTestImageRepository : ITestImageRepository
@@ -23,7 +27,7 @@ namespace Infrastructure.Repositories
             SqlMapper.AddTypeHandler(new DateTimeHandler());
         }
 
-        public SqLiteTestImageRepository(ConfigurationService configurationService, IMapper mapper)
+        public SqLiteTestImageRepository(IConfigurationService configurationService, IMapper mapper)
         {
             _settings = configurationService.Get<SqliteSettings>("sqlite");
             _mapper = mapper;
@@ -100,7 +104,7 @@ namespace Infrastructure.Repositories
             return imgs.ToList();
         }
 
-        public void Add(TestImage img)
+        public TestImage Add(TestImage img)
         {
             CheckNotNull(img);
 
@@ -116,7 +120,8 @@ namespace Infrastructure.Repositories
                 throw new Exception("Not inserted");
             }
 
-            img.Id = result;
+            TestImageDeserializationHelper.SetInternalFields(result, img);
+            return img;
         }
 
         public void Remove(TestImage img)

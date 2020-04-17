@@ -5,18 +5,10 @@ using System.Windows.Controls;
 using Infrastructure;
 using Infrastructure.Repositories;
 using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
-using Prism.Mvvm;
-using Prism.Regions;
 using WindowUI.FaceInitialization;
 
 namespace WindowUI.MainWindow
 {
-    public enum NavigationItems
-    {
-
-    }
-
     /// <summary>
     /// Interaction logic for MainWindowView
     /// </summary>
@@ -58,87 +50,5 @@ namespace WindowUI.MainWindow
             }
 
         }
-    }
-
-    public interface IMainViewController
-    {
-        void Init(MainWindowViewModel vm);
-    }
-
-    public class MainViewController : IMainViewController
-    {
-        private MainWindowViewModel _vm;
-        private readonly ITestImageRepository _testImageRepository;
-        private readonly IRegionManager _regionManager;
-
-        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager)
-        {
-            _regionManager = regionManager;
-            _testImageRepository = testImageRepository;
-        }
-
-        public void Init(MainWindowViewModel vm)
-        {
-            _vm = vm;
-
-            if (_testImageRepository.Count != 3)
-            {
-                // if (ShowInitFaceStepDialog())
-                // {
-                //     _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
-                // }
-                // else
-                // {
-                //     Application.Current.Shutdown();
-                // }
-            }
-        }
-
-        private bool ShowInitFaceStepDialog()
-        {
-            var mySettings = new MetroDialogSettings()
-            {
-                AffirmativeButtonText = "Start",
-                NegativeButtonText = "Cancel",
-            };
-            var result = WindowModuleStartupService.ShellWindow.ShowModalMessageExternal("Action required",
-                "You must go through profile initialization step.",
-                MessageDialogStyle.AffirmativeAndNegative, mySettings);
-
-            return true;
-        }
-    }
-
-    public class MainWindowViewModel : BindableBase, INavigationAware
-    {
-        private IMainViewController _controller;
-
-        public MainWindowViewModel(IMainViewController controller)
-        {
-            _controller = controller;
-        }
-
-        public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            _controller.Init(this);
-        }
-
-        public bool IsNavigationTarget(NavigationContext navigationContext)
-        {
-            return true;
-        }
-
-        public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-        }
-    }
-
-
-
-    public class NavigationItemViewModel : BindableBase
-    {
-        public NavigationItems NavigationItem { get; set; }
-        public string Label { get; set; }
-        public string IconName { get; set; }
     }
 }

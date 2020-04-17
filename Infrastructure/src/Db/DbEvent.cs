@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Media;
 using AutoMapper;
-using Infrastructure.Domain;
+using Domain;
+using Domain.WorkTime.Events;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Infrastructure.Db
 {
@@ -23,7 +26,7 @@ namespace Infrastructure.Db
         public DbEventProfile()
         {
             CreateMap<Event, DbEvent>()
-                .ForMember(db => db.EventName, opt => opt.MapFrom<int>(ev => (int)ev.EventName))
+                .ForMember(db => db.EventName, opt => opt.MapFrom<int>(ev => (int) ev.EventName))
                 .ForMember(db => db.Data, opt => opt.MapFrom<string>(ev => DbEventSerializer.Serialize(ev)));
 
             CreateMap<DbEvent, Event>()
@@ -36,11 +39,8 @@ namespace Infrastructure.Db
         public Event Convert(DbEvent source, Event destination, ResolutionContext context)
         {
             var ev = DbEventSerializer.Deserialize(source.Data);
-            ev.AggregateId = source.AggregateId;
-            ev.AggregateVersion = source.AggregateVersion;
-            ev.EventName = (EventName)source.EventName;
-            ev.Id = source.Id;
-
+            EventDeserializationHelper.Deserialize(source.Id, source.AggregateId, source.AggregateVersion, source.Date,
+                (EventName)source.EventName, ev);
             return ev;
         }
     }
@@ -53,13 +53,49 @@ namespace Infrastructure.Db
         }
     }
 
+    internal class EventContractResolver : DefaultContractResolver
+    {
+        private readonly string[] _ignored;
+
+        public EventContractResolver(params string[] ignored)
+        {
+            _ignored = ignored;
+        }
+
+
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            var prop = base.CreateProperty(member, memberSerialization);
+
+            if (_ignored.Contains(prop.PropertyName))
+            {
+                prop.ShouldDeserialize = _ => false;
+            }
+
+            return prop;
+        }
+    }
+
     internal static class DbEventSerializer
     {
+        private static readonly EventContractResolver ContractResolver;
+
+        static DbEventSerializer()
+        {
+            ContractResolver = new EventContractResolver(
+                nameof(Event.Id),
+                nameof(Event.AggregateId),
+                nameof(Event.AggregateVersion),
+                nameof(Event.Date),
+                nameof(Event.EventName));
+        }
+
         public static Event Deserialize(string json)
         {
             var ev = JsonConvert.DeserializeObject(json, new JsonSerializerSettings()
             {
                 TypeNameHandling = TypeNameHandling.All,
+                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             }) as Event;
 
             if (ev == null)
@@ -76,6 +112,7 @@ namespace Infrastructure.Db
             {
                 TypeNameHandling = TypeNameHandling.All,
                 DateFormatString = "yyyy'-'MM'-'dd' 'HH':'mm':'ss.FFFFFFFK",
+                ContractResolver = ContractResolver,
             });
 
             if (string.IsNullOrWhiteSpace(json))

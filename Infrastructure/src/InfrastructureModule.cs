@@ -4,12 +4,12 @@ using AutoMapper;
 using Infrastructure.Db;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
-using Infrastructure.WorkTimeAlg;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
 using Unity;
+using WorkTimeAlghorithm;
 
 namespace Infrastructure
 {

@@ -17,7 +17,7 @@ namespace Application
         {
             base.ConfigureModuleCatalog(moduleCatalog);
             moduleCatalog.AddModule<InfrastructureModule>();
-            moduleCatalog.AddModule<WindowUIModule>();
+            moduleCatalog.AddModule<WindowUiModule>();
             moduleCatalog.AddModule<NotifyBarUIModule>();
         }
 

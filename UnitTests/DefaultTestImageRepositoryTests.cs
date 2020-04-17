@@ -1,7 +1,10 @@
 ﻿using Infrastructure.Repositories;
+using WorkTimeAlghorithm;
+using Xunit;
 
-namespace UnitTests
+namespace Infrastructure.Tests
 {
+    [Trait("Category", "Integration")]
     public class DefaultTestImageRepositoryTests : TestImageRepositoryTests
     {
         public override ITestImageRepository GetTestImageRepository()

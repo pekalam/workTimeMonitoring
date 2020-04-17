@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Infrastructure.WorkTimeAlg;
+using WorkTimeAlghorithm;
 
 namespace Infrastructure.Repositories
 {
@@ -42,7 +42,7 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public void Add(TestImage img)
+        public TestImage Add(TestImage img)
         {
             if (img == null)
             {
@@ -55,7 +55,8 @@ namespace Infrastructure.Repositories
 
 
             _imgs.Add(img);
-            img.Id = _imgs.Count;
+            TestImageDeserializationHelper.SetInternalFields(_imgs.Count, img);
+            return img;
         }
 
         public void Remove(TestImage img)

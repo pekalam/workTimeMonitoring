@@ -8,9 +8,9 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Infrastructure;
 using Infrastructure.Repositories;
-using Infrastructure.WorkTimeAlg;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Commands;
+using WorkTimeAlghorithm;
 
 namespace WindowUI.FaceInitialization
 {

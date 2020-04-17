@@ -4,10 +4,12 @@ using Dapper;
 using Infrastructure.Db;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
-using Infrastructure.WorkTimeAlg;
+using WorkTimeAlghorithm;
+using Xunit;
 
-namespace UnitTests
+namespace Infrastructure.Tests
 {
+    [Trait("Category", "Integration")]
     public class SqliteTestImageRepositoryTests : TestImageRepositoryTests, IDisposable
     {
         private static FaceEncodingData? FaceEncodings;

@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using AutoMapper;
-using DlibDotNet;
-using FaceRecognitionDotNet;
 using FluentAssertions;
-using Infrastructure.Repositories;
-using Infrastructure.WorkTimeAlg;
 using OpenCvSharp;
+using WorkTimeAlghorithm;
 using Xunit;
 
-namespace UnitTests
+namespace Infrastructure.Tests
 {
     public abstract class TestImageRepositoryTests
     {

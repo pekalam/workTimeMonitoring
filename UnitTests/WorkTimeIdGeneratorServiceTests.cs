@@ -1,8 +1,9 @@
-﻿using FluentAssertions;
-using Infrastructure.Repositories;
+﻿using Domain;
+using Domain.Services;
+using FluentAssertions;
 using Xunit;
 
-namespace UnitTests
+namespace Infrastructure.Tests
 {
     public abstract class WorkTimeIdGeneratorServiceTests
     {

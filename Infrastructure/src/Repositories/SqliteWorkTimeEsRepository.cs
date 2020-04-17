@@ -4,8 +4,12 @@ using System.Data.SQLite;
 using System.Linq;
 using AutoMapper;
 using Dapper;
+using Domain;
+using Domain.Repositories;
+using Domain.User;
+using Domain.WorkTime;
+using Domain.WorkTime.Events;
 using Infrastructure.Db;
-using Infrastructure.Domain;
 using Newtonsoft.Json;
 
 namespace Infrastructure.Repositories

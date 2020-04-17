@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Infrastructure.WorkTimeAlg;
 using OpenCvSharp;
+using WorkTimeAlghorithm;
 
 namespace Infrastructure.Db
 {

@@ -55,14 +55,5 @@ namespace Infrastructure
             var bmpImg = BitmapToImageSource(bmp);
             return bmpImg;
         }
-
-        public static Image ToImage(this Mat photo)
-        {
-            var bytes = new byte[photo.Rows * photo.Cols * photo.ElemSize()];
-            Marshal.Copy(photo.Data, bytes, 0, bytes.Length);
-
-            var img = FaceRecognition.LoadImage(bytes, photo.Rows, photo.Cols, photo.ElemSize());
-            return img;
-        }
     }
 }

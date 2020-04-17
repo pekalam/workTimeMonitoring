@@ -34,7 +34,7 @@ namespace WindowUI
         }
     }
 
-    public class WindowUIModule : IModule
+    public class WindowUiModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
