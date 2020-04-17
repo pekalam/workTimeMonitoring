@@ -12,20 +12,44 @@
     <UserControl.Resources>
         <faceInitialization:PercentageTextConverter x:Key="percentageTextConverter"/>
     </UserControl.Resources>
-    <Grid>
+    <Grid Background="White">
         <Grid>
             <Image x:Name="image" VerticalAlignment="Stretch"/>
             <Canvas x:Name="canvas">
-                <TextBlock x:Name="percentageText" Visibility="{c:Binding FaceDetected, FalseToVisibility=Hidden}" Text="{Binding Progress, Converter={StaticResource percentageTextConverter}}" Foreground="White" FontSize="20"/>
+                <TextBlock x:Name="percentageText" Visibility="{c:Binding 'FaceDetected and Progress > 0', FalseToVisibility=Hidden}" Text="{Binding Progress, Converter={StaticResource percentageTextConverter}}" Foreground="White" FontSize="20"/>
                 <Rectangle x:Name="faceRect" Visibility="{c:Binding FaceDetected, FalseToVisibility=Hidden}" Stroke="{Binding FaceRectBrush}"/>
-                <Button Background="#19DCDCDC" BorderThickness="0" Panel.ZIndex="101" x:Name="startStepButton" Command="{Binding StartFaceInitCommand}" Visibility="{c:Binding '!StepStarted and FaceDetected', FalseToVisibility=Hidden}" Foreground="White">
+                <Button Background="#19DCDCDC" BorderThickness="0" Panel.ZIndex="101" x:Name="startStepButton" Command="{Binding StartFaceInitCommand}" Visibility="{c:Binding '!StepStarted and FaceDetected', FalseToVisibility=Hidden}" Foreground="Black">
                     <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center">
                         <iconPacks:PackIconFontAwesome Kind="PlayCircleRegular" HorizontalAlignment="Center" Height="30" Width="30"/>
                         <TextBlock Margin="0,5,0,0" Text="Press to start" FontSize="14"/>
                     </StackPanel>
                 </Button>
-                <faceInitialization:LoadingRect Panel.ZIndex="99" x:Name="loadingRect" Canvas.Left="120" Canvas.Top="200" Width="200" Height="200" Thickness="4" Progress="{Binding Progress}"/>
+                <faceInitialization:LoadingRect Visibility="{c:Binding FaceDetected, FalseToVisibility=Hidden}" Panel.ZIndex="99" x:Name="loadingRect" Canvas.Left="120" Canvas.Top="200" Width="200" Height="200" Thickness="4" Progress="{Binding Progress}"/>
+
             </Canvas>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1.5*"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="1" VerticalAlignment="Stretch" Visibility="{c:Binding InstructionsVisible, FalseToVisibility=Hidden}">
+                    <StackPanel Background="#A514202B">
+                        <TextBlock Foreground="White" Padding="5,5,5,5" Text="{Binding InstructionsText}" HorizontalAlignment="Center" FontSize="28"/>
+                        <Grid>
+                            <iconPacks:PackIconFontAwesome Foreground="White" Kind="ArrowRightSolid" Visibility="{c:Binding RightArrowVisible, FalseToVisibility=Hidden}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" Margin="0,10,0,10" Width="30" Height="30"/>
+                            <iconPacks:PackIconFontAwesome Foreground="White" Kind="ArrowLeftSolid" Visibility="{c:Binding LeftArrowVisible, FalseToVisibility=Hidden}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" Margin="0,20,0,0" Width="30" Height="30"/>
+                        </Grid>
+                    </StackPanel>
+
+
+                </StackPanel>
+            </Grid>
+
+
         </Grid>
         <Grid Background="#A514202B" Panel.ZIndex="101" Visibility="{c:Binding LoadingOverlayVisible, FalseToVisibility=Collapsed}">
             <StackPanel VerticalAlignment="Center">
@@ -34,7 +58,7 @@
             </StackPanel>
         </Grid>
         <DockPanel LastChildFill="False">
-            
+
             <Grid DockPanel.Dock="Bottom" Panel.ZIndex="100" Visibility="{c:Binding StepInfoPanelVisible, FalseToVisibility=Collapsed}" Background="{Binding StepInfoPanelBrush}" Height="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>

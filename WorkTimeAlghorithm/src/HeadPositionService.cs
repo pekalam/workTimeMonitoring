@@ -23,12 +23,14 @@ namespace WorkTimeAlghorithm
 
     public class HeadPositionServiceSettings
     {
-        public double HorizontalPoseThreshold { get; set; } = 0.05;
+        public double HorizontalPoseThreshold { get; set; } = 0.20;
         public double VerticalPoseThreshold { get; set; } = 10;
     }
 
     public class HeadPositionService : IHeadPositionService
     {
+        
+
         private readonly HeadPositionServiceSettings _settings;
 
         public HeadPositionService(HeadPositionServiceSettings settings)
@@ -39,17 +41,20 @@ namespace WorkTimeAlghorithm
         private HeadRotation EstimateHorizontalPose(IDictionary<FacePart, IEnumerable<Point>> landmarks, Rect face, Mat frame)
         {
             var noseTop = landmarks[FacePart.NoseBridge].First();
+            var left = landmarks[FacePart.Chin].First(p => p.X == landmarks[FacePart.Chin].Min(v => v.X));
+            var right = landmarks[FacePart.Chin].First(p => p.X == landmarks[FacePart.Chin].Max(v => v.X));
 
             #region DEBUG
-#if DEBUG
-            //Cv2.Ellipse(frame, new RotatedRect(new Point2f(noseTop.X, noseTop.Y), new Size2f(2, 2), 0), Scalar.Yellow);
+#if SHOW_MARKERS
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(noseTop.X, noseTop.Y), new Size2f(2, 2), 0), Scalar.Yellow);
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(left.X, left.Y), new Size2f(2, 2), 0), Scalar.Violet);
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(right.X, right.Y), new Size2f(2, 2), 0), Scalar.PaleGreen);
 #endif
 
             #endregion
 
-            Point center = new Point(face.Location.X + face.Width / 2, face.Location.Y + face.Height / 2);
 
-            int dist = (center.X - noseTop.X);
+            int dist = ((noseTop.X - left.X) - (right.X - noseTop.X));
 
             if (Math.Abs(dist) < _settings.HorizontalPoseThreshold * face.Width)
             {
@@ -65,9 +70,9 @@ namespace WorkTimeAlghorithm
             var rightEye = landmarks[FacePart.RightEyebrow].Last();
 
             #region DEBUG
-#if DEBUG
-            //Cv2.Ellipse(frame, new RotatedRect(new Point2f(leftEye.X, leftEye.Y), new Size2f(2, 2), 0), Scalar.Red);
-            //Cv2.Ellipse(frame, new RotatedRect(new Point2f(rightEye.X, rightEye.Y), new Size2f(2, 2), 0), Scalar.Red);
+#if SHOW_MARKERS
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(leftEye.X, leftEye.Y), new Size2f(2, 2), 0), Scalar.Red);
+            Cv2.Ellipse(frame, new RotatedRect(new Point2f(rightEye.X, rightEye.Y), new Size2f(2, 2), 0), Scalar.Red);
 #endif
             #endregion
 
@@ -91,7 +96,7 @@ namespace WorkTimeAlghorithm
         {
             var bytes = new byte[frame.Rows * frame.Cols * frame.ElemSize()];
             Marshal.Copy(frame.Data, bytes, 0, bytes.Length);
-            var img = FaceRecognition.LoadImage(bytes, frame.Rows, frame.Cols, frame.ElemSize());
+            using var img = FaceRecognition.LoadImage(bytes, frame.Rows, frame.Cols, frame.ElemSize());
             var allLandmarks = SharedFaceRecognitionModel.Model.FaceLandmark(img,
                 new[] {new Location(face.Left, face.Top, face.Right, face.Bottom),}, PredictorModel.Large);
 
@@ -103,13 +108,13 @@ namespace WorkTimeAlghorithm
             }
 
             #region DEBUG
-#if DEBUG
+#if SHOW_MARKERS
             foreach (var facePart in Enum.GetValues(typeof(FacePart)).Cast<FacePart>())
             {
                 foreach (var landmark in landmarks)
                 {
-                    //foreach (var p in landmark.Value.ToArray()) 
-                        //Cv2.Ellipse(frame, new RotatedRect(new Point2f(p.X, p.Y), new Size2f(2, 2), 0), Scalar.Aqua);
+                    foreach (var p in landmark.Value.ToArray()) 
+                        Cv2.Ellipse(frame, new RotatedRect(new Point2f(p.X, p.Y), new Size2f(2, 2), 0), Scalar.Aqua);
                 }
             }
 #endif

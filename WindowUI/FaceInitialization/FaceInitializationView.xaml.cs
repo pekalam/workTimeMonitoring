@@ -15,18 +15,28 @@ namespace WindowUI.FaceInitialization
     {
         private int orgWidth = 0;
         private int orgHeight = 0;
+        private FaceInitializationViewModel _vm;
 
         public FaceInitializationView()
         {
             InitializeComponent();
 
+            
             var vm = (DataContext as FaceInitializationViewModel);
+            _vm = vm;
             vm.OnFrameChanged += OnFrameChanged;
             vm.OnFaceDetected += OnFaceDetected;
+            vm.OnNoFaceDetected += OnNoFaceDetected;
+        }
+
+        private void OnNoFaceDetected()
+        {
+
         }
 
         private void OnFaceDetected(Rect obj)
         {
+
             var sw = (image.ActualWidth / orgWidth);
             var sh = (image.ActualHeight / orgHeight);
 

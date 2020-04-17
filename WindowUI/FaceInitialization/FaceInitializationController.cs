@@ -49,11 +49,15 @@ namespace WindowUI.FaceInitialization
         private void OnStartFaceInit()
         {
             _startStep = true;
+            
         }
 
         private void OnStepInfoRetryClick()
         {
+            _initFaceService.Reset();
+            _vm.Progress = 0;
             _vm.HidePhotoPreview();
+            _vm.HideStepInfo();
             _vm.StepStarted = false;
             _stepCompleted = false;
         }
@@ -120,6 +124,7 @@ namespace WindowUI.FaceInitialization
                     if (!_stepCompleted)
                     {
                         _vm.ShowOverlay("Waiting for face...");
+                        _vm.CallOnNoFaceDetected();
                     }
                 }
             }
@@ -138,10 +143,19 @@ namespace WindowUI.FaceInitialization
                     _vm.ShowErrorStepInfo("Face not detected");
                     break;
                 case InitFaceProgress.FaceNotStraight:
-                    _vm.ShowInformationStepInfo("Invalid face position");
+                    _vm.ShowInstructions("Look at front of cam");
+                    break;
+                case InitFaceProgress.FaceNotTurnedLeft:
+                    _vm.ShowInstructions("Look in following direction", rightArrow: true);
+                    break;
+                case InitFaceProgress.FaceNotTurnedRight:
+                    _vm.ShowInstructions("Look in following direction", leftArrow: true);
                     break;
                 case InitFaceProgress.FaceRecognitionError:
                     _vm.ShowErrorStepInfo("Invalid face");
+                    break;
+                case InitFaceProgress.PhotosTaken:
+                    _vm.HideInstructions();
                     break;
                 case InitFaceProgress.Progress:
                     _vm.HideStepInfo();

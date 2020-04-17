@@ -25,7 +25,7 @@ namespace Infrastructure.Tests
         }
 
         [Fact]
-        public void f()
+        public void Event_to_DbEvent()
         {
             var worktime = WorkTimeTestUtils.CreateManual();
 
@@ -41,7 +41,7 @@ namespace Infrastructure.Tests
         }
 
         [Fact]
-        public void TestImageMapping()
+        public void TestImage_to_DbTestImage()
         {
             var utils = new ImageTestUtils();
             var (rect, face) = utils.GetFaceImg("front");

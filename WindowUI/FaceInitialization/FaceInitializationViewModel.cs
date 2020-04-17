@@ -34,6 +34,10 @@ namespace WindowUI.FaceInitialization
         private ImageSource _photo3;
         private bool _faceDetected;
         private bool _stepStarted;
+        private bool _instructionsVisible;
+        private string _instructionsText;
+        private bool _leftArrowVisible;
+        private bool _rightArrowVisible;
 
         public FaceInitializationViewModel(IFaceInitializationController controller)
         {
@@ -200,6 +204,40 @@ namespace WindowUI.FaceInitialization
             get => _photo3;
             set => SetProperty(ref _photo3, value);
         }
+
+        public bool InstructionsVisible
+        {
+            get => _instructionsVisible;
+            set => SetProperty(ref _instructionsVisible, value);
+        }
+
+        public string InstructionsText
+        {
+            get => _instructionsText;
+            set => SetProperty(ref _instructionsText, value);
+        }
+
+        public bool LeftArrowVisible
+        {
+            get => _leftArrowVisible;
+            set => SetProperty(ref _leftArrowVisible, value);
+        }
+
+        public bool RightArrowVisible
+        {
+            get => _rightArrowVisible;
+            set => SetProperty(ref _rightArrowVisible, value);
+        }
+
+        public void ShowInstructions(string text, bool leftArrow = false, bool rightArrow = false)
+        {
+            RightArrowVisible = rightArrow;
+            LeftArrowVisible = leftArrow;
+            InstructionsText = text;
+            InstructionsVisible = true;
+        }
+
+        public void HideInstructions() => InstructionsVisible = false;
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {

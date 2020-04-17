@@ -72,6 +72,14 @@ namespace WorkTimeAlghorithm.UnitTests
                              !args.Stoped;
         }
 
+        private Expression<Func<InitFaceProgressArgs, bool>> PhotosTaken()
+        {
+            return (args) => args.Frame == null &&
+                             args.ProgressPercentage > 0 &&
+                             args.ProgressState == WorkTimeAlghorithm.InitFaceProgress.PhotosTaken &&
+                             !args.Stoped;
+        }
+
         private Expression<Func<InitFaceProgressArgs, bool>> InitFaceProgress()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
@@ -92,6 +100,20 @@ namespace WorkTimeAlghorithm.UnitTests
         {
             return (args) => args.Frame == _nonEmptyFrame &&
                              args.ProgressState == WorkTimeAlghorithm.InitFaceProgress.FaceNotStraight &&
+                             !args.Stoped;
+        }
+
+        private Expression<Func<InitFaceProgressArgs, bool>> FaceNotLeft()
+        {
+            return (args) => args.Frame == _nonEmptyFrame &&
+                             args.ProgressState == WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedLeft &&
+                             !args.Stoped;
+        }
+
+        private Expression<Func<InitFaceProgressArgs, bool>> FaceNotRight()
+        {
+            return (args) => args.Frame == _nonEmptyFrame &&
+                             args.ProgressState == WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedRight &&
                              !args.Stoped;
         }
 
@@ -229,6 +251,7 @@ namespace WorkTimeAlghorithm.UnitTests
                     .Returns(() => (HeadRotation.Front, HeadRotation.Front));
                 mHcFaceDetection.ReturnFace(_testUtils, "front");
                 yield return _nonEmptyFrame;
+                mProgress.Verify(f => f.Report(It.Is(InitFaceProgress())), Times.Exactly(1));
 
 
                 mHcFaceDetection.Setup(f => f.DetectFrontalFaces(It.IsAny<Mat>())).Returns(new Rect[0]);
@@ -242,31 +265,31 @@ namespace WorkTimeAlghorithm.UnitTests
                 mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
                     .Returns(() => (HeadRotation.Front, HeadRotation.Right));
                 yield return _nonEmptyFrame;
-                mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Exactly(3));
+                mProgress.Verify(f => f.Report(It.Is(FaceNotLeft())), Times.Exactly(1));
 
 
                 mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
                     .Returns(() => (HeadRotation.Right, HeadRotation.Right));
                 yield return _nonEmptyFrame;
-                mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Exactly(4));
+                mProgress.Verify(f => f.Report(It.Is(FaceNotLeft())), Times.Exactly(2));
 
                 mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
                     .Returns(() => (HeadRotation.Left, HeadRotation.Left));
                 yield return _nonEmptyFrame;
-                mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Exactly(4));
+                mProgress.Verify(f => f.Report(It.Is(InitFaceProgress())), Times.Exactly(2));
 
 
                 mHcFaceDetection.ReturnFrontProfileFace(_testUtils, "right");
                 mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
                     .Returns(() => (HeadRotation.Right, HeadRotation.Left));
                 yield return _nonEmptyFrame;
-                mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Exactly(5));
+                mProgress.Verify(f => f.Report(It.Is(FaceNotRight())), Times.Exactly(1));
 
 
                 mHeadPositionService.Setup(f => f.GetHeadPosition(It.IsAny<Mat>(), It.IsAny<Rect>()))
                     .Returns(() => (HeadRotation.Left, HeadRotation.Right));
                 yield return _nonEmptyFrame;
-                mProgress.Verify(f => f.Report(It.Is(FaceNotStraight())), Times.Exactly(6));
+                mProgress.Verify(f => f.Report(It.Is(FaceNotRight())), Times.Exactly(2));
 
             }
 
@@ -308,7 +331,6 @@ namespace WorkTimeAlghorithm.UnitTests
                 mHcFaceDetection.ReturnFrontProfileFace(_testUtils, "right");
                 yield return _nonEmptyFrame;
 
-                mProgress.Verify(f => f.Report(It.Is(InitFaceProgress())), Times.AtLeast(3));
             }
 
             return SuccessfulCapture();
@@ -338,6 +360,10 @@ namespace WorkTimeAlghorithm.UnitTests
             initTestService.InitFaceProgress = mProgress.Object;
             await await initTestService.InitFace(mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
                 CancellationToken.None);
+
+
+            mProgress.Verify(f => f.Report(It.Is(InitFaceProgress())), Times.AtLeast(3));
+            mProgress.Verify(f => f.Report(It.Is(PhotosTaken())), Times.Exactly(1));
 
             mProgress.Verify(f => f.Report(It.Is(InitFaceProgress(null, 100))), Times.Once());
             mTestImageRepository.Verify(f => f.Clear(), Times.Once());

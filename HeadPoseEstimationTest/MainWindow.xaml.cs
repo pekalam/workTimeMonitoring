@@ -142,6 +142,7 @@ namespace HeadPoseEstimationTest
                 }
 
                 image.Source = frame.ToBitmapImage();
+                frame.Dispose();
             }
         }
 

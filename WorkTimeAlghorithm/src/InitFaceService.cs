@@ -23,7 +23,10 @@ namespace WorkTimeAlghorithm
         FaceRecognitionError,
         ProfileFaceNotDetected,
         FaceNotStraight,
+        FaceNotTurnedLeft,
+        FaceNotTurnedRight,
         CancelledByUser,
+        PhotosTaken,
     }
 
     public class InitFaceService
@@ -104,7 +107,7 @@ namespace WorkTimeAlghorithm
             var faceEncodings = new List<Task<FaceEncodingData?>>();
 
             _progress = 0;
-            ResetLearned();
+            Reset();
 
 
             while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
@@ -149,7 +152,7 @@ namespace WorkTimeAlghorithm
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            exception: WorkTimeAlghorithm.InitFaceProgress.FaceNotStraight);
+                            exception: hTarget == HeadRotation.Left ? WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedLeft : WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedRight);
                         continue;
                     }
                 }
@@ -179,13 +182,14 @@ namespace WorkTimeAlghorithm
                 if (testImages.Count == 3)
                 {
                     interrupted = false;
+                    ReportInitFaceProgress(null, exception: WorkTimeAlghorithm.InitFaceProgress.PhotosTaken);
                     break;
                 }
             }
 
             if (interrupted)
             {
-                ResetLearned();
+                Reset();
                 ReportInitFaceProgress(null, exception: WorkTimeAlghorithm.InitFaceProgress.CancelledByUser, stopped: true);
                 return Task.CompletedTask;
             }
@@ -201,7 +205,7 @@ namespace WorkTimeAlghorithm
                     _progress = 0;
                     ReportInitFaceProgress(null, exception: WorkTimeAlghorithm.InitFaceProgress.FaceRecognitionError,
                         stopped: true);
-                    ResetLearned();
+                    Reset();
                 }
                 else
                 {
@@ -217,7 +221,7 @@ namespace WorkTimeAlghorithm
             }, ct);
         }
 
-        private void ResetLearned()
+        public void Reset()
         {
             _testImageRepository.Clear();
         }
