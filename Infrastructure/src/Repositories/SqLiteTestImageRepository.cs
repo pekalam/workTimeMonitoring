@@ -17,6 +17,7 @@ namespace Infrastructure.Repositories
     internal class SqLiteTestImageRepository : ITestImageRepository
     {
         public const string TestImageTable = "TestImage";
+        private const string ColumnNames = "Id, FaceLocation_x, FaceLocation_y, FaceLocation_width, FaceLocation_height, Img, HorizontalHeadRotation, DateCreated, FaceEncoding, IsReferenceImg";
 
         private readonly SqliteSettings _settings;
         private readonly IMapper _mapper;
@@ -66,7 +67,7 @@ namespace Infrastructure.Repositories
         public IReadOnlyList<TestImage> GetAll()
         {
             var sql =
-                @$"SELECT Id, FaceLocation_x, FaceLocation_y, FaceLocation_right, FaceLocation_bottom, Img, Rotation, DateCreated, FaceEncoding, IsReferenceImg 
+                @$"SELECT {ColumnNames}
                    FROM {TestImageTable};";
 
             using var connection = CreateConnection();
@@ -77,7 +78,7 @@ namespace Infrastructure.Repositories
         public IReadOnlyList<TestImage> GetReferenceImages()
         {
             var sql =
-                @$"SELECT Id, FaceLocation_x, FaceLocation_y, FaceLocation_right, FaceLocation_bottom, Img, Rotation, DateCreated, FaceEncoding, IsReferenceImg 
+                @$"SELECT {ColumnNames}
                    FROM {TestImageTable}
                    WHERE IsReferenceImg = true;";
 
@@ -94,7 +95,7 @@ namespace Infrastructure.Repositories
             }
 
             var sql =
-                @$"SELECT Id, FaceLocation_x, FaceLocation_y, FaceLocation_right, FaceLocation_bottom, Img, Rotation, DateCreated, FaceEncoding, IsReferenceImg 
+                @$"SELECT {ColumnNames}
                    FROM {TestImageTable}
                    WHERE DateCreated >= @startDate  
                    ORDER BY DateCreated DESC LIMIT @maxCount;";
@@ -110,7 +111,7 @@ namespace Infrastructure.Repositories
 
             var dbEntity = _mapper.Map<DbTestImage>(img);
             var sql =
-                $@"INSERT INTO TestImage VALUES ( @Id, @FaceLocation_x, @FaceLocation_y, @FaceLocation_right, @FaceLocation_bottom, @Img, @Rotation, @DateCreated, @FaceEncoding, @IsReferenceImg ); SELECT last_insert_rowid();";
+                $@"INSERT INTO TestImage VALUES ( @Id, @FaceLocation_x, @FaceLocation_y, @FaceLocation_width, @FaceLocation_height, @Img, @HorizontalHeadRotation, @DateCreated, @FaceEncoding, @IsReferenceImg ); SELECT last_insert_rowid();";
 
             using var connection = CreateConnection();
             var result = connection.ExecuteScalar<int>(sql, dbEntity);

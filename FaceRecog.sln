@@ -35,11 +35,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkTimeAlghorithm", "WorkTimeAlghorithm\WorkTimeAlghorithm.csproj", "{891D8B91-F579-4070-8C86-539F042143E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.UnitTests", "Domain.UnitTests\Domain.UnitTests.csproj", "{39330452-FFED-4FC8-BD7C-09FD617D0572}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.UnitTests", "Domain.UnitTests\Domain.UnitTests.csproj", "{39330452-FFED-4FC8-BD7C-09FD617D0572}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkTimeAlghorithm.UnitTests", "WorkTimeAlghorithm.UnitTests\WorkTimeAlghorithm.UnitTests.csproj", "{B3F59689-C824-4890-8D4F-E10B42CAD2C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkTimeAlghorithm.UnitTests", "WorkTimeAlghorithm.UnitTests\WorkTimeAlghorithm.UnitTests.csproj", "{B3F59689-C824-4890-8D4F-E10B42CAD2C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainTestUtils", "CommonTestUtils\DomainTestUtils.csproj", "{F5C47C8B-2F1E-40BC-97AC-E42090E63DBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainTestUtils", "CommonTestUtils\DomainTestUtils.csproj", "{F5C47C8B-2F1E-40BC-97AC-E42090E63DBD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestApps", "TestApps", "{91F030E2-1B56-4363-8013-7F99788B5DF8}"
 EndProject
@@ -59,14 +59,12 @@ Global
 		{B855B6EB-14F0-41C8-88E0-B0BF33A33155}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B855B6EB-14F0-41C8-88E0-B0BF33A33155}.Release|x64.ActiveCfg = Release|x64
 		{B855B6EB-14F0-41C8-88E0-B0BF33A33155}.Release|x64.Build.0 = Release|x64
-		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Debug|x64.ActiveCfg = Debug|x64
 		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Debug|x64.Build.0 = Debug|x64
-		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Release|x64.ActiveCfg = Release|Any CPU
-		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Release|x64.Build.0 = Release|Any CPU
+		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Release|Any CPU.ActiveCfg = Release|x64
+		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Release|x64.ActiveCfg = Release|x64
+		{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}.Release|x64.Build.0 = Release|x64
 		{81FB5388-4E2D-4F3A-A995-4F8273DDA3BD}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{81FB5388-4E2D-4F3A-A995-4F8273DDA3BD}.Debug|x64.ActiveCfg = Debug|x64
 		{81FB5388-4E2D-4F3A-A995-4F8273DDA3BD}.Debug|x64.Build.0 = Debug|x64

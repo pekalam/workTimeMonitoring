@@ -22,6 +22,12 @@ namespace Infrastructure.Repositories
         private readonly SqliteSettings _sqliteSettings;
         private readonly IMapper _mapper;
 
+        static SqliteWorkTimeEsRepository()
+        {
+            SqlMapper.RemoveTypeMap(typeof(DateTime));
+            SqlMapper.AddTypeHandler(new DateTimeHandler());
+        }
+
         public SqliteWorkTimeEsRepository(SqliteSettings sqliteSettings, IMapper mapper)
         {
             _sqliteSettings = sqliteSettings;

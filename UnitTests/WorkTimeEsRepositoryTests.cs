@@ -31,7 +31,6 @@ namespace Infrastructure.Tests
             workTime.MarkPendingEventsAsHandled();
 
             var found = _repository.Find(workTime.User, workTime.DateCreated);
-            found.Should().NotBeNull();
 
             found.PendingEvents.Count.Should().Be(0);
             found.Should().BeEquivalentTo(workTime, options =>
@@ -39,10 +38,19 @@ namespace Infrastructure.Tests
                 return options.Excluding(time => time.StartDate).Excluding(time => time.EndDate)
                     .Excluding(time => time.ActionEvents);
             });
-            DateTimeTestExtentsions.SafeCompare(found.StartDate.Value, workTime.StartDate.Value);
-            DateTimeTestExtentsions.SafeCompare(found.EndDate, workTime.EndDate);
+            found.StartDate.Value.SafeCompare(workTime.StartDate.Value);
+            found.EndDate.SafeCompare(workTime.EndDate);
             //todo
             found.ActionEvents.Count.Should().Be(workTime.ActionEvents.Count);
+
+            for (int i = 0; i < found.ActionEvents.Count; i++)
+            {
+                found.ActionEvents[i].Should().BeEquivalentTo(workTime.ActionEvents[i], 
+                    opt => opt
+                        .Excluding(e => e.Date).Excluding(e => e.Id));
+                found.ActionEvents[i].Id.Should().NotBeNull();
+                found.ActionEvents[i].Date.SafeCompare(workTime.ActionEvents[i].Date);
+            }
         }
 
         [Fact]
@@ -64,26 +72,27 @@ namespace Infrastructure.Tests
         }
 
         [Fact]
-        public void f()
+        public void FindFromSnapshot_returns_aggregate_from_snapshot()
         {
             var workTime = WorkTimeTestUtils.CreateManual();
             workTime.StartManually();
             var snap = workTime.TakeSnapshot();
+
             _repository.Save(workTime);
             workTime.MarkPendingEventsAsHandled();
 
             workTime.AddMouseAction();
 
-            var prev = _repository.FindFromSnapshot(snap);
+            var fromSnap = _repository.FindFromSnapshot(snap);
 
-            prev.Should().BeEquivalentTo(workTime, opt =>
+            fromSnap.Should().BeEquivalentTo(workTime, opt =>
             {
                 return opt.Excluding(w => w.FromSnapshot).Excluding(w => w.PendingEvents).Excluding(w => w.AggregateVersion).Excluding(w => w.ActionEvents);
             });
-            prev.FromSnapshot.Should().BeTrue();
-            prev.ActionEvents.Should().BeEmpty();
-            prev.PendingEvents.Should().BeEmpty();
-            prev.AggregateVersion.Should().Be(workTime.AggregateVersion - 1);
+            fromSnap.FromSnapshot.Should().BeTrue();
+            fromSnap.ActionEvents.Should().BeEmpty();
+            fromSnap.PendingEvents.Should().BeEmpty();
+            fromSnap.AggregateVersion.Should().Be(workTime.AggregateVersion - 1);
         }
     }
 }

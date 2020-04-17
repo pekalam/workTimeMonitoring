@@ -38,8 +38,10 @@ namespace Infrastructure.Tests
 
         public void Dispose()
         {
-            using var connection = new SQLiteConnection(new ConfigurationService("").Get<SqliteSettings>("sqlite").ConnectionString);
-            connection.Execute($"DELETE FROM {SqLiteTestImageRepository.TestImageTable};");
+            SqliteTestUtils.TruncTable(SqLiteTestImageRepository.TestImageTable);
         }
+
+
+
     }
 }

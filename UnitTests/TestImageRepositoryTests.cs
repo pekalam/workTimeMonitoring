@@ -19,9 +19,15 @@ namespace Infrastructure.Tests
 
         public abstract ITestImageRepository GetTestImageRepository();
 
-        protected  virtual TestImage CreateTestImage(bool isReferenceImg = true)
+        protected abstract TestImage CreateTestImage(bool isReferenceImg = true);
+
+        private void CompareTestImgs(TestImage t1, TestImage t2)
         {
-            return new TestImage( new Rect(0, 0, 20, 20), Mat.Zeros(4, 4, MatType.CV_8UC1), HeadRotation.Left, DateTime.UtcNow, isReferenceImg);
+            t1.Should().BeEquivalentTo(t2, opt => opt.Excluding(i => i.Img));
+            var mat = t1.Img;
+
+            mat.Rows.Should().Be(t2.Img.Rows);
+            mat.Cols.Should().Be(t2.Img.Cols);
         }
 
         [Fact]
@@ -49,6 +55,7 @@ namespace Infrastructure.Tests
             var t2 = CreateTestImage();
             _repository.Add(t2);
             _repository.Add(t1);
+            _repository.Count.Should().Be(2);
 
             _repository.Remove(t1);
             _repository.Count.Should().Be(1);
@@ -78,10 +85,12 @@ namespace Infrastructure.Tests
             var t2 = CreateTestImage();
             _repository.Add(t1);
             _repository.Add(t2);
+            _repository.Count.Should().Be(2);
 
-            _repository.GetAll().Count.Should().Be(2);
-            _repository.GetAll().First().Id.Should().Be(t1.Id);
-            _repository.GetAll().Last().Id.Should().Be(t2.Id);
+            var all = _repository.GetAll();
+            all.Count.Should().Be(2);
+            CompareTestImgs(all.First(), t1);
+            CompareTestImgs(all.Last(), t2);
         }
 
         [Fact]
@@ -91,6 +100,7 @@ namespace Infrastructure.Tests
             var t2 = CreateTestImage();
             _repository.Add(t1);
             _repository.Add(t2);
+            _repository.Count.Should().Be(2);
 
             _repository.Clear();
 
@@ -102,14 +112,18 @@ namespace Infrastructure.Tests
         {
             var t1 = CreateTestImage(false);
             var t2 = CreateTestImage(true);
+            var t3 = CreateTestImage(true);
             _repository.Add(t1);
             _repository.Add(t2);
+            _repository.Add(t3);
+            _repository.Count.Should().Be(3);
 
 
             var result = _repository.GetReferenceImages();
 
-            result.Count.Should().Be(1);
-            result.First().Id.Should().Be(t2.Id);
+            result.Count.Should().Be(2);
+            CompareTestImgs(result.First(), t2);
+            CompareTestImgs(result.Last(), t3);
         }
 
 
@@ -129,7 +143,15 @@ namespace Infrastructure.Tests
             var result = _repository.GetMostRecentImages(now, 1);
 
             result.Count.Should().Be(1);
-            result.First().Id.Should().Be(t2.Id);
+            CompareTestImgs(result.First(), t2);
+
+            await Task.Delay(200);
+            now = DateTime.UtcNow;
+            var t3 = CreateTestImage(true);
+            _repository.Add(t3);
+
+            result = _repository.GetMostRecentImages(now, 1);
+            CompareTestImgs(result.First(), t3);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using OpenCvSharp;
+using Serilog.Formatting.Display;
 using WorkTimeAlghorithm;
 
 namespace Infrastructure.Db
@@ -17,10 +18,10 @@ namespace Infrastructure.Db
                             FaceEncodingHelpers.Serialize(testImage.FaceEncoding.Value));
                     })
                 .ForMember(db => db.FaceLocation_x, opt => opt.MapFrom<int>(image => image.FaceLocation.X))
-                .ForMember(db => db.FaceLocation_x, opt => opt.MapFrom<int>(image => image.FaceLocation.Y))
-                .ForMember(db => db.FaceLocation_right, opt => opt.MapFrom<int>(image => image.FaceLocation.Right))
-                .ForMember(db => db.FaceLocation_bottom, opt => opt.MapFrom<int>(image => image.FaceLocation.Bottom));
-
+                .ForMember(db => db.FaceLocation_y, opt => opt.MapFrom<int>(image => image.FaceLocation.Y))
+                .ForMember(db => db.FaceLocation_width, opt => { opt.MapFrom<int>(image => image.FaceLocation.Width); })
+                .ForMember(db => db.FaceLocation_height, opt => opt.MapFrom<int>(image => image.FaceLocation.Height));
+                
 
             CreateMap<DbTestImage, TestImage>()
                 .ForMember(image => image.FaceEncoding, opt =>
@@ -43,7 +44,7 @@ namespace Infrastructure.Db
                     opt =>
                     {
                         opt.MapFrom<Rect>((db, _) => new Rect(db.FaceLocation_x, db.FaceLocation_y,
-                            db.FaceLocation_right, db.FaceLocation_bottom));
+                            db.FaceLocation_width, db.FaceLocation_height));
                     });
         }
     }

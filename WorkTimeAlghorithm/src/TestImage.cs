@@ -105,7 +105,6 @@ namespace WorkTimeAlghorithm
 
         internal TestImage()
         {
-            
         }
 
         public TestImage(FaceEncodingData faceEncoding, Rect faceLocation, Mat img, HeadRotation horizontalHeadRotation, DateTime dateCreated, bool isReferenceImg)
