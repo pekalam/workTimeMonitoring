@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Infrastructure.Tests
 {
+    
+
     [Trait("Category", "Integration")]
     public class SqliteWorkTimeEsRepositoryTests : WorkTimeEsRepositoryTests, IDisposable
     {
@@ -17,7 +19,7 @@ namespace Infrastructure.Tests
             {
                 opt.AddProfile<DbEventProfile>();
             });
-            return new SqliteWorkTimeEsRepository(new SqliteSettings(), mapper.CreateMapper());
+            return new SqliteWorkTimeEsRepository(TestUtils.ConfigurationService, mapper.CreateMapper());
         }
 
         public void Dispose()

@@ -6,14 +6,16 @@ using AutoMapper;
 using Dapper;
 using Domain;
 using Domain.Repositories;
+using Domain.Services;
 using Domain.User;
-using Domain.WorkTime;
-using Domain.WorkTime.Events;
+using Domain.WorkTimeAggregate;
+using Domain.WorkTimeAggregate.Events;
 using Infrastructure.Db;
 using Newtonsoft.Json;
 
 namespace Infrastructure.Repositories
 {
+    
     public class SqliteWorkTimeEsRepository : IWorkTimeEsRepository
     {
         public const string TableName = "WorkTimeEvent";
@@ -28,9 +30,9 @@ namespace Infrastructure.Repositories
             SqlMapper.AddTypeHandler(new DateTimeHandler());
         }
 
-        public SqliteWorkTimeEsRepository(SqliteSettings sqliteSettings, IMapper mapper)
+        public SqliteWorkTimeEsRepository(IConfigurationService configurationService, IMapper mapper)
         {
-            _sqliteSettings = sqliteSettings;
+            _sqliteSettings = configurationService.Get<SqliteSettings>("sqlite");
             _mapper = mapper;
         }
 
@@ -48,10 +50,10 @@ namespace Infrastructure.Repositories
 
         public int CountForUser(User user)
         {
-            var sql = $@"SELECT COUNT(*) FROM {TableName} WHERE EventName = @EventName AND json_extract(Data, '$.User.Username.Value')";
+            var sql = $@"SELECT COUNT(*) FROM {TableName} WHERE EventName = @EventName AND json_extract(Data, '$.User.Username.Value') = @Username";
 
             using var conn = CreateConnection(true);
-            var count = conn.ExecuteScalar<int>(sql, new {EventName=(int)EventName.WorkTimeCreated});
+            var count = conn.ExecuteScalar<int>(sql, new {EventName=(int)EventName.WorkTimeCreated, Username=user.Username.Value});
             return count;
         }
 
@@ -59,7 +61,7 @@ namespace Infrastructure.Repositories
         {
             var sql = $@"INSERT INTO {TableName} ({TableCols}) VALUES (NULL, @EventName, @AggregateId, @AggregateVersion, @Date, @Data)";
             using var conn = CreateConnection(false);
-            var trans = conn.BeginTransaction();
+            using var trans = conn.BeginTransaction();
 
             foreach (var ev in workTime.PendingEvents)
             {
@@ -135,7 +137,7 @@ namespace Infrastructure.Repositories
             var sql = $@"DELETE FROM {TableName} WHERE AggregateId = @AggregateId AND AggregateVersion > @AggregateVersion";
 
             using var conn = CreateConnection(false);
-            var trans = conn.BeginTransaction();
+            using var trans = conn.BeginTransaction();
 
             var result = conn.Execute(sql, new {AggregateId=snapshotEvent.AggregateId, AggregateVersion=snapshotEvent.AggregateVersion});
 

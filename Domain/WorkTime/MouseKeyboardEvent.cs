@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Domain.WorkTime
+namespace Domain.WorkTimeAggregate
 {
     public class MouseKeyboardEvent
     {

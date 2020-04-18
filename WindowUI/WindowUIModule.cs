@@ -1,4 +1,7 @@
-﻿using CommonServiceLocator;
+﻿using System;
+using System.Threading.Tasks;
+using System.Windows;
+using CommonServiceLocator;
 using Infrastructure;
 using Infrastructure.Messaging;
 using MahApps.Metro.Controls;
@@ -38,6 +41,7 @@ namespace WindowUI
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
+
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)

@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 
 [assembly:InternalsVisibleTo("DomainTestUtils")]
-namespace Domain.WorkTime.Events
+namespace Domain.WorkTimeAggregate.Events
 {
     public class Event
     {

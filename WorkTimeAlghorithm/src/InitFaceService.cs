@@ -73,6 +73,11 @@ namespace WorkTimeAlghorithm
                 var fe1 = faceEncoding1.GetAwaiter().GetResult();
                 var fe2 = faceEncoding2.GetAwaiter().GetResult();
 
+                if (fe1 == null || fe2 == null)
+                {
+                    throw new ArgumentException("Cannot get face encodings");
+                }
+
                 if (!_dnFaceRecognition.CompareFaces(face1, fe1, face2, fe2))
                 {
                     throw new ArgumentException("Invalid faces");

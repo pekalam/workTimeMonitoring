@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Windows.Media;
 using AutoMapper;
 using Domain;
-using Domain.WorkTime.Events;
+using Domain.WorkTimeAggregate.Events;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 

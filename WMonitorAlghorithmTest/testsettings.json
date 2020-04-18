@@ -1,0 +1,10 @@
+{
+  "sqlite": {
+    "ConnectionString": "Data Source=.\\testappdb.db;"
+  },
+  "eventGathering": {
+    "MouseEventWindowSz": "5000",
+    "MouseEventMonitorWindowSz": "250",
+    "MouseEventBufferSz": "0" 
+  } 
+}

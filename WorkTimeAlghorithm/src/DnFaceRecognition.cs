@@ -44,21 +44,27 @@ namespace WorkTimeAlghorithm
 
             if (faceEncoding1 == null)
             {
-                return double.MaxValue;
+                faceEncoding1 = InternalGetFaceEncoding(img1);
+                if (faceEncoding1 == null)
+                {
+                    return double.MaxValue;
+                }
             }
 
             using var img2 = LoadImage(photo2);
 
-            if (faceEncoding2 != null)
+            if (faceEncoding2 == null)
             {
-                var distance = FaceRecognition.FaceDistance(faceEncoding1.Value, faceEncoding2.Value);
-                Debug.WriteLine($"faces dist {distance}");
-                return distance;
+                faceEncoding2 = InternalGetFaceEncoding(img2);
+                if (faceEncoding2 == null)
+                {
+                    return double.MaxValue;
+                }
             }
-            else
-            {
-                return double.MaxValue;
-            }
+
+            var distance = FaceRecognition.FaceDistance(faceEncoding1.Value, faceEncoding2.Value);
+            Debug.WriteLine($"faces dist {distance}");
+            return distance;
         }
 
         public bool CompareFaces(Mat photo1, FaceEncodingData? faceEncoding1, Mat photo2, FaceEncodingData? faceEncoding2)

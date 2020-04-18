@@ -12,9 +12,9 @@ namespace Infrastructure.Repositories
 
         private readonly SqliteSettings _sqliteSettings;
 
-        public SqliteWorkTimeIdGeneratorService(SqliteSettings sqliteSettings)
+        public SqliteWorkTimeIdGeneratorService(IConfigurationService configurationService)
         {
-            _sqliteSettings = sqliteSettings;
+            _sqliteSettings = configurationService.Get<SqliteSettings>("sqlite");
         }
         
         public long GenerateId()
@@ -23,7 +23,7 @@ namespace Infrastructure.Repositories
 
             using var c = new SQLiteConnection(_sqliteSettings.ConnectionString);
             c.Open();
-            var trans = c.BeginTransaction();
+            using var trans = c.BeginTransaction();
 
             var id = c.ExecuteScalar<long>(sql);
 

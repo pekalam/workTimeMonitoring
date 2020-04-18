@@ -5,7 +5,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Domain.User;
-using Domain.WorkTime.Events;
+using Domain.WorkTimeAggregate;
+using Domain.WorkTimeAggregate.Events;
 using DomainTestUtils;
 using FluentAssertions;
 using Moq;
@@ -18,6 +19,7 @@ namespace Domain.UnitTests
     public class WorkTimeTests
     {
         private readonly User.User _user = new User.User(new Username("mpekala"));
+        private MouseKeyboardEvent _testMkEvent = new MouseKeyboardEvent();
 
         [Fact]
         public void Start_starts_working_time_and_sets_startDate()
@@ -41,7 +43,7 @@ namespace Domain.UnitTests
         {
             var workTime = WorkTimeTestUtils.CreateManual();
 
-            Assert.ThrowsAny<Exception>(() => workTime.AddMouseAction());
+            Assert.ThrowsAny<Exception>(() => workTime.AddMouseAction(_testMkEvent));
         }
 
         [Fact]
@@ -52,9 +54,9 @@ namespace Domain.UnitTests
 
             workTime.StartManually();
             workTime.MarkPendingEventsAsHandled();
-            workTime.AddMouseAction();
-            workTime.ActionEvents.Count.Should().Be(1);
-            workTime.ActionEvents.First().Should().BeOfType<MouseAction>();
+            workTime.AddMouseAction(_testMkEvent);
+            workTime.MouseActionEvents.Count.Should().Be(1);
+            workTime.MouseActionEvents.First().Should().BeOfType<MouseAction>();
             
             workTime.PendingEvents.Count.Should().Be(1);
             workTime.PendingEvents.First().Should().BeOfType<MouseAction>();
@@ -66,7 +68,7 @@ namespace Domain.UnitTests
         {
             var workTime = WorkTimeTestUtils.CreateManual();
 
-            Assert.ThrowsAny<Exception>(() => workTime.AddKeyboardAction());
+            Assert.ThrowsAny<Exception>(() => workTime.AddKeyboardAction(_testMkEvent));
         }
 
         [Fact]
@@ -75,11 +77,11 @@ namespace Domain.UnitTests
             var workTime = WorkTimeTestUtils.CreateManual();
 
             workTime.StartManually();
-            workTime.AddMouseAction();
+            workTime.AddMouseAction(_testMkEvent);
 
             workTime.TakeSnapshot();
 
-            workTime.ActionEvents.Count.Should().Be(0);
+            workTime.MouseActionEvents.Count.Should().Be(0);
             workTime.PendingEvents.Count.Should().Be(4);
             workTime.PendingEvents.Last().Should().BeOfType<WorkTimeSnapshotCreated>();
             workTime.AggregateVersion.Should().Be(4);
@@ -92,16 +94,20 @@ namespace Domain.UnitTests
             var workTime = WorkTimeTestUtils.CreateManual();
 
             workTime.StartManually();
-            workTime.AddMouseAction();
-            workTime.AddKeyboardAction();
+            workTime.AddMouseAction(_testMkEvent);
+            workTime.AddKeyboardAction(_testMkEvent);
 
 
-            var recreated = WorkTime.WorkTime.FromEvents(workTime.PendingEvents);
+            var recreated = WorkTimeAggregate.WorkTime.FromEvents(workTime.PendingEvents);
             workTime.MarkPendingEventsAsHandled();
 
             recreated.Should().BeEquivalentTo(workTime, options =>
             {
-                return options.Excluding(time => time.StartDate).Excluding(time => time.EndDate).Excluding(time => time.DateCreated);
+                return options.Excluding(time => time.StartDate)
+                    .Excluding(t => t.KeyboardActionEvents)
+                    .Excluding(t => t.MouseActionEvents)
+                    .Excluding(time => time.EndDate)
+                    .Excluding(time => time.DateCreated);
             });
             DateTimeTestExtentsions.SafeCompare(recreated.StartDate.Value, workTime.StartDate.Value);
             DateTimeTestExtentsions.SafeCompare(recreated.EndDate, workTime.EndDate);
@@ -114,18 +120,19 @@ namespace Domain.UnitTests
             var workTime = WorkTimeTestUtils.CreateManual();
 
             workTime.StartManually();
-            workTime.AddMouseAction();
-            workTime.AddKeyboardAction();
+            workTime.AddMouseAction(_testMkEvent);
+            workTime.AddKeyboardAction(_testMkEvent);
 
             var snap = workTime.TakeSnapshot();
             workTime.MarkPendingEventsAsHandled();
 
-            workTime.AddMouseAction();
+            workTime.AddMouseAction(_testMkEvent);
 
             workTime.AggregateVersion.Should().Be(6);
             workTime.RollbackToSnapshot(snap);
             workTime.PendingEvents.Count.Should().Be(0);
-            workTime.ActionEvents.Count.Should().Be(0);
+            workTime.MouseActionEvents.Count.Should().Be(0);
+            workTime.KeyboardActionEvents.Count.Should().Be(0);
             workTime.AggregateVersion.Should().Be(5);
             workTime.FromSnapshot.Should().BeTrue();
         }

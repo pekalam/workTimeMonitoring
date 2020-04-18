@@ -12,6 +12,7 @@ using Infrastructure.Services;
 using WorkTimeAlghorithm;
 
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
+[assembly: InternalsVisibleTo("WMonitorAlghorithmTest")]
 namespace Infrastructure.Repositories
 {
     internal class SqLiteTestImageRepository : ITestImageRepository

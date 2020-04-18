@@ -2,19 +2,34 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Domain.Repositories;
-using Domain.WorkTime.Events;
+using Domain.Services;
+using Domain.WorkTimeAggregate.Events;
 using ReflectionMagic;
 
 [assembly: InternalsVisibleTo("Domain.UnitTests")]
-namespace Domain.WorkTime
+[assembly: InternalsVisibleTo("Infrastructure.Tests")]
+namespace Domain.WorkTimeAggregate
 {
     public class WorkTimeBuildService
     {
         private readonly IWorkTimeEsRepository _repository;
+        private readonly IWorkTimeIdGeneratorService _idGenerator;
 
-        public WorkTimeBuildService(IWorkTimeEsRepository repository)
+        public WorkTimeBuildService(IWorkTimeEsRepository repository, IWorkTimeIdGeneratorService idGenerator)
         {
             _repository = repository;
+            _idGenerator = idGenerator;
+        }
+
+        public WorkTime CreateStartedManually(User.User user, DateTime endDate)
+        {
+            var id = _idGenerator.GenerateId();
+
+            //todo long
+            var workTime = new WorkTime((int) id, user, null, endDate);
+            _repository.Save(workTime);
+            workTime.MarkPendingEventsAsHandled();
+            return workTime;
         }
 
     }
@@ -31,7 +46,9 @@ namespace Domain.WorkTime
     public class WorkTime
     {
         private readonly List<Event> _pendingEvents = new List<Event>();
-        private readonly List<Event> _actionEvents = new List<Event>();
+        private readonly List<MouseAction> _mouseActionEvents = new List<MouseAction>();
+        private readonly List<KeyboardAction> _keyboardActionEvents = new List<KeyboardAction>();
+
 
         internal WorkTime(int aggregateId, User.User user, DateTime? startDate, DateTime endDate)
         {
@@ -43,7 +60,7 @@ namespace Domain.WorkTime
 
 
         public long AggregateVersion { get; private set; }
-        public int AggregateId { get; private set; }
+        public int AggregateId { get; private set; } = -1;
         public DateTime? StartDate { get; private set; }
         public DateTime EndDate { get; private set; }
         public DateTime DateCreated { get; private set; }
@@ -53,7 +70,8 @@ namespace Domain.WorkTime
         public bool FromSnapshot { get; private set; }
 
         public IReadOnlyList<Event> PendingEvents => _pendingEvents;
-        public IReadOnlyList<Event> ActionEvents => _actionEvents;
+        public IReadOnlyList<MouseAction> MouseActionEvents => _mouseActionEvents;
+        public IReadOnlyList<KeyboardAction> KeyboardActionEvents => _keyboardActionEvents;
 
         public void MarkPendingEventsAsHandled() => _pendingEvents.Clear();
 
@@ -106,29 +124,34 @@ namespace Domain.WorkTime
             StartWorkTime();
         }
 
-        public void AddMouseAction()
+        internal void AddMouseAction(MouseKeyboardEvent mkEvent)
         {
             CheckIsStarted();
 
-            var ev = new MouseAction(AggregateId, DateTime.UtcNow, 0);
-            _actionEvents.Add(ev);
+            var ev = new MouseAction(AggregateId, DateTime.UtcNow,  mkEvent);
+            _mouseActionEvents.Add(ev);
             AddEvent(ev);
         }
 
-        public void AddKeyboardAction()
+        internal void AddKeyboardAction(MouseKeyboardEvent mkEvent)
         {
             CheckIsStarted();
 
-            var ev = new KeyboardAction(AggregateId, DateTime.UtcNow, 0);
-            _actionEvents.Add(ev);
+            var ev = new KeyboardAction(AggregateId, DateTime.UtcNow, mkEvent);
+            _keyboardActionEvents.Add(ev);
             AddEvent(ev);
+        }
+
+        internal void ClearEvents()
+        {
+            _keyboardActionEvents.Clear();
+            _mouseActionEvents.Clear();
         }
 
         public WorkTimeSnapshotCreated TakeSnapshot()
         {
-            CheckIsStarted();
-
-            _actionEvents.Clear();
+            _mouseActionEvents.Clear();
+            _keyboardActionEvents.Clear();
             var snapshot = new WorkTimeSnapshot()
             {
                 StartDate = StartDate,
@@ -154,7 +177,8 @@ namespace Domain.WorkTime
             AggregateVersion = workTimeSnapshotEvent.AggregateVersion;
             FromSnapshot = true;
             _pendingEvents.Clear();
-            _actionEvents.Clear();
+            _mouseActionEvents.Clear();
+            _keyboardActionEvents.Clear();
 
             Apply(workTimeSnapshotEvent);
         }
@@ -171,12 +195,12 @@ namespace Domain.WorkTime
 
         private void Apply(KeyboardAction keyboardAction)
         {
-            _actionEvents.Add(keyboardAction);
+            _keyboardActionEvents.Add(keyboardAction);
         }
 
         private void Apply(MouseAction mouseAction)
         {
-            _actionEvents.Add(mouseAction);
+            _mouseActionEvents.Add(mouseAction);
         }
 
         private void Apply(WorkTimeStarted workTimeStarted)

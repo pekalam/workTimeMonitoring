@@ -4,7 +4,8 @@
     AggregateId INTEGER NOT NULL,
     AggregateVersion BIGINT NOT NULL,
     Date DATETIME NOT NULL,
-    Data TEXT NOT NULL
+    Data TEXT NOT NULL,
+    UNIQUE(AggregateId, AggregateVersion)
 );
 
 

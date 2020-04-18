@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using CommonServiceLocator;
 using Gma.System.MouseKeyHook;
+using Infrastructure;
 using Infrastructure.Messaging;
 using MahApps.Metro.Controls;
 using Prism.Events;
@@ -14,7 +15,6 @@ namespace Application
     /// </summary>
     public partial class Shell : AcrylicWindow
     {
-
         public Shell()
         {
             InitializeComponent();

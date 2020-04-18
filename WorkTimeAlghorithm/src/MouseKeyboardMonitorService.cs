@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Windows.Forms;
 using Domain;
-using Domain.WorkTime.Events;
+using Domain.WorkTimeAggregate.Events;
 using Gma.System.MouseKeyHook;
 
 namespace WorkTimeAlghorithm

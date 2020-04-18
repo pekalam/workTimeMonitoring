@@ -1,5 +1,7 @@
-﻿using Domain;
+﻿using System;
+using Domain;
 using Domain.Repositories;
+using Domain.WorkTimeAggregate;
 using DomainTestUtils;
 using FluentAssertions;
 using Xunit;
@@ -17,13 +19,41 @@ namespace Infrastructure.Tests
 
         protected abstract IWorkTimeEsRepository CreateRepository();
 
+
+        [Fact]
+        public void Save_adds_new()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual();
+            _repository.Save(workTime);
+
+            _repository.CountForUser(workTime.User).Should().Be(1);
+        }
+
+        [Fact]
+        public void Save_called_twice_with_same_param_throws()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual();
+            _repository.Save(workTime);
+            _repository.CountForUser(workTime.User).Should().Be(1);
+
+            Assert.ThrowsAny<Exception>(() => _repository.Save(workTime));
+
+            _repository.CountForUser(workTime.User).Should().Be(1);
+        }
+
+        [Fact]
+        public void CountForUser_returns_valid_num()
+        {
+
+        }
+
         [Fact]
         public void Find_when_valid_start_date_finds_full_aggregate()
         {
             var workTime = WorkTimeTestUtils.CreateManual();
             workTime.StartManually();
-            workTime.AddMouseAction();
-            workTime.AddKeyboardAction();
+            workTime.AddMouseAction(new MouseKeyboardEvent());
+            workTime.AddKeyboardAction(new MouseKeyboardEvent());
             
             _repository.Save(workTime);
             workTime.PendingEvents.Count.Should().Be(4);
@@ -36,20 +66,33 @@ namespace Infrastructure.Tests
             found.Should().BeEquivalentTo(workTime, options =>
             {
                 return options.Excluding(time => time.StartDate).Excluding(time => time.EndDate)
-                    .Excluding(time => time.ActionEvents);
+                    .Excluding(t => t.MouseActionEvents)
+                    .Excluding(t => t.KeyboardActionEvents);
             });
             found.StartDate.Value.SafeCompare(workTime.StartDate.Value);
             found.EndDate.SafeCompare(workTime.EndDate);
             //todo
-            found.ActionEvents.Count.Should().Be(workTime.ActionEvents.Count);
+            found.MouseActionEvents.Count.Should().Be(workTime.MouseActionEvents.Count);
 
-            for (int i = 0; i < found.ActionEvents.Count; i++)
+            for (int i = 0; i < found.MouseActionEvents.Count; i++)
             {
-                found.ActionEvents[i].Should().BeEquivalentTo(workTime.ActionEvents[i], 
+                found.MouseActionEvents[i].Should().BeEquivalentTo(workTime.MouseActionEvents[i], 
                     opt => opt
                         .Excluding(e => e.Date).Excluding(e => e.Id));
-                found.ActionEvents[i].Id.Should().NotBeNull();
-                found.ActionEvents[i].Date.SafeCompare(workTime.ActionEvents[i].Date);
+                found.MouseActionEvents[i].Id.Should().NotBeNull();
+                found.MouseActionEvents[i].Date.SafeCompare(workTime.MouseActionEvents[i].Date);
+            }
+
+
+            found.KeyboardActionEvents.Count.Should().Be(workTime.KeyboardActionEvents.Count);
+
+            for (int i = 0; i < found.KeyboardActionEvents.Count; i++)
+            {
+                found.KeyboardActionEvents[i].Should().BeEquivalentTo(workTime.KeyboardActionEvents[i],
+                    opt => opt
+                        .Excluding(e => e.Date).Excluding(e => e.Id));
+                found.KeyboardActionEvents[i].Id.Should().NotBeNull();
+                found.KeyboardActionEvents[i].Date.SafeCompare(workTime.KeyboardActionEvents[i].Date);
             }
         }
 
@@ -59,7 +102,7 @@ namespace Infrastructure.Tests
             var workTime = WorkTimeTestUtils.CreateManual();
             workTime.StartManually();
             var snap = workTime.TakeSnapshot();
-            workTime.AddMouseAction();
+            workTime.AddMouseAction(new MouseKeyboardEvent());
             _repository.Save(workTime);
             workTime.MarkPendingEventsAsHandled();
 
@@ -81,16 +124,18 @@ namespace Infrastructure.Tests
             _repository.Save(workTime);
             workTime.MarkPendingEventsAsHandled();
 
-            workTime.AddMouseAction();
+            workTime.AddMouseAction(new MouseKeyboardEvent());
 
             var fromSnap = _repository.FindFromSnapshot(snap);
 
             fromSnap.Should().BeEquivalentTo(workTime, opt =>
             {
-                return opt.Excluding(w => w.FromSnapshot).Excluding(w => w.PendingEvents).Excluding(w => w.AggregateVersion).Excluding(w => w.ActionEvents);
+                return opt.Excluding(w => w.FromSnapshot).Excluding(w => w.PendingEvents).Excluding(w => w.AggregateVersion)
+                    .Excluding(t => t.MouseActionEvents).Excluding(t => t.KeyboardActionEvents);
             });
             fromSnap.FromSnapshot.Should().BeTrue();
-            fromSnap.ActionEvents.Should().BeEmpty();
+            fromSnap.MouseActionEvents.Should().BeEmpty();
+            fromSnap.KeyboardActionEvents.Should().BeEmpty();
             fromSnap.PendingEvents.Should().BeEmpty();
             fromSnap.AggregateVersion.Should().Be(workTime.AggregateVersion - 1);
         }

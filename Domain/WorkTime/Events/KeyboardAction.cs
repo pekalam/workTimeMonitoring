@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace Domain.WorkTime.Events
+namespace Domain.WorkTimeAggregate.Events
 {
     public class KeyboardAction : Event 
     {
-        public KeyboardAction(int aggregateId, DateTime date, int totalSeconds) : base(aggregateId, date, EventName.KeyboardAction)
+        public KeyboardAction(int aggregateId, DateTime date, MouseKeyboardEvent mkEvent) : base(aggregateId, date, EventName.KeyboardAction)
         {
-            TotalSeconds = totalSeconds;
+            MkEvent = mkEvent;
         }
 
-        public int TotalSeconds { get; }
+        public MouseKeyboardEvent MkEvent { get; }
     }
 }

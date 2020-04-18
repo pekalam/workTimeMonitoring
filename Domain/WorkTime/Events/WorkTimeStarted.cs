@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Domain.WorkTime.Events
+namespace Domain.WorkTimeAggregate.Events
 {
     public class WorkTimeStarted : Event
     {

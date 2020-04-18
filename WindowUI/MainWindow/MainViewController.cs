@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Windows.Threading;
 using Infrastructure;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Regions;
@@ -28,17 +30,23 @@ namespace WindowUI.MainWindow
         {
             _vm = vm;
 
-            if (_testImageRepository.Count != 3)
+
+            Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
-                if (ShowInitFaceStepDialog())
+                if (_testImageRepository.Count != 3)
                 {
-                    _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+                    if (ShowInitFaceStepDialog())
+                    {
+                        _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+                    }
+                    else
+                    {
+                        Application.Current.Shutdown();
+                    }
                 }
-                else
-                {
-                    Application.Current.Shutdown();
-                }
-            }
+            });
+
+
         }
 
         private bool ShowInitFaceStepDialog()

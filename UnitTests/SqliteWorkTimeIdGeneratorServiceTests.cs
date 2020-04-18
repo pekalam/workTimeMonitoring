@@ -12,7 +12,7 @@ namespace Infrastructure.Tests
     {
         protected override IWorkTimeIdGeneratorService Create()
         {
-            return new SqliteWorkTimeIdGeneratorService(new SqliteSettings());
+            return new SqliteWorkTimeIdGeneratorService(TestUtils.ConfigurationService);
         }
 
         public void Dispose()

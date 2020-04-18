@@ -1,6 +1,6 @@
 ﻿using System;
-using Domain.WorkTime;
-using Domain.WorkTime.Events;
+using Domain.WorkTimeAggregate;
+using Domain.WorkTimeAggregate.Events;
 using FluentAssertions;
 using Xunit;
 

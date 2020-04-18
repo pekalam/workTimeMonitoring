@@ -1,4 +1,4 @@
-﻿namespace Domain.WorkTime.Events
+﻿namespace Domain.WorkTimeAggregate.Events
 {
     public enum EventName
     {

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Domain;
 using Domain.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using Serilog;
 
 namespace Infrastructure.Services
 {
@@ -31,15 +33,14 @@ namespace Infrastructure.Services
                 var config = _root.GetSection(sectionName).Get<T>();
                 if (config == null)
                 {
-                    throw new NullReferenceException($"Cannot find settings for section: {sectionName}");
+                    Log.Logger.Information($"Cannot find settings for section: {sectionName}");
+                    return new T();
                 }
 
                 return config;
             }
-            else
-            {
-                return new T();
-            }
+
+            return new T();
         }
     }
 }

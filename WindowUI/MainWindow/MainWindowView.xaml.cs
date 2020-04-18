@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Infrastructure;
@@ -16,7 +17,14 @@ namespace WindowUI.MainWindow
     {
         public MainWindowView()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception e)
+            {
+                GlobalExceptionHandler.Handle(e);
+            }
         }
 
         private void HamburgerMenuControl_HamburgerButtonClick(object sender, System.Windows.RoutedEventArgs e)

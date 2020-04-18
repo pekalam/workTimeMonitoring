@@ -1,7 +1,7 @@
 ﻿using System;
 using Domain;
 using Domain.User;
-using Domain.WorkTime;
+using Domain.WorkTimeAggregate;
 
 namespace DomainTestUtils
 {
@@ -18,6 +18,7 @@ namespace DomainTestUtils
 
     public static class WorkTimeTestUtils
     {
+
         public static WorkTime CreateManual()
         {
             return new WorkTime(1, UserTestUtils.CreateTestUser(), null, DateTime.UtcNow.AddMinutes(10));

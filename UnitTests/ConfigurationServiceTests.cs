@@ -29,10 +29,11 @@ namespace Infrastructure.Tests
         }
 
         [Fact]
-        public void Get_if_section_not_found_throws()
+        public void Get_if_section_not_found_returns_default_instance()
         {
             var service = new ConfigurationService("settings.json");
-            Assert.Throws<NullReferenceException>(() => service.Get<HeadPositionServiceSettings>("x"));
+            var instance = service.Get<HeadPositionServiceSettings>("x");
+            instance.Should().BeEquivalentTo(new HeadPositionServiceSettings());
         }
     }
 }

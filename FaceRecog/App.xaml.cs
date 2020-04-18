@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using Infrastructure;
 using NotifyBarUI;
 using Prism.Ioc;
@@ -28,6 +29,11 @@ namespace Application
         protected override Window CreateShell()
         {
             return Container.Resolve<Shell>();
+        }
+
+        private void PrismApplication_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            Console.WriteLine("asd");
         }
     }
 }
