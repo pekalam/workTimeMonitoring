@@ -7,6 +7,7 @@ using AutoMapper;
 using Dapper;
 using Domain;
 using Domain.Services;
+using Domain.User;
 using Infrastructure.Db;
 using Infrastructure.Services;
 using WorkTimeAlghorithm;
@@ -15,21 +16,21 @@ using WorkTimeAlghorithm;
 [assembly: InternalsVisibleTo("WMonitorAlghorithmTest")]
 namespace Infrastructure.Repositories
 {
-    internal class SqLiteTestImageRepository : ITestImageRepository
+    internal class SqliteTestImageRepository : ITestImageRepository
     {
         public const string TestImageTable = "TestImage";
-        private const string ColumnNames = "Id, FaceLocation_x, FaceLocation_y, FaceLocation_width, FaceLocation_height, Img, HorizontalHeadRotation, DateCreated, FaceEncoding, IsReferenceImg";
+        private const string ColumnNames = "Id, FaceLocation_x, FaceLocation_y, FaceLocation_width, FaceLocation_height, Img, HorizontalHeadRotation, DateCreated, FaceEncoding, IsReferenceImg, UserId";
 
         private readonly SqliteSettings _settings;
         private readonly IMapper _mapper;
 
-        static SqLiteTestImageRepository()
+        static SqliteTestImageRepository()
         {
             SqlMapper.RemoveTypeMap(typeof(DateTime));
             SqlMapper.AddTypeHandler(new DateTimeHandler());
         }
 
-        public SqLiteTestImageRepository(IConfigurationService configurationService, IMapper mapper)
+        public SqliteTestImageRepository(IConfigurationService configurationService, IMapper mapper)
         {
             _settings = configurationService.Get<SqliteSettings>("sqlite");
             _mapper = mapper;
@@ -38,13 +39,6 @@ namespace Infrastructure.Repositories
         private SQLiteConnection CreateConnection()
         {
             return new SQLiteConnection(_settings.ConnectionString);
-        }
-
-        private int CountQuery()
-        {
-            var sql = @$"SELECT COUNT(*) FROM {TestImageTable};";
-            using var connection = CreateConnection();
-            return connection.ExecuteScalar<int>(sql);
         }
 
         private void CheckNotNull(TestImage img)
@@ -63,32 +57,38 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public int Count => CountQuery();
+        int ITestImageRepository.Count(User user)
+        {
+            var sql = @$"SELECT COUNT(*) FROM {TestImageTable} WHERE UserId = @UserId";
+            using var connection = CreateConnection();
+            return connection.ExecuteScalar<int>(sql, new {user.UserId});
+        }
 
-        public IReadOnlyList<TestImage> GetAll()
+        public IReadOnlyList<TestImage> GetAll(User user)
         {
             var sql =
                 @$"SELECT {ColumnNames}
-                   FROM {TestImageTable};";
+                   FROM {TestImageTable} WHERE UserId = @UserId";
 
             using var connection = CreateConnection();
-            var imgs = connection.Query<DbTestImage>(sql).Select(i => _mapper.Map<TestImage>(i));
+            var imgs = connection.Query<DbTestImage>(sql, new { user.UserId }).Select(i => _mapper.Map<TestImage>(i));
             return imgs.ToList();
         }
 
-        public IReadOnlyList<TestImage> GetReferenceImages()
+        public IReadOnlyList<TestImage> GetReferenceImages(User user)
         {
             var sql =
-                @$"SELECT {ColumnNames}
-                   FROM {TestImageTable}
-                   WHERE IsReferenceImg = true;";
+                @$"SELECT {ColumnNames} 
+                   FROM {TestImageTable} 
+                   WHERE UserId = @UserId 
+                   AND IsReferenceImg = true;";
 
             using var connection = CreateConnection();
-            var imgs = connection.Query<DbTestImage>(sql).Select(i => _mapper.Map<TestImage>(i));
+            var imgs = connection.Query<DbTestImage>(sql, new { user.UserId }).Select(i => _mapper.Map<TestImage>(i));
             return imgs.ToList();
         }
 
-        public IReadOnlyList<TestImage> GetMostRecentImages(DateTime startDate, int maxCount)
+        public IReadOnlyList<TestImage> GetMostRecentImages(User user, DateTime startDate, int maxCount)
         {
             if (maxCount <= 0)
             {
@@ -96,13 +96,14 @@ namespace Infrastructure.Repositories
             }
 
             var sql =
-                @$"SELECT {ColumnNames}
-                   FROM {TestImageTable}
-                   WHERE DateCreated >= @startDate  
+                @$"SELECT {ColumnNames} 
+                   FROM {TestImageTable}  
+                   WHERE UserId = @UserId 
+                   AND DateCreated >= @startDate  
                    ORDER BY DateCreated DESC LIMIT @maxCount;";
 
             using var connection = CreateConnection();
-            var imgs = connection.Query<DbTestImage>(sql, new { startDate, maxCount }).Select(i => _mapper.Map<TestImage>(i));
+            var imgs = connection.Query<DbTestImage>(sql, new { startDate, maxCount, UserId=user.UserId }).Select(i => _mapper.Map<TestImage>(i));
             return imgs.ToList();
         }
 
@@ -112,7 +113,10 @@ namespace Infrastructure.Repositories
 
             var dbEntity = _mapper.Map<DbTestImage>(img);
             var sql =
-                $@"INSERT INTO TestImage VALUES ( @Id, @FaceLocation_x, @FaceLocation_y, @FaceLocation_width, @FaceLocation_height, @Img, @HorizontalHeadRotation, @DateCreated, @FaceEncoding, @IsReferenceImg ); SELECT last_insert_rowid();";
+                $@"INSERT INTO TestImage 
+                    VALUES ( @Id, @FaceLocation_x, @FaceLocation_y, @FaceLocation_width, @FaceLocation_height, @Img, @HorizontalHeadRotation, @DateCreated, @FaceEncoding, @IsReferenceImg, @UserId ); 
+                    SELECT last_insert_rowid();";
+
 
             using var connection = CreateConnection();
             var result = connection.ExecuteScalar<int>(sql, dbEntity);
@@ -142,10 +146,10 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public void Clear()
+        public void Clear(User user)
         {
             using var connection = CreateConnection();
-            connection.Execute($"DELETE FROM {SqLiteTestImageRepository.TestImageTable};");
+            connection.Execute($"DELETE FROM {SqliteTestImageRepository.TestImageTable} WHERE UserId = @UserId", new{user.UserId});
         }
     }
 }

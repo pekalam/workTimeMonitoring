@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using Domain.User;
 using FaceRecognitionDotNet;
 using OpenCvSharp;
 
@@ -19,7 +20,8 @@ namespace WorkTimeAlghorithm
         public DateTime DateCreated { get; private set; }
         public FaceEncodingData FaceEncoding { get; private set; }
         public bool IsReferenceImg { get; private set; }
-
+        public User User { get; private set; }
+        
         public TestImageBuilder AddFaceLocation(Rect faceLocation)
         {
             FaceLocation = faceLocation;
@@ -56,9 +58,15 @@ namespace WorkTimeAlghorithm
             return this;
         }
 
+        public TestImageBuilder SetUser(User user)
+        {
+            User = user;
+            return this;
+        }
+
         public virtual TestImage Build()
         {
-            return new TestImage(FaceEncoding, FaceLocation, Img, Rotation, DateCreated, IsReferenceImg);
+            return new TestImage(FaceEncoding, FaceLocation, Img, Rotation, DateCreated, IsReferenceImg, User.UserId);
         }
     }
 
@@ -102,12 +110,15 @@ namespace WorkTimeAlghorithm
         public HeadRotation HorizontalHeadRotation { get; private set; }
         public DateTime DateCreated { get; private set; }
         public bool IsReferenceImg { get; private set; }
+        public long UserId { get; private set; }
+
 
         internal TestImage()
         {
+            
         }
 
-        public TestImage(FaceEncodingData faceEncoding, Rect faceLocation, Mat img, HeadRotation horizontalHeadRotation, DateTime dateCreated, bool isReferenceImg)
+        public TestImage(FaceEncodingData faceEncoding, Rect faceLocation, Mat img, HeadRotation horizontalHeadRotation, DateTime dateCreated, bool isReferenceImg, long userId)
         {
             if (faceLocation.Width <= 0 || faceLocation.Height <= 0)
             {
@@ -135,16 +146,18 @@ namespace WorkTimeAlghorithm
             HorizontalHeadRotation = horizontalHeadRotation;
             DateCreated = dateCreated;
             IsReferenceImg = isReferenceImg;
+            UserId = userId;
         }
 
         //Test ctor
-        internal TestImage(Rect faceLocation, Mat img, HeadRotation horizontalHeadRotation, DateTime dateCreated, bool isReferenceImg)
+        internal TestImage(Rect faceLocation, Mat img, HeadRotation horizontalHeadRotation, DateTime dateCreated, bool isReferenceImg, long userId)
         {
             FaceLocation = faceLocation;
             Img = img;
             HorizontalHeadRotation = horizontalHeadRotation;
             DateCreated = dateCreated;
             IsReferenceImg = isReferenceImg;
+            UserId = userId;
         }
     }
 }

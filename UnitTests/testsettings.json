@@ -1,5 +1,5 @@
 {
   "sqlite": {
-    "ConnectionString": "Data Source=.\\appdb.db;"
+    "ConnectionString": "Data Source=.\\testappdb.db;"
   }
 }

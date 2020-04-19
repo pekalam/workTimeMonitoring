@@ -4,7 +4,7 @@ namespace Domain.WorkTimeAggregate.Events
 {
     public class KeyboardAction : Event 
     {
-        public KeyboardAction(int aggregateId, DateTime date, MouseKeyboardEvent mkEvent) : base(aggregateId, date, EventName.KeyboardAction)
+        public KeyboardAction(long aggregateId, DateTime date, MouseKeyboardEvent mkEvent) : base(aggregateId, date, EventName.KeyboardAction)
         {
             MkEvent = mkEvent;
         }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
+[assembly: InternalsVisibleTo("DomainTestUtils")]
 namespace Domain.User
 {
     public class DomainPrimitive<TVal, TSubcl> : IEquatable<TSubcl>, IComparable<TSubcl>
@@ -59,14 +61,54 @@ namespace Domain.User
         public static implicit operator Username(string username) => new Username(username);
     }
 
+    public class Password : DomainPrimitive<string, Password>
+    {
+        public const int MinLength = 3;
+
+        public Password(string value) : base(value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new Exception();
+            }
+        }
+
+        public static implicit operator string(Password password) => password.Value;
+        public static implicit operator Password(string password) => new Password(password);
+    }
+
 
     public class User
     {
-        public User(Username username)
+        public User(long userId, Username username)
         {
+            UserId = userId;
             Username = username;
         }
+        
+        internal User()
+        {
 
-        public Username Username { get; }
+        }
+
+        public long UserId { get; private set; }
+        public Username Username { get; private set; }
+    }
+
+    public class AuthData
+    {
+        public AuthData(long userId, Password password)
+        {
+            UserId = userId;
+            Password = password;
+        }
+
+        internal AuthData()
+        {
+            
+        }
+
+        public long UserId { get; private set; }
+        public Password Password { get; private set; }
     }
 }

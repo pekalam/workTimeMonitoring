@@ -13,7 +13,6 @@ using Infrastructure.Services;
 using Infrastructure.src.Services;
 using Xunit;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Infrastructure.Tests
 {
     public abstract class WorkTimeIdGeneratorServiceTests
@@ -130,7 +129,7 @@ namespace Infrastructure.Tests
         [Fact]
         public void Create()
         {
-            var workTime = _service.CreateStartedManually(new User("mpekala"), DateTime.UtcNow.AddMinutes(60));
+            var workTime = _service.CreateStartedManually(new User(1, "mpekala"), DateTime.UtcNow.AddMinutes(60));
             workTime.AggregateId.Should().BeGreaterThan(-1);
             workTime.PendingEvents.Count.Should().Be(0);
         }

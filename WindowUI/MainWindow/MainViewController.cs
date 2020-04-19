@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Threading;
+using Domain.User;
 using Infrastructure;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Regions;
@@ -18,11 +19,13 @@ namespace WindowUI.MainWindow
     {
         private MainWindowViewModel _vm;
         private readonly ITestImageRepository _testImageRepository;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _regionManager;
 
-        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager)
+        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager, IAuthenticationService authenticationService)
         {
             _regionManager = regionManager;
+            _authenticationService = authenticationService;
             _testImageRepository = testImageRepository;
         }
 
@@ -33,7 +36,7 @@ namespace WindowUI.MainWindow
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
-                if (_testImageRepository.Count != 3)
+                if (ShouldStartInitFaceStep())
                 {
                     if (ShowInitFaceStepDialog())
                     {
@@ -49,6 +52,17 @@ namespace WindowUI.MainWindow
 
         }
 
+        private bool ShouldStartInitFaceStep()
+        {
+            var user = _authenticationService.User;
+            if (_testImageRepository.GetReferenceImages(user).Count >= 3)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private bool ShowInitFaceStepDialog()
         {
             var mySettings = new MetroDialogSettings()
@@ -60,7 +74,7 @@ namespace WindowUI.MainWindow
                 "You must go through profile initialization step.",
                 MessageDialogStyle.AffirmativeAndNegative, mySettings);
 
-            return true;
+            return result == MessageDialogResult.Affirmative;
         }
     }
 }

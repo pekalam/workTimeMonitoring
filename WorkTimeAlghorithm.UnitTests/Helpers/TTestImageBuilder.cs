@@ -4,7 +4,7 @@ namespace WorkTimeAlghorithm.UnitTests
     {
         public override TestImage Build()
         {
-            return new TestImage(FaceLocation, Img, Rotation, DateCreated, true);
+            return new TestImage(FaceLocation, Img, Rotation, DateCreated, true, 1);
         }
     }
 }

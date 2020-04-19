@@ -17,5 +17,6 @@ namespace Infrastructure.Db
         public DateTime DateCreated { get; set; }
         public byte[] FaceEncoding { get; set; }
         public bool IsReferenceImg { get; set; }
+        public long UserId { get; set; }
     }
 }

@@ -15,7 +15,7 @@ namespace Infrastructure.Db
     {
         public long? Id { get; set; }
         public int EventName { get; set; }
-        public int AggregateId { get; set; }
+        public long AggregateId { get; set; }
         public long AggregateVersion { get; set; }
         public DateTime Date { get; set; }
         public string Data { get; set; }
@@ -67,9 +67,9 @@ namespace Infrastructure.Db
         {
             var prop = base.CreateProperty(member, memberSerialization);
 
-            if (_ignored.Contains(prop.PropertyName))
+            if (prop.DeclaringType == typeof(Event) && _ignored.Contains(prop.PropertyName))
             {
-                prop.ShouldDeserialize = _ => false;
+                prop.ShouldSerialize = _ => false;
             }
 
             return prop;
@@ -95,7 +95,6 @@ namespace Infrastructure.Db
             var ev = JsonConvert.DeserializeObject(json, new JsonSerializerSettings()
             {
                 TypeNameHandling = TypeNameHandling.All,
-                ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             }) as Event;
 
             if (ev == null)

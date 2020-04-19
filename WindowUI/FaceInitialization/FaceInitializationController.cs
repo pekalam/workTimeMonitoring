@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Domain.User;
 using Infrastructure;
 using Infrastructure.Repositories;
 using MahApps.Metro.Controls.Dialogs;
@@ -32,9 +33,10 @@ namespace WindowUI.FaceInitialization
         private bool _startStep;
         private bool _stepCompleted;
         private CancellationTokenSource _camCts;
+        private IAuthenticationService _authenticationService;
 
         public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection,
-            InitFaceService initFaceService, ITestImageRepository testImageRepository)
+            InitFaceService initFaceService, ITestImageRepository testImageRepository, IAuthenticationService authenticationService)
         {
             _captureService = captureService;
             _faceDetection = faceDetection;
@@ -44,6 +46,7 @@ namespace WindowUI.FaceInitialization
             StepInfoRetryClick = new DelegateCommand(OnStepInfoRetryClick);
             StartFaceInitCommand = new DelegateCommand(OnStartFaceInit);
             _initFaceService.InitFaceProgress = new Progress<InitFaceProgressArgs>(OnInitFaceProgress);
+            _authenticationService = authenticationService;
         }
 
         private void OnStartFaceInit()
@@ -102,7 +105,7 @@ namespace WindowUI.FaceInitialization
                     {
                         _vm.HideOverlay();
                         _vm.StepStarted = true;
-                        stepEndTask = await _initFaceService.InitFace(camEnumerator, stepCts.Token)
+                        stepEndTask = await _initFaceService.InitFace(_authenticationService.User, camEnumerator, stepCts.Token)
                             .ConfigureAwait(true);
 
                         _startStep = false;
@@ -162,7 +165,7 @@ namespace WindowUI.FaceInitialization
                     if (obj.ProgressPercentage == 100)
                     {
                         _vm.ShowSuccessStepInfo("Profile initialized");
-                        _vm.ShowPhotoPreview(_testImageRepository.GetAll().Select(p => p.Img.ToBitmapImage())
+                        _vm.ShowPhotoPreview(_testImageRepository.GetAll(_authenticationService.User).Select(p => p.Img.ToBitmapImage())
                             .ToArray());
                         _stepCompleted = true;
                     }

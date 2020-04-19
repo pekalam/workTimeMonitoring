@@ -44,12 +44,12 @@ namespace WMonitorAlghorithmTest
 
             _workTimeBuildService = new WorkTimeBuildService(repo, new SqliteWorkTimeIdGeneratorService(config));
             var workTime =
-                _workTimeBuildService.CreateStartedManually(new User("mpekala"), DateTime.UtcNow.AddMinutes(120));
+                _workTimeBuildService.CreateStartedManually(new User(1,"mpekala"), DateTime.UtcNow.AddMinutes(120));
 
 
             workTime.StartManually();
 
-            _alghorithm = new WMonitorAlghorithm(new AlghorithmFaceRecognition(new HcFaceDetection(), new DnFaceRecognition(), new CaptureService(), new SqLiteTestImageRepository(config,
+            _alghorithm = new WMonitorAlghorithm(new AlghorithmFaceRecognition(new HcFaceDetection(), new DnFaceRecognition(), new CaptureService(), new SqliteTestImageRepository(config,
                 new MapperConfiguration(opt => opt.AddProfile<DbTestImageProfile>()).CreateMapper())), new WorkTimeEventService(uow, repo, config), workTime);
             
 

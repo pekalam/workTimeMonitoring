@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Domain.Services;
+using Domain.WorkTimeAggregate;
 using Serilog;
 using StateMachineLib;
 
@@ -16,7 +17,7 @@ namespace WorkTimeAlghorithm.StateMachine
             _workTimeEventService = workTimeEventService;
         }
 
-        public async Task Enter(WMonitorAlghorithm.State state, StateMachine<WMonitorAlghorithm.Triggers, WMonitorAlghorithm.States> sm)
+        public async Task Enter(WMonitorAlghorithm.State state, StateMachine<WMonitorAlghorithm.Triggers, WMonitorAlghorithm.States> sm, WorkTime workTime)
         {
             state.CanCapureMouseKeyboard = false;
 
@@ -30,7 +31,7 @@ namespace WorkTimeAlghorithm.StateMachine
             {
                 Log.Logger.Debug($"Starting {timeMs} state 3 delay");
                 await Task.Delay(timeMs);
-                (_, faceRecognized) = await _faceRecognition.RecognizeFace();
+                (_, faceRecognized) = await _faceRecognition.RecognizeFace(workTime.User);
             }
 
             sm.Next(WMonitorAlghorithm.Triggers.FaceRecog);

@@ -7,11 +7,23 @@
              xmlns:regions="http://prismlibrary.com/"
              xmlns:infrastructure="clr-namespace:Infrastructure;assembly=Infrastructure"
              xmlns:application="clr-namespace:Application"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              AllowsTransparency="True"
              ResizeMode="CanResize"
              IgnoreTaskbarOnMaximize="False"
              mc:Ignorable="d"
              Title="Shell" Height="800" Width="1200" Background="{x:Null}" >
+    <mah:MetroWindow.RightWindowCommands>
+        <mah:WindowCommands ShowLastSeparator="False">
+            <Button
+                    Content="User"
+                    ToolTip="User panel" >
+                <b:Interaction.Behaviors>
+                    <infrastructure:AuthVisibleBehaviour/>
+                </b:Interaction.Behaviors>
+            </Button>
+        </mah:WindowCommands>
+    </mah:MetroWindow.RightWindowCommands>
     <Grid>
         <ContentControl
             regions:RegionManager.RegionName="{x:Static infrastructure:ShellRegions.MainRegion}" />

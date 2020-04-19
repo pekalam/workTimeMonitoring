@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Domain.User;
 using FluentAssertions;
 using OpenCvSharp;
 using WorkTimeAlghorithm;
@@ -11,15 +12,19 @@ namespace Infrastructure.Tests
     public abstract class TestImageRepositoryTests
     {
         private readonly ITestImageRepository _repository;
+        private User user;
 
         public TestImageRepositoryTests()
         {
             _repository = GetTestImageRepository();
+            user = CreateUser();
         }
 
         public abstract ITestImageRepository GetTestImageRepository();
 
         protected abstract TestImage CreateTestImage(bool isReferenceImg = true);
+
+        protected abstract User CreateUser();
 
         private void CompareTestImgs(TestImage t1, TestImage t2)
         {
@@ -36,10 +41,10 @@ namespace Infrastructure.Tests
             var t1 = CreateTestImage();
             var t2 = CreateTestImage();
             _repository.Add(t1);
-            _repository.Count.Should().Be(1);
+            _repository.Count(user).Should().Be(1);
 
             _repository.Add(t2);
-            _repository.Count.Should().Be(2);
+            _repository.Count(user).Should().Be(2);
         }
 
         [Fact]
@@ -55,10 +60,10 @@ namespace Infrastructure.Tests
             var t2 = CreateTestImage();
             _repository.Add(t2);
             _repository.Add(t1);
-            _repository.Count.Should().Be(2);
+            _repository.Count(user).Should().Be(2);
 
             _repository.Remove(t1);
-            _repository.Count.Should().Be(1);
+            _repository.Count(user).Should().Be(1);
         }
 
 
@@ -85,10 +90,10 @@ namespace Infrastructure.Tests
             var t2 = CreateTestImage();
             _repository.Add(t1);
             _repository.Add(t2);
-            _repository.Count.Should().Be(2);
+            _repository.Count(user).Should().Be(2);
 
-            var all = _repository.GetAll();
-            all.Count.Should().Be(2);
+            var all = _repository.GetAll(user);
+            all.Count().Should().Be(2);
             CompareTestImgs(all.First(), t1);
             CompareTestImgs(all.Last(), t2);
         }
@@ -100,11 +105,11 @@ namespace Infrastructure.Tests
             var t2 = CreateTestImage();
             _repository.Add(t1);
             _repository.Add(t2);
-            _repository.Count.Should().Be(2);
+            _repository.Count(user).Should().Be(2);
 
-            _repository.Clear();
+            _repository.Clear(user);
 
-            _repository.Count.Should().Be(0);
+            _repository.Count(user).Should().Be(0);
         }
 
         [Fact]
@@ -116,12 +121,12 @@ namespace Infrastructure.Tests
             _repository.Add(t1);
             _repository.Add(t2);
             _repository.Add(t3);
-            _repository.Count.Should().Be(3);
+            _repository.Count(user).Should().Be(3);
 
 
-            var result = _repository.GetReferenceImages();
+            var result = _repository.GetReferenceImages(user);
 
-            result.Count.Should().Be(2);
+            result.Count().Should().Be(2);
             CompareTestImgs(result.First(), t2);
             CompareTestImgs(result.Last(), t3);
         }
@@ -140,9 +145,9 @@ namespace Infrastructure.Tests
 
             await Task.Delay(500);
 
-            var result = _repository.GetMostRecentImages(now, 1);
+            var result = _repository.GetMostRecentImages(user, now, 1);
 
-            result.Count.Should().Be(1);
+            result.Count().Should().Be(1);
             CompareTestImgs(result.First(), t2);
 
             await Task.Delay(200);
@@ -150,7 +155,7 @@ namespace Infrastructure.Tests
             var t3 = CreateTestImage(true);
             _repository.Add(t3);
 
-            result = _repository.GetMostRecentImages(now, 1);
+            result = _repository.GetMostRecentImages(user, now, 1);
             CompareTestImgs(result.First(), t3);
         }
     }

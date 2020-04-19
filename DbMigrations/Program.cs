@@ -30,6 +30,7 @@ namespace DbMigrations
                 evolve.Migrate();
 
                 File.Copy(dbName, $"../../../../Infrastructure/{dbName}", true);
+                File.Copy(dbName, $"../../../../UnitTests/test{dbName}", true);
             }
             catch (Exception ex)
             {

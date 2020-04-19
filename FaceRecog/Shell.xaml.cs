@@ -43,6 +43,7 @@ namespace Application
         {
             base.OnContentRendered(e);
             ServiceLocator.Current.GetInstance<IEventAggregator>().GetEvent<AppStartedEvent>().Publish(this);
+            
         }
 
         protected override void OnStateChanged(EventArgs e)

@@ -26,7 +26,7 @@ namespace Domain.WorkTimeAggregate
             var id = _idGenerator.GenerateId();
 
             //todo long
-            var workTime = new WorkTime((int) id, user, null, endDate);
+            var workTime = new WorkTime(id, user, null, endDate);
             _repository.Save(workTime);
             workTime.MarkPendingEventsAsHandled();
             return workTime;
@@ -50,7 +50,7 @@ namespace Domain.WorkTimeAggregate
         private readonly List<KeyboardAction> _keyboardActionEvents = new List<KeyboardAction>();
 
 
-        internal WorkTime(int aggregateId, User.User user, DateTime? startDate, DateTime endDate)
+        internal WorkTime(long aggregateId, User.User user, DateTime? startDate, DateTime endDate)
         {
             AggregateId = aggregateId;
             Create(user, startDate, endDate);
@@ -60,7 +60,7 @@ namespace Domain.WorkTimeAggregate
 
 
         public long AggregateVersion { get; private set; }
-        public int AggregateId { get; private set; } = -1;
+        public long AggregateId { get; private set; } = -1;
         public DateTime? StartDate { get; private set; }
         public DateTime EndDate { get; private set; }
         public DateTime DateCreated { get; private set; }

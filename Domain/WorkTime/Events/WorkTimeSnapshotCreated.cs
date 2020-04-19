@@ -4,7 +4,7 @@ namespace Domain.WorkTimeAggregate.Events
 {
     public class WorkTimeSnapshotCreated : Event
     {
-        public WorkTimeSnapshotCreated(int aggregateId, DateTime date, WorkTimeSnapshot snapshot) : base(aggregateId, date, EventName.WorkTimeSnapshotCreated)
+        public WorkTimeSnapshotCreated(long aggregateId, DateTime date, WorkTimeSnapshot snapshot) : base(aggregateId, date, EventName.WorkTimeSnapshotCreated)
         {
             Snapshot = snapshot;
         }

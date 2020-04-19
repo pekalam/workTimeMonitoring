@@ -30,10 +30,5 @@ namespace Application
         {
             return Container.Resolve<Shell>();
         }
-
-        private void PrismApplication_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
-            Console.WriteLine("asd");
-        }
     }
 }

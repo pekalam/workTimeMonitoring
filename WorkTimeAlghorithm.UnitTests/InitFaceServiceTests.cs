@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.User;
+using DomainTestUtils;
 using Moq;
 using Moq.AutoMock;
 using OpenCvSharp;
@@ -152,19 +154,20 @@ namespace WorkTimeAlghorithm.UnitTests
             var cts = new CancellationTokenSource();
 
             mCaptureService.Setup(f => f.CaptureFrames(cts.Token)).Returns(InterruptedCapture);
-            mTestImageRepository.SetupGet(f => f.Count).Returns(0);
+            mTestImageRepository.Setup(f => f.Count(It.IsAny<User>())).Returns(0);
 
             var initTestService = _mocker.CreateInstance<InitFaceService>();
             initTestService.InitFaceProgress = mProgress.Object;
 
             cts.Cancel();
             await initTestService.InitFace(
+                UserTestUtils.CreateTestUser(1),
                 mCaptureService.Object.CaptureFrames(cts.Token).GetAsyncEnumerator(cts.Token),
                 CancellationToken.None);
 
             mProgress.Verify(f => f.Report(It.Is(CancelledByUser())), Times.Once());
 
-            mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
+            mTestImageRepository.Verify(f => f.Clear(It.IsAny<User>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -185,14 +188,15 @@ namespace WorkTimeAlghorithm.UnitTests
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
             var initTestService = _mocker.CreateInstance<InitFaceService>();
             initTestService.InitFaceProgress = mProgress.Object;
-            await await initTestService.InitFace(mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
+            await await initTestService.InitFace(UserTestUtils.CreateTestUser(1)
+                ,mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
                 CancellationToken.None);
 
             mProgress.Verify(f => f.Report(It.Is(InitFaceProgress(_nonEmptyFrame, 100))), Times.Never());
             mProgress.Verify(f => f.Report(It.Is(InitFaceProgress(null, 100))), Times.Never());
             mProgress.Verify(f => f.Report(It.Is(FaceRecognitionError())), Times.Once());
 
-            mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
+            mTestImageRepository.Verify(f => f.Clear(It.IsAny<User>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -208,14 +212,15 @@ namespace WorkTimeAlghorithm.UnitTests
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
             var initTestService = _mocker.CreateInstance<InitFaceService>();
             initTestService.InitFaceProgress = mProgress.Object;
-            await await initTestService.InitFace(mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
+            await await initTestService.InitFace(UserTestUtils.CreateTestUser(1),
+                mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
                 CancellationToken.None);
 
             mProgress.Verify(f => f.Report(It.Is(InitFaceProgress(_nonEmptyFrame, 100))), Times.Never());
             mProgress.Verify(f => f.Report(It.Is(InitFaceProgress(null, 100))), Times.Never());
             mProgress.Verify(f => f.Report(It.Is(FaceRecognitionError())), Times.Once());
 
-            mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
+            mTestImageRepository.Verify(f => f.Clear(It.IsAny<User>()), Times.Exactly(2));
         }
 
 
@@ -302,10 +307,11 @@ namespace WorkTimeAlghorithm.UnitTests
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(InvalidCapture);
             var initTestService = _mocker.CreateInstance<InitFaceService>();
             initTestService.InitFaceProgress = mProgress.Object;
-            await await initTestService.InitFace(mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
+            await await initTestService.InitFace(
+                UserTestUtils.CreateTestUser(1), mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
                 CancellationToken.None);
 
-            mTestImageRepository.Verify(f => f.Clear(), Times.Exactly(2));
+            mTestImageRepository.Verify(f => f.Clear(It.IsAny<User>()), Times.Exactly(2));
         }
 
         private IAsyncEnumerable<Mat> SuccessfulFaceCapturingScenario(Mock<IHcFaceDetection> mHcFaceDetection, Mock<IProgress<InitFaceProgressArgs>> mProgress, Mock<IHeadPositionService> mHeadPositionService)
@@ -354,11 +360,11 @@ namespace WorkTimeAlghorithm.UnitTests
             mDnFaceRecognition.Setup(f => f.GetFaceEncodings(It.IsAny<Mat>())).Returns(FaceEncodingData.ValidFaceEncodingData);
 
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
-            mTestImageRepository.SetupGet(f => f.Count).Returns(0);
+            mTestImageRepository.Setup(f => f.Count(It.IsAny<User>())).Returns(0);
 
             var initTestService = _mocker.CreateInstance<InitFaceService>();
             initTestService.InitFaceProgress = mProgress.Object;
-            await await initTestService.InitFace(mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
+            await await initTestService.InitFace(UserTestUtils.CreateTestUser(1),mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
                 CancellationToken.None);
 
 
@@ -366,7 +372,7 @@ namespace WorkTimeAlghorithm.UnitTests
             mProgress.Verify(f => f.Report(It.Is(PhotosTaken())), Times.Exactly(1));
 
             mProgress.Verify(f => f.Report(It.Is(InitFaceProgress(null, 100))), Times.Once());
-            mTestImageRepository.Verify(f => f.Clear(), Times.Once());
+            mTestImageRepository.Verify(f => f.Clear(It.IsAny<User>()), Times.Once());
         }
     }
 }

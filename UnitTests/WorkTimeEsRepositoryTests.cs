@@ -6,6 +6,7 @@ using DomainTestUtils;
 using FluentAssertions;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Infrastructure.Tests
 {
     public abstract class WorkTimeEsRepositoryTests

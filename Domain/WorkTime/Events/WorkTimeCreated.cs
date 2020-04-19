@@ -4,7 +4,7 @@ namespace Domain.WorkTimeAggregate.Events
 {
     public class WorkTimeCreated : Event
     {
-        public WorkTimeCreated(int aggregateId, DateTime date, DateTime? startDate, DateTime endDate, DateTime dateCreated, User.User user, bool autoStart) : base(aggregateId, date, EventName.WorkTimeCreated)
+        public WorkTimeCreated(long aggregateId, DateTime date, DateTime? startDate, DateTime endDate, DateTime dateCreated, User.User user, bool autoStart) : base(aggregateId, date, EventName.WorkTimeCreated)
         {
             StartDate = startDate;
             EndDate = endDate;

@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using Domain.User;
 
 namespace WorkTimeAlghorithm
 {
     public interface ITestImageRepository
     {
-        int Count { get; }
-        IReadOnlyList<TestImage> GetAll();
-        IReadOnlyList<TestImage> GetReferenceImages();
-        IReadOnlyList<TestImage> GetMostRecentImages(DateTime startDate, int maxCount);
+        int Count(User user);
+        IReadOnlyList<TestImage> GetAll(User user);
+        IReadOnlyList<TestImage> GetReferenceImages(User user);
+        IReadOnlyList<TestImage> GetMostRecentImages(User user, DateTime startDate, int maxCount);
         TestImage Add(TestImage img);
         void Remove(TestImage img);
-        void Clear();
+        void Clear(User user);
     }
 }

@@ -8,10 +8,14 @@ using AutoMapper;
 using CommonServiceLocator;
 using Domain.Repositories;
 using Domain.Services;
+using Domain.User;
 using Infrastructure.Db;
+using Infrastructure.Messaging;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Infrastructure.src.Repositories;
 using Infrastructure.src.Services;
+using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
@@ -23,11 +27,12 @@ namespace Infrastructure
 {
     public class InfrastructureModule : IModule
     {
-
         public void OnInitialized(IContainerProvider containerProvider)
         {
             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
                 .TypeHandle);
+
+            containerProvider.Resolve<IEventAggregator>().GetEvent<InfrastructureModuleLoaded>().Publish(this);
         }
 
         private object SettingsFactory<T>(IUnityContainer container) where T : new()
@@ -46,12 +51,13 @@ namespace Infrastructure
             containerRegistry.RegisterInstance<ILogger>(Log.Logger);
 
             containerRegistry.RegisterInstance<IMapper>(new MapperConfiguration(cfg =>
-                {
-                    cfg.AddProfile<DbTestImageProfile>();
-                    cfg.AddProfile<DbEventProfile>();
-                }).CreateMapper());
+            {
+                cfg.AddProfile<DbTestImageProfile>();
+                cfg.AddProfile<DbEventProfile>();
+            }).CreateMapper());
 
-            containerRegistry.RegisterInstance(typeof(IConfigurationService), new ConfigurationService("settings.json"));
+            containerRegistry.RegisterInstance(typeof(IConfigurationService),
+                new ConfigurationService("settings.json"));
             containerRegistry.GetContainer()
                 .RegisterFactory<HeadPositionServiceSettings>(SettingsFactory<HeadPositionServiceSettings>);
 
@@ -60,27 +66,32 @@ namespace Infrastructure
             containerRegistry.GetContainer().RegisterType<IHeadPositionService, HeadPositionService>();
             containerRegistry.GetContainer().RegisterType<IHcFaceDetection, HcFaceDetection>();
             containerRegistry.GetContainer().RegisterType<IDnFaceRecognition, DnFaceRecognition>();
-            containerRegistry.GetContainer().RegisterSingleton<ITestImageRepository, SqLiteTestImageRepository>();
+            containerRegistry.GetContainer().RegisterSingleton<ITestImageRepository, SqliteTestImageRepository>();
             containerRegistry.GetContainer()
                 .RegisterSingleton<IMouseKeyboardMonitorService, MouseKeyboardMonitorService>();
             containerRegistry.GetContainer().RegisterType<IWorkTimeUow, WorkTimeUow>();
             containerRegistry.GetContainer().RegisterType<IWorkTimeEsRepository, SqliteWorkTimeEsRepository>();
-            containerRegistry.GetContainer().RegisterType<IWorkTimeIdGeneratorService, SqliteWorkTimeIdGeneratorService>();
-
+            containerRegistry.GetContainer()
+                .RegisterType<IWorkTimeIdGeneratorService, SqliteWorkTimeIdGeneratorService>();
+            containerRegistry.GetContainer().RegisterType<IAuthDataRepository, SqliteAuthDataRepository>();
+            containerRegistry.GetContainer().RegisterType<IUserRepository, SqliteUserRepository>();
 
             containerRegistry.RegisterInstance(typeof(WorkTimeEventService), new WorkTimeEventService(
-                ServiceLocator.Current.GetInstance<IWorkTimeUow>(), ServiceLocator.Current.GetInstance<IWorkTimeEsRepository>(), ServiceLocator.Current.GetInstance<IConfigurationService>()));
+                ServiceLocator.Current.GetInstance<IWorkTimeUow>(),
+                ServiceLocator.Current.GetInstance<IWorkTimeEsRepository>(),
+                ServiceLocator.Current.GetInstance<IConfigurationService>()));
+
+            containerRegistry.RegisterInstance(typeof(IAuthenticationService),
+                new AuthenticationService(ServiceLocator.Current.GetInstance<IAuthDataRepository>(),
+                    ServiceLocator.Current.GetInstance<IUserRepository>()));
 
 
             GlobalExceptionHandler.Init();
         }
-
-
     }
 
     public static class GlobalExceptionHandler
     {
-
         internal static void Init()
         {
             Application.Current.DispatcherUnhandledException += CurrentOnDispatcherUnhandledException;

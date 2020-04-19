@@ -27,7 +27,7 @@
                     </Grid.ColumnDefinitions>
                     <iconPacks:PackIconFontAwesome Kind="{Binding IconName}"
                                                    HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"/>
+                                                   VerticalAlignment="Center" Width="19" Height="19"/>
                     <TextBlock Grid.Column="1"
                                VerticalAlignment="Center"
                                FontSize="16"
@@ -44,7 +44,7 @@
                     </Grid.ColumnDefinitions>
                     <iconPacks:PackIconFontAwesome Kind="{Binding IconName}"
                                                    HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"/>
+                                                   VerticalAlignment="Center" Width="19" Height="19"/>
                     <TextBlock Grid.Column="1"
                                VerticalAlignment="Center"
                                FontSize="16"
@@ -98,41 +98,30 @@
                                 HamburgerButtonClick="HamburgerMenuControl_HamburgerButtonClick"
                                 ItemTemplate="{StaticResource HamburgerMenuItem}"
                                 OptionsItemTemplate="{StaticResource HamburgerOptionsMenuItem}"
-                                SelectedIndex="2"
+                                SelectedIndex="0"
                                 Style="{StaticResource HamburgerMenuCreatorsStyle}"
                                 VerticalScrollBarOnLeftSide="False" PaneBackground="#96E0E9FF">
 
 
             <mah:HamburgerMenu.ItemsSource>
                 <mah:HamburgerMenuItemCollection>
-                    <mah:HamburgerMenuGlyphItem>
-                        <mah:HamburgerMenuGlyphItem.Tag>
-                            <mainWindow:NavigationItemViewModel Label="Data"
- 
-                                                     IconName="DatabaseSolid"/>
-                        </mah:HamburgerMenuGlyphItem.Tag>
-                    </mah:HamburgerMenuGlyphItem>
-                    <mah:HamburgerMenuGlyphItem>
-                        <mah:HamburgerMenuGlyphItem.Tag>
-                            <mainWindow:NavigationItemViewModel Label="Neural network"
-     
-                                                              IconName="ProjectDiagramSolid"/>
-                        </mah:HamburgerMenuGlyphItem.Tag>
-                    </mah:HamburgerMenuGlyphItem>
-                    <mah:HamburgerMenuGlyphItem>
-                        <mah:HamburgerMenuGlyphItem.Tag>
-                            <mainWindow:NavigationItemViewModel Label="Training"
 
-                                                              IconName="CaretRightSolid"/>
-                        </mah:HamburgerMenuGlyphItem.Tag>
-                    </mah:HamburgerMenuGlyphItem>
                     <mah:HamburgerMenuGlyphItem>
                         <mah:HamburgerMenuGlyphItem.Tag>
-                            <mainWindow:NavigationItemViewModel Label="ModelSelection"
-          
-                                                              IconName="CheckSquareSolid"/>
+                            <mainWindow:NavigationItemViewModel Label="Start work"
+     
+                                                                IconName="BusinessTimeSolid"/>
                         </mah:HamburgerMenuGlyphItem.Tag>
                     </mah:HamburgerMenuGlyphItem>
+
+                    <mah:HamburgerMenuGlyphItem>
+                        <mah:HamburgerMenuGlyphItem.Tag>
+                            <mainWindow:NavigationItemViewModel Label="Your statistics"
+ 
+                                                     IconName="ChartPieSolid"/>
+                        </mah:HamburgerMenuGlyphItem.Tag>
+                    </mah:HamburgerMenuGlyphItem>
+
                 </mah:HamburgerMenuItemCollection>
             </mah:HamburgerMenu.ItemsSource>
 
@@ -157,7 +146,7 @@
 
         </mah:HamburgerMenu>
         <StackPanel Grid.Column="1" Background="White" >
-            <ContentControl prism:RegionManager.RegionName="xx" Margin="5,0,5,5" />
+            <ContentControl prism:RegionManager.RegionName="ContentRegion" Margin="5,0,5,5" />
         </StackPanel>
     </Grid>
 </UserControl>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.User;
 using OpenCvSharp;
 
 namespace WorkTimeAlghorithm
@@ -37,6 +38,7 @@ namespace WorkTimeAlghorithm
         private readonly IHeadPositionService _headPositionService;
 
         private double _progress;
+        private User _user;
 
         public InitFaceService(ITestImageRepository testImageRepository, IDnFaceRecognition dnFaceRecognition,
             IHcFaceDetection faceDetection,
@@ -51,12 +53,12 @@ namespace WorkTimeAlghorithm
         public IProgress<InitFaceProgressArgs>? InitFaceProgress { get; set; }
 
         private void ReportInitFaceProgress(Mat? img, Rect? face = null,
-            InitFaceProgress exception = WorkTimeAlghorithm.InitFaceProgress.Progress,
+            InitFaceProgress state = WorkTimeAlghorithm.InitFaceProgress.Progress,
             bool stopped = false)
         {
             InitFaceProgress?.Report(new InitFaceProgressArgs()
             {
-                ProgressState = exception,
+                ProgressState = state,
                 FaceRect = face,
                 Frame = img,
                 ProgressPercentage = (int) _progress,
@@ -103,7 +105,7 @@ namespace WorkTimeAlghorithm
             });
         }
 
-        public async Task<Task> InitFace(IAsyncEnumerator<Mat> camEnumerator, CancellationToken ct)
+        public async Task<Task> InitFace(User user, IAsyncEnumerator<Mat> camEnumerator, CancellationToken ct)
         {
             bool interrupted = true;
 
@@ -112,6 +114,7 @@ namespace WorkTimeAlghorithm
             var faceEncodings = new List<Task<FaceEncodingData?>>();
 
             _progress = 0;
+            _user = user;
             Reset();
 
 
@@ -127,7 +130,7 @@ namespace WorkTimeAlghorithm
                     faceRects = _faceDetection.DetectFrontalFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, exception: WorkTimeAlghorithm.InitFaceProgress.FaceNotDetected);
+                        ReportInitFaceProgress(frame, state: WorkTimeAlghorithm.InitFaceProgress.FaceNotDetected);
                         continue;
                     }
 
@@ -136,7 +139,7 @@ namespace WorkTimeAlghorithm
                     if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            exception: WorkTimeAlghorithm.InitFaceProgress.FaceNotStraight);
+                            state: WorkTimeAlghorithm.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -145,7 +148,7 @@ namespace WorkTimeAlghorithm
                     faceRects = _faceDetection.DetectFrontalThenProfileFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, exception: WorkTimeAlghorithm.InitFaceProgress.ProfileFaceNotDetected);
+                        ReportInitFaceProgress(frame, state: WorkTimeAlghorithm.InitFaceProgress.ProfileFaceNotDetected);
 
                         continue;
                     }
@@ -157,7 +160,7 @@ namespace WorkTimeAlghorithm
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            exception: hTarget == HeadRotation.Left ? WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedLeft : WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedRight);
+                            state: hTarget == HeadRotation.Left ? WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedLeft : WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedRight);
                         continue;
                     }
                 }
@@ -168,6 +171,7 @@ namespace WorkTimeAlghorithm
                     .AddDateCreated(DateTime.UtcNow)
                     .AddFaceLocation(faceRects.First())
                     .AddHeadRotation(targetRotation)
+                    .SetUser(user)
                     .SetIsReferenceImg(true);
                 testImages.Add(testImageBldr);
 
@@ -187,7 +191,7 @@ namespace WorkTimeAlghorithm
                 if (testImages.Count == 3)
                 {
                     interrupted = false;
-                    ReportInitFaceProgress(null, exception: WorkTimeAlghorithm.InitFaceProgress.PhotosTaken);
+                    ReportInitFaceProgress(null, state: WorkTimeAlghorithm.InitFaceProgress.PhotosTaken);
                     break;
                 }
             }
@@ -195,7 +199,7 @@ namespace WorkTimeAlghorithm
             if (interrupted)
             {
                 Reset();
-                ReportInitFaceProgress(null, exception: WorkTimeAlghorithm.InitFaceProgress.CancelledByUser, stopped: true);
+                ReportInitFaceProgress(null, state: WorkTimeAlghorithm.InitFaceProgress.CancelledByUser, stopped: true);
                 return Task.CompletedTask;
             }
 
@@ -208,7 +212,7 @@ namespace WorkTimeAlghorithm
                 if (t.Exception != null)
                 {
                     _progress = 0;
-                    ReportInitFaceProgress(null, exception: WorkTimeAlghorithm.InitFaceProgress.FaceRecognitionError,
+                    ReportInitFaceProgress(null, state: WorkTimeAlghorithm.InitFaceProgress.FaceRecognitionError,
                         stopped: true);
                     Reset();
                 }
@@ -228,7 +232,7 @@ namespace WorkTimeAlghorithm
 
         public void Reset()
         {
-            _testImageRepository.Clear();
+            _testImageRepository.Clear(_user);
         }
     }
 }

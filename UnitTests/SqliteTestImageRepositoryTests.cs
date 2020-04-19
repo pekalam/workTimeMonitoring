@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data.SQLite;
 using Dapper;
+using Domain.User;
+using DomainTestUtils;
 using Infrastructure.Db;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
@@ -24,7 +26,7 @@ namespace Infrastructure.Tests
 
         public override ITestImageRepository GetTestImageRepository()
         {
-            return new SqLiteTestImageRepository(new ConfigurationService(""),
+            return new SqliteTestImageRepository(new ConfigurationService(""),
                 MapperConfigFactory.Create().CreateMapper());
         }
 
@@ -32,13 +34,19 @@ namespace Infrastructure.Tests
         {
             var utils = new ImageTestUtils();
             var (rect, face) = utils.GetFaceImg("front");
+            var user = UserTestUtils.CreateTestUser(1);
 
-            return new TestImage(FaceEncodings, rect, face, HeadRotation.Front, DateTime.UtcNow, isReferenceImg);
+            return new TestImage(FaceEncodings, rect, face, HeadRotation.Front, DateTime.UtcNow, isReferenceImg, user.UserId);
+        }
+
+        protected override User CreateUser()
+        {
+            return UserTestUtils.CreateTestUser(1);
         }
 
         public void Dispose()
         {
-            SqliteTestUtils.TruncTable(SqLiteTestImageRepository.TestImageTable);
+            SqliteTestUtils.TruncTable(SqliteTestImageRepository.TestImageTable);
         }
 
 

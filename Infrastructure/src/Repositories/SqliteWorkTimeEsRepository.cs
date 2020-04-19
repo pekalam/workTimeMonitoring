@@ -50,10 +50,10 @@ namespace Infrastructure.Repositories
 
         public int CountForUser(User user)
         {
-            var sql = $@"SELECT COUNT(*) FROM {TableName} WHERE EventName = @EventName AND json_extract(Data, '$.User.Username.Value') = @Username";
+            var sql = $@"SELECT COUNT(*) FROM {TableName} WHERE EventName = @EventName AND json_extract(Data, '$.User.UserId') = @UserId";
 
             using var conn = CreateConnection(true);
-            var count = conn.ExecuteScalar<int>(sql, new {EventName=(int)EventName.WorkTimeCreated, Username=user.Username.Value});
+            var count = conn.ExecuteScalar<int>(sql, new {EventName=(int)EventName.WorkTimeCreated, UserId=user.UserId});
             return count;
         }
 
@@ -84,7 +84,7 @@ namespace Infrastructure.Repositories
             //todo json_extract(Data, '$.DateCreated') <=> Date - error
             var sql = $@"SELECT {TableCols} FROM {TableName}
                                WHERE AggregateId = (SELECT AggregateId FROM {TableName}
-                                                    WHERE EventName = @EventName AND json_extract(Data, '$.User.Username.Value') = @Username
+                                                    WHERE EventName = @EventName AND json_extract(Data, '$.User.UserId') = @UserId
                                                                            AND json_extract(Data, '$.DateCreated') <= @Date
                                                                            AND json_extract(Data, '$.EndDate') >= @Date 
                                                                            ORDER BY Date DESC LIMIT 1);";
@@ -93,7 +93,7 @@ namespace Infrastructure.Repositories
 
             var events = conn.Query<DbEvent>(sql, new
                 {
-                    Username = user.Username.Value,
+                    UserId = user.UserId,
                     Date = date,
                     EventName=EventName.WorkTimeCreated,
                 })
@@ -106,12 +106,13 @@ namespace Infrastructure.Repositories
 
         public WorkTime? FindFromSnapshot(WorkTimeSnapshotCreated snapshotEvent)
         {
-            var sql = $@"SELECT {TableCols} FROM {TableName} WHERE AggregateVersion = @AggregateVersion";
+            var sql = $@"SELECT {TableCols} FROM {TableName} WHERE AggregateId = @AggregateId AND AggregateVersion = @AggregateVersion";
             using var conn = CreateConnection(true);
 
             var events = conn.Query<DbEvent>(sql, new
                 {
                     AggregateVersion = snapshotEvent.AggregateVersion,
+                    AggregateId = snapshotEvent.AggregateId,
                 })
                 .MapToEvents(_mapper).ToList();
 
@@ -139,7 +140,7 @@ namespace Infrastructure.Repositories
             using var conn = CreateConnection(false);
             using var trans = conn.BeginTransaction();
 
-            var result = conn.Execute(sql, new {AggregateId=snapshotEvent.AggregateId, AggregateVersion=snapshotEvent.AggregateVersion});
+            var result = conn.Execute(sql, new {snapshotEvent.AggregateId, snapshotEvent.AggregateVersion});
 
             if (result == 0)
             {

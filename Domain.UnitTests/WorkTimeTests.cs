@@ -18,18 +18,18 @@ namespace Domain.UnitTests
 {
     public class WorkTimeTests
     {
-        private readonly User.User _user = new User.User(new Username("mpekala"));
+        private readonly User.User _user = new User.User(1, new Username("mpekala"));
         private MouseKeyboardEvent _testMkEvent = new MouseKeyboardEvent();
 
         [Fact]
         public void Start_starts_working_time_and_sets_startDate()
         {
-            var workTime = WorkTimeTestUtils.CreateManual();
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
             workTime.MarkPendingEventsAsHandled();
 
             workTime.StartDate.Should().BeNull();
             workTime.StartManually();
-            DateTimeTestExtentsions.SafeCompare(workTime.StartDate.Value, DateTime.UtcNow);
+            workTime.StartDate.Value.SafeCompare(DateTime.UtcNow);
             workTime.StartDate.Value.Kind.Should().Be(DateTimeKind.Utc);
             workTime.User.Should().BeEquivalentTo(_user);
             workTime.PendingEvents.Count.Should().Be(1);

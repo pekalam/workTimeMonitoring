@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Accessibility;
+using Domain.User;
 using OpenCvSharp;
 using Serilog;
 
@@ -22,7 +24,7 @@ namespace WorkTimeAlghorithm.StateMachine
             _testImageRepository = testImageRepository;
         }
 
-        public Task<(bool faceDetected, bool faceRecognized)> RecognizeFace()
+        public Task<(bool faceDetected, bool faceRecognized)> RecognizeFace(User user)
         {
             return Task.Factory.StartNew<(bool faceDetected, bool faceRecognized)>(() =>
             {
@@ -36,7 +38,7 @@ namespace WorkTimeAlghorithm.StateMachine
                 }
                 else
                 {
-                    var ph = _testImageRepository.GetMostRecentImages(DateTime.UtcNow.AddDays(-20), 1);
+                    var ph = _testImageRepository.GetMostRecentImages(user, DateTime.UtcNow.AddDays(-20), 1);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         Cv2.ImShow("1", ph.First().Img);

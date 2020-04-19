@@ -3,10 +3,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using CommonServiceLocator;
 using Infrastructure;
 using Infrastructure.Repositories;
 using MahApps.Metro.Controls;
+using Prism.Regions;
 using WindowUI.FaceInitialization;
+using WindowUI.StartWork;
 
 namespace WindowUI.MainWindow
 {
@@ -50,11 +53,11 @@ namespace WindowUI.MainWindow
             {
                 throw new ArgumentException("Null tag value of menu item");
             }
+            ServiceLocator.Current.GetInstance<IRegionManager>().Regions["ContentRegion"].RequestNavigate(nameof(StartWorkView));
 
 
             if (ModuleCommands.Navigate.CanExecute(navItemVm.NavigationItem))
             {
-                
             }
 
         }

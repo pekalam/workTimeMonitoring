@@ -2,6 +2,7 @@
 using System.Linq;
 using MahApps.Metro.Controls;
 using Prism.Events;
+using Prism.Modularity;
 
 namespace Infrastructure.Messaging
 {
@@ -33,5 +34,10 @@ namespace Infrastructure.Messaging
 
     public class AppStartedEvent : UiEvent<MetroWindow>
     {
+    }
+
+    public class InfrastructureModuleLoaded : UiEvent<IModule>
+    {
+
     }
 }

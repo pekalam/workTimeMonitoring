@@ -19,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="migrations\V1_0__Create_TestImage_table.sql" />
-    <Content Remove="migrations\V1_1__Create_WorkTimeEvent_table.sql" />
+    <Content Remove="migrations\V1_0__Create_Tables.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,11 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="migrations\V1_0__Create_TestImage_table.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="migrations\V1_1__Create_WorkTimeEvent_table.sql">
-      <Generator></Generator>
+    <None Update="migrations\V1_0__Create_Tables.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

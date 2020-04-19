@@ -28,12 +28,12 @@ namespace WorkTimeAlghorithm.StateMachine
 
         private async void State2Action(Triggers t)
         {
-            await _state2.Enter(_state, _sm);
+            await _state2.Enter(_state, _sm, _workTime);
         }
 
         private async void State3Action(Triggers t)
         {
-            await _state3.Enter(_state, _sm);
+            await _state3.Enter(_state, _sm, _workTime);
         }
 
 
