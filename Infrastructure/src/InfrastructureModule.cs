@@ -20,6 +20,9 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
+using ToastNotifications;
+using ToastNotifications.Lifetime;
+using ToastNotifications.Position;
 using Unity;
 using WorkTimeAlghorithm;
 
@@ -76,18 +79,36 @@ namespace Infrastructure
             containerRegistry.GetContainer().RegisterType<IAuthDataRepository, SqliteAuthDataRepository>();
             containerRegistry.GetContainer().RegisterType<IUserRepository, SqliteUserRepository>();
 
-            containerRegistry.RegisterInstance(typeof(WorkTimeEventService), new WorkTimeEventService(
-                ServiceLocator.Current.GetInstance<IWorkTimeUow>(),
-                ServiceLocator.Current.GetInstance<IWorkTimeEsRepository>(),
-                ServiceLocator.Current.GetInstance<IConfigurationService>()));
+            containerRegistry.GetContainer().RegisterSingleton<WorkTimeEventService>();
 
-            containerRegistry.RegisterInstance(typeof(IAuthenticationService),
-                new AuthenticationService(ServiceLocator.Current.GetInstance<IAuthDataRepository>(),
-                    ServiceLocator.Current.GetInstance<IUserRepository>()));
+
+            containerRegistry.GetContainer().RegisterSingleton<IAuthenticationService, AuthenticationService>();
+
+
+            containerRegistry.GetContainer().RegisterFactory<Notifier>((container, type, arg3) =>
+            {
+                return new Notifier(cfg =>
+                {
+                    cfg.PositionProvider = new WindowPositionProvider(
+                        parentWindow: Application.Current.MainWindow,
+                        corner: Corner.BottomRight,
+                        offsetX: 0,
+                        offsetY: 0);
+
+                    cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(
+                        notificationLifetime: TimeSpan.FromSeconds(10),
+                        maximumNotificationCount: MaximumNotificationCount.FromCount(5));
+
+                    cfg.Dispatcher = Application.Current.Dispatcher;
+                });
+            });
+
 
 
             GlobalExceptionHandler.Init();
         }
+
+
     }
 
     public static class GlobalExceptionHandler

@@ -19,7 +19,7 @@ namespace WorkTimeAlghorithm
     {
         private const int KeyboardDelay = 1000;
 
-        private readonly IKeyboardMouseEvents _hook = Hook.GlobalEvents();
+        private IKeyboardMouseEvents _hook;
         private readonly Subject<int> _mouseMoveSubject = new Subject<int>();
         private readonly Subject<MonitorEvent> _mouseMoveActionSubject = new Subject<MonitorEvent>();
         private readonly Subject<int> _keyboardSubject = new Subject<int>();
@@ -30,8 +30,7 @@ namespace WorkTimeAlghorithm
 
         public MouseKeyboardMonitorService()
         {
-            _hook.MouseMoveExt += HookOnMouseMoveExt;
-            _hook.KeyUp += HookOnKeyUp;
+
 
             _mouseMoveSubject
                 .Throttle(TimeSpan.FromMilliseconds(200))
@@ -73,6 +72,13 @@ namespace WorkTimeAlghorithm
                     _keyboardStart = null;
                 });
 
+        }
+
+        public void Start()
+        {
+            _hook = Hook.GlobalEvents();
+            _hook.MouseMoveExt += HookOnMouseMoveExt;
+            _hook.KeyUp += HookOnKeyUp;
         }
 
         private void HookOnKeyUp(object sender, KeyEventArgs e)

@@ -133,6 +133,35 @@ namespace Infrastructure.Repositories
             return workTime;
         }
 
+        public WorkTime? FindLatestFromSnapshot(User user)
+        {
+            var sql = $@"SELECT {TableCols} FROM {TableName}
+                               INNER JOIN (SELECT AggregateId as 'idsnap', AggregateVersion as 'ver' 
+                                            FROM {TableName} WHERE EventName=@EventName
+                                            AND json_extract(Data, '$.Snapshot.User.UserId') = @UserId 
+                                            ORDER BY Date DESC LIMIT 1) snap
+                               ON AggregateId = snap.idsnap
+                               AND AggregateVersion >= snap.ver";
+            using var conn = CreateConnection(true);
+
+            var events = conn.Query<DbEvent>(sql, new
+                {
+                    EventName = EventName.WorkTimeSnapshotCreated,
+                    UserId=user.UserId,
+
+                })
+                .MapToEvents(_mapper).ToList();
+
+            if (events.Count == 0)
+            {
+                return null;
+            }
+
+            var workTime = WorkTime.CreateFromSnapshot(events);
+
+            return workTime;
+        }
+
         public void Rollback(WorkTimeSnapshotCreated snapshotEvent)
         {
             var sql = $@"DELETE FROM {TableName} WHERE AggregateId = @AggregateId AND AggregateVersion > @AggregateVersion";

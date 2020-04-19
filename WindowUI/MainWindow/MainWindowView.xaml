@@ -145,8 +145,8 @@
             </mah:HamburgerMenu.OptionsItemsSource>
 
         </mah:HamburgerMenu>
-        <StackPanel Grid.Column="1" Background="White" >
-            <ContentControl prism:RegionManager.RegionName="ContentRegion" Margin="5,0,5,5" />
-        </StackPanel>
+        <Grid Grid.Column="1" Background="White" >
+            <ContentControl Grid.Column="1" HorizontalAlignment="Stretch" prism:RegionManager.RegionName="ContentRegion" Margin="5,0,5,5" />
+        </Grid>
     </Grid>
 </UserControl>

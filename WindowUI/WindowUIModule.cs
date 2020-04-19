@@ -35,6 +35,8 @@ namespace WindowUI
             containerRegistry.GetContainer()
                 .RegisterType<ILoginViewController, LoginViewController>();
 
+            containerRegistry.GetContainer().RegisterSingleton<WorkTimeModuleService>();
+
             containerRegistry.GetContainer().RegisterInstance(ServiceLocator.Current.GetInstance<WindowModuleStartupService>());
         }
     }

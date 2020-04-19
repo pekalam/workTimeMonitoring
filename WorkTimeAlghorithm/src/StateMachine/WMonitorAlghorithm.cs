@@ -17,16 +17,21 @@ namespace WorkTimeAlghorithm.StateMachine
         private State6Service _state6 = new State6Service();
         private WorkTime _workTime;
 
-        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, WorkTime workTime)
+        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService)
         {
             _mouseKeyboardMonitor.KeyboardAction.Subscribe(OnKeyboardAction);
             _mouseKeyboardMonitor.MouseMoveAction.Subscribe(OnMouseAction);
             _workTimeEventService = workTimeEventService;
-            _workTimeEventService.SetWorkTime(workTime);
             _faceRecognition = faceRecognition;
             _state2 = new State2Service(faceRecognition, workTimeEventService);
             _state3 = new State3Service(faceRecognition, workTimeEventService);
             InitStateMachine();
+        }
+
+        public void SetWorkTime(WorkTime workTime)
+        {
+            _workTime = workTime;
+            _workTimeEventService.SetWorkTime(workTime);
         }
 
         private void OnMouseAction(MonitorEvent ev)
@@ -59,6 +64,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public void Start()
         {
+            _mouseKeyboardMonitor.Start();
             _sm.Next(Triggers.Start);
         }
     }

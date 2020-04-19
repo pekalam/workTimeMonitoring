@@ -11,6 +11,8 @@ using Infrastructure;
 using Infrastructure.Repositories;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Commands;
+using Prism.Regions;
+using WindowUI.MainWindow;
 using WorkTimeAlghorithm;
 
 namespace WindowUI.FaceInitialization
@@ -21,6 +23,7 @@ namespace WindowUI.FaceInitialization
         ICommand StepInfoContinueClick { get; }
         ICommand StepInfoRetryClick { get; }
         ICommand StartFaceInitCommand { get; }
+        ICommand BackCommand { get; }
     }
 
     public class FaceInitializationController : IFaceInitializationController
@@ -29,33 +32,41 @@ namespace WindowUI.FaceInitialization
         private readonly ICaptureService _captureService;
         private readonly IHcFaceDetection _faceDetection;
         private readonly ITestImageRepository _testImageRepository;
+        private readonly IAuthenticationService _authenticationService;
+        private readonly IRegionManager _regionManager;
         private readonly InitFaceService _initFaceService;
         private bool _startStep;
         private bool _stepCompleted;
         private CancellationTokenSource _camCts;
-        private IAuthenticationService _authenticationService;
 
         public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection,
-            InitFaceService initFaceService, ITestImageRepository testImageRepository, IAuthenticationService authenticationService)
+            InitFaceService initFaceService, ITestImageRepository testImageRepository, IAuthenticationService authenticationService, IRegionManager regionManager)
         {
             _captureService = captureService;
             _faceDetection = faceDetection;
             _initFaceService = initFaceService;
             _testImageRepository = testImageRepository;
-            StepInfoContinueClick = new DelegateCommand(OnStepInfoContinueClick);
-            StepInfoRetryClick = new DelegateCommand(OnStepInfoRetryClick);
-            StartFaceInitCommand = new DelegateCommand(OnStartFaceInit);
-            _initFaceService.InitFaceProgress = new Progress<InitFaceProgressArgs>(OnInitFaceProgress);
             _authenticationService = authenticationService;
+            _regionManager = regionManager;
+            StepInfoContinueClick = new DelegateCommand(StepInfoContinueExecute);
+            StepInfoRetryClick = new DelegateCommand(StepInfoRetryExecute);
+            StartFaceInitCommand = new DelegateCommand(StartFaceInitExecute);
+            BackCommand = new DelegateCommand(BackExecute);
+            _initFaceService.InitFaceProgress = new Progress<InitFaceProgressArgs>(OnInitFaceProgress);
         }
 
-        private void OnStartFaceInit()
+        private void BackExecute()
+        {
+            _camCts.Cancel();
+            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(MainWindowView));
+        }
+
+        private void StartFaceInitExecute()
         {
             _startStep = true;
-            
         }
 
-        private void OnStepInfoRetryClick()
+        private void StepInfoRetryExecute()
         {
             _initFaceService.Reset();
             _vm.Progress = 0;
@@ -65,9 +76,10 @@ namespace WindowUI.FaceInitialization
             _stepCompleted = false;
         }
 
-        private void OnStepInfoContinueClick()
+        private void StepInfoContinueExecute()
         {
             _camCts.Cancel();
+            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(MainWindowView));
         }
 
         public async Task Init(FaceInitializationViewModel vm)
@@ -84,6 +96,7 @@ namespace WindowUI.FaceInitialization
         public ICommand StepInfoContinueClick { get; }
         public ICommand StepInfoRetryClick { get; }
         public ICommand StartFaceInitCommand { get; }
+        public ICommand BackCommand { get; }
 
         private async Task StartInitFaceStep()
         {

@@ -11,6 +11,16 @@
              prism:ViewModelLocator.AutoWireViewModel="True" d:DesignWidth="1200" d:DesignHeight="800">
     <UserControl.Resources>
         <faceInitialization:PercentageTextConverter x:Key="percentageTextConverter"/>
+        <Style x:Key="AccentCircleButtonStyle"
+               BasedOn="{StaticResource MahApps.Styles.Button.Circle}"
+               TargetType="{x:Type ButtonBase}">
+            <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Accent}" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Accent}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <Grid Background="White">
         <Grid>
@@ -32,7 +42,10 @@
                     <RowDefinition Height="1.5*"/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="1" VerticalAlignment="Stretch" Visibility="{c:Binding InstructionsVisible, FalseToVisibility=Hidden}">
+
+
+              
+                    <StackPanel Grid.Row="1" VerticalAlignment="Stretch" Visibility="{c:Binding InstructionsVisible, FalseToVisibility=Hidden}">
                     <StackPanel Background="#A514202B">
                         <TextBlock Foreground="White" Padding="5,5,5,5" Text="{Binding InstructionsText}" HorizontalAlignment="Center" FontSize="28"/>
                         <Grid>
@@ -52,13 +65,24 @@
 
         </Grid>
         <Grid Background="#A514202B" Panel.ZIndex="101" Visibility="{c:Binding LoadingOverlayVisible, FalseToVisibility=Collapsed}">
+
             <StackPanel VerticalAlignment="Center">
                 <mah:ProgressRing IsActive="True" />
                 <TextBlock Text="{Binding LoadingOverlayText}" Foreground="White" HorizontalAlignment="Center" Margin="0,30,0,0" FontSize="16"/>
             </StackPanel>
         </Grid>
+        <StackPanel HorizontalAlignment="Left" Panel.ZIndex="102">
+            <Button Width="48"
+                    Height="48"
+                    Margin="15"
+                    Background="White"
+                    Style="{StaticResource AccentCircleButtonStyle}" Command="{Binding BackCommand}">
+                <iconPacks:PackIconModern Width="20"
+                                          Height="20"
+                                          Kind="ArrowLeft" />
+            </Button>
+        </StackPanel>
         <DockPanel LastChildFill="False">
-
             <Grid DockPanel.Dock="Bottom" Panel.ZIndex="100" Visibility="{c:Binding StepInfoPanelVisible, FalseToVisibility=Collapsed}" Background="{Binding StepInfoPanelBrush}" Height="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>

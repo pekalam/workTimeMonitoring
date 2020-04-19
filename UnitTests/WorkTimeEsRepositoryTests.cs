@@ -115,6 +115,15 @@ namespace Infrastructure.Tests
             found.Should().BeEquivalentTo(workTime, opt => opt.Excluding(t => t.FromSnapshot));
         }
 
+        private void CompareWorkTimes(WorkTime w1, WorkTime w2)
+        {
+            w1.Should().BeEquivalentTo(w2, opt =>
+            {
+                return opt.Excluding(w => w.FromSnapshot).Excluding(w => w.PendingEvents).Excluding(w => w.AggregateVersion)
+                    .Excluding(t => t.MouseActionEvents).Excluding(t => t.KeyboardActionEvents);
+            });
+        }
+
         [Fact]
         public void FindFromSnapshot_returns_aggregate_from_snapshot()
         {
@@ -129,16 +138,43 @@ namespace Infrastructure.Tests
 
             var fromSnap = _repository.FindFromSnapshot(snap);
 
-            fromSnap.Should().BeEquivalentTo(workTime, opt =>
-            {
-                return opt.Excluding(w => w.FromSnapshot).Excluding(w => w.PendingEvents).Excluding(w => w.AggregateVersion)
-                    .Excluding(t => t.MouseActionEvents).Excluding(t => t.KeyboardActionEvents);
-            });
+            CompareWorkTimes(fromSnap, workTime);
             fromSnap.FromSnapshot.Should().BeTrue();
             fromSnap.MouseActionEvents.Should().BeEmpty();
             fromSnap.KeyboardActionEvents.Should().BeEmpty();
             fromSnap.PendingEvents.Should().BeEmpty();
             fromSnap.AggregateVersion.Should().Be(workTime.AggregateVersion - 1);
+        }
+
+
+        [Fact]
+        public void FindLatestFromSnapshot_returns_latest_aggregate_from_snapshot()
+        {
+            var user = UserTestUtils.CreateTestUser(1);
+            var workTime = WorkTimeTestUtils.CreateManual(user);
+            workTime.StartManually();
+            var snap = workTime.TakeSnapshot();
+            workTime.AddMouseAction(new MouseKeyboardEvent());
+            _repository.Save(workTime);
+
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddDays(1);
+
+            var workTime2 = WorkTimeTestUtils.CreateManual(user);
+            workTime2.StartManually();
+            var snap2 = workTime2.TakeSnapshot();
+            workTime.AddMouseAction(new MouseKeyboardEvent());
+            _repository.Save(workTime2);
+
+            var found = _repository.FindLatestFromSnapshot(user);
+
+            CompareWorkTimes(found, workTime2);
+        }
+
+        [Fact]
+        public void FindLatestFromSnapshot_returns_null_if_does_not_exist()
+        {
+            var user = UserTestUtils.CreateTestUser(900);
+            _repository.FindLatestFromSnapshot(user).Should().BeNull();
         }
     }
 }

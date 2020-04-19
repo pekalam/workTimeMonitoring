@@ -27,7 +27,7 @@ namespace WorkTimeAlghorithm
 
         private FaceEncodingData? InternalGetFaceEncoding(Image img)
         {
-            var imgEncodings = SharedFaceRecognitionModel.FaceEncodingsSync(img, new[] { new Location(0, 0, img.Width, img.Height) }, model: PredictorModel.Small);
+            var imgEncodings = SharedFaceRecognitionModel.FaceEncodingsSync(img, null, model: PredictorModel.Small);
 
             if (imgEncodings.Count != 1)
             {

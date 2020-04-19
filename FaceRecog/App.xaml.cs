@@ -30,5 +30,7 @@ namespace Application
         {
             return Container.Resolve<Shell>();
         }
+
+
     }
 }

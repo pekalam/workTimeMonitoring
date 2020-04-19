@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Domain.Repositories;
 using Domain.Services;
 using Domain.WorkTimeAggregate.Events;
@@ -10,6 +12,11 @@ using ReflectionMagic;
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
 namespace Domain.WorkTimeAggregate
 {
+    internal static class InternalTimeService
+    {
+        public static Func<DateTime> GetCurrentDateTime = () => DateTime.UtcNow;
+    }
+
     public class WorkTimeBuildService
     {
         private readonly IWorkTimeEsRepository _repository;
@@ -21,12 +28,16 @@ namespace Domain.WorkTimeAggregate
             _idGenerator = idGenerator;
         }
 
-        public WorkTime CreateStartedManually(User.User user, DateTime endDate)
+        public WorkTime CreateStartedManually(User.User user, DateTime endDate, bool start = false)
         {
             var id = _idGenerator.GenerateId();
 
             //todo long
             var workTime = new WorkTime(id, user, null, endDate);
+            if (start)
+            {
+                workTime.StartManually();
+            }
             _repository.Save(workTime);
             workTime.MarkPendingEventsAsHandled();
             return workTime;
@@ -88,8 +99,9 @@ namespace Domain.WorkTimeAggregate
             AutoStart = startDate.HasValue;
             User = user;
             EndDate = endDate;
-            DateCreated = DateTime.UtcNow;
-            AddEvent(new WorkTimeCreated(AggregateId, DateTime.UtcNow, StartDate, EndDate,DateCreated, User, AutoStart));
+            var now = InternalTimeService.GetCurrentDateTime();
+            DateCreated = now;
+            AddEvent(new WorkTimeCreated(AggregateId, now, StartDate, EndDate,DateCreated, User, AutoStart));
         }
 
         private void CheckIsStarted()
@@ -102,8 +114,9 @@ namespace Domain.WorkTimeAggregate
 
         private void StartWorkTime()
         {
-            StartDate = DateTime.UtcNow;
-            AddEvent(new WorkTimeStarted(AggregateId, DateTime.UtcNow, StartDate.Value));
+            var now = InternalTimeService.GetCurrentDateTime();
+            StartDate = now;
+            AddEvent(new WorkTimeStarted(AggregateId, now, StartDate.Value));
         }
 
         public void StartManually()
@@ -128,7 +141,7 @@ namespace Domain.WorkTimeAggregate
         {
             CheckIsStarted();
 
-            var ev = new MouseAction(AggregateId, DateTime.UtcNow,  mkEvent);
+            var ev = new MouseAction(AggregateId, InternalTimeService.GetCurrentDateTime(),  mkEvent);
             _mouseActionEvents.Add(ev);
             AddEvent(ev);
         }
@@ -137,7 +150,7 @@ namespace Domain.WorkTimeAggregate
         {
             CheckIsStarted();
 
-            var ev = new KeyboardAction(AggregateId, DateTime.UtcNow, mkEvent);
+            var ev = new KeyboardAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
             _keyboardActionEvents.Add(ev);
             AddEvent(ev);
         }
@@ -161,7 +174,7 @@ namespace Domain.WorkTimeAggregate
                 DateCreated = DateCreated,
             };
 
-            var ev = new WorkTimeSnapshotCreated(AggregateId, DateTime.UtcNow, snapshot);
+            var ev = new WorkTimeSnapshotCreated(AggregateId, InternalTimeService.GetCurrentDateTime(), snapshot);
             AddEvent(ev);
             return ev;
         }
@@ -224,6 +237,23 @@ namespace Domain.WorkTimeAggregate
             workTime.AggregateVersion = snapshotCreated.AggregateVersion;
             workTime.FromSnapshot = true;
             workTime.Apply(snapshotCreated);
+            return workTime;
+        }
+
+        public static WorkTime CreateFromSnapshot(IEnumerable<Event> events)
+        {
+            var snap = events.First() as WorkTimeSnapshotCreated;
+            if (snap == null)
+            {
+                throw new Exception("First event not snapshot");
+            }
+            var workTime = CreateFromSnapshot(snap);
+
+            foreach (var ev in events.Skip(1))
+            {
+                workTime.AsDynamic().Apply(ev);
+            }
+
             return workTime;
         }
 

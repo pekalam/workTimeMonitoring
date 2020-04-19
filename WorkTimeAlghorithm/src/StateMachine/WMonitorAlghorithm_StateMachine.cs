@@ -21,7 +21,7 @@ namespace WorkTimeAlghorithm.StateMachine
         }
 
         private StateMachine<Triggers, States> _sm;
-#if DEBUG
+#if DEV_MODE
         private StateMachineVis<Triggers, States> _vis;
 #endif
         private State _state = new State();
@@ -82,7 +82,7 @@ namespace WorkTimeAlghorithm.StateMachine
         {
             BuildStateMachine();
 
-#if DEBUG
+#if DEV_MODE
             _vis = new StateMachineVis<Triggers, States>(_sm, pipeName: "graphViz", loggingEnabled: false);
             _vis.Start(@"StateMachineLibVis.exe", "-c graphViz -l 970");
 #endif

@@ -45,11 +45,13 @@ namespace WindowUI.FaceInitialization
             StepInfoContinueClick = _controller.StepInfoContinueClick;
             StepInfoRetryClick = _controller.StepInfoRetryClick;
             StartFaceInitCommand = _controller.StartFaceInitCommand;
+            BackCommand = _controller.BackCommand;
         }
 
         public ICommand StepInfoContinueClick { get; }
         public ICommand StepInfoRetryClick { get; }
         public ICommand StartFaceInitCommand { get; }
+        public ICommand BackCommand { get; }
 
         public void CallOnFrameChanged(BitmapSource bmp)
         {

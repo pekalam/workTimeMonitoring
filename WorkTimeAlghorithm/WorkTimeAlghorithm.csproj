@@ -26,6 +26,7 @@
     <PackageReference Include="StateMachineLib" Version="1.0.34" />
     <PackageReference Include="StateMachineLibVis" Version="1.0.2" />
     <PackageReference Include="System.Reactive" Version="4.4.1" />
+    <PackageReference Include="Unity.Abstractions" Version="5.11.1" />
   </ItemGroup>
 
   <ItemGroup>

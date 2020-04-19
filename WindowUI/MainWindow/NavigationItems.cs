@@ -2,6 +2,6 @@
 {
     public enum NavigationItems
     {
-
+        StartMonitor, Statistics, Profile, Settings 
     }
 }

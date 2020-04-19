@@ -39,14 +39,16 @@ namespace WorkTimeAlghorithm.StateMachine
                 else
                 {
                     var ph = _testImageRepository.GetMostRecentImages(user, DateTime.UtcNow.AddDays(-20), 1);
+#if DEV_MODE
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         Cv2.ImShow("1", ph.First().Img);
                         Cv2.ImShow("2", frame);
 
                     });
+#endif
 
-                    faceRecognized = _faceRecognition.CompareFaces(frame, null, ph.First().Img, null);
+                    faceRecognized = _faceRecognition.CompareFaces(ph.First().Img, null, frame, null);
                     faceDetected = true;
                 }
 

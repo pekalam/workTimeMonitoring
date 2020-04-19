@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 using Domain.User;
 using FaceRecognitionDotNet;
 using OpenCvSharp;
+using Unity;
+using WorkTimeAlghorithm.StateMachine;
 
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
 namespace WorkTimeAlghorithm
