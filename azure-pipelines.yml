@@ -38,12 +38,13 @@ stages:
           platform: 'x64'
           configuration: 'Debug'
       - task: DownloadSecureFile@1
+        name: faceRecogTestFixtures
         inputs:
           secureFile: 'FaceRecogTestFixtures.zip'
       - task: ExtractFiles@1
         inputs:
           archiveFilePatterns: 'FaceRecogTestFixtures.zip'
-          destinationFolder: '$(System.DefaultWorkingDirectory)'
+          destinationFolder: '$(faceRecogTestFixtures.secureFilePath)'
           cleanDestinationFolder: false
       - task: VSTest@2
         displayName: 'Run unit ests'
