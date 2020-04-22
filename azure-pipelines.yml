@@ -49,7 +49,7 @@ stages:
         artifact: DebugBuild
       - task: DownloadSecureFile@1
         inputs:
-        secureFile: 'FaceRecogTestFixtures.zip'
+          secureFile: 'FaceRecogTestFixtures.zip'
       - task: ExtractFiles@1
         inputs:
           archiveFilePatterns: 'FaceRecogTestFixtures.zip'
