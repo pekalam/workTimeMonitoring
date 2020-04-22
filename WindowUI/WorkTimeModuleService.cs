@@ -10,7 +10,6 @@ namespace WindowUI
 {
     public class WorkTimeModuleService
     {
-        private WorkTime _currentWorkTime;
         private readonly IAuthenticationService _authenticationService;
         private readonly WorkTimeBuildService _workTimeBuildService;
         private readonly WMonitorAlghorithm _alghorithm;
@@ -25,6 +24,7 @@ namespace WindowUI
         }
 
         public bool AlgorithmStarted { get; private set; }
+        public WorkTime CurrentWorkTime { get; private set; }
 
         public void StartNew(DateTime? start, DateTime end)
         {
@@ -34,7 +34,7 @@ namespace WindowUI
 
         private void StartAlgorithm(WorkTime workTime)
         {
-            _currentWorkTime = workTime;
+            CurrentWorkTime = workTime;
             _alghorithm.SetWorkTime(workTime);
             _alghorithm.Start();
             AlgorithmStarted = true;
@@ -56,7 +56,7 @@ namespace WindowUI
             var restoredWorkTime = _workTimeRepository.FindLatestFromSnapshot(user);
             if (restoredWorkTime != null)
             {
-                if (restoredWorkTime.EndDate < DateTime.UtcNow)
+                if (restoredWorkTime.EndDate > DateTime.UtcNow)
                 {
                     StartAlgorithm(restoredWorkTime);
                     return true;

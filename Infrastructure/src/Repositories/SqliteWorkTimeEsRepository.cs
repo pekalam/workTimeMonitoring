@@ -73,10 +73,32 @@ namespace Infrastructure.Repositories
         }
 
 
-        //todo Username = user?
-        List<WorkTime> IWorkTimeEsRepository.FindAll(User user, DateTime startDate, DateTime endDate)
+        public List<WorkTime> FindAll(User user, DateTime? startDate, DateTime? endDate)
         {
-            throw new NotImplementedException();
+            var sql = $@"SELECT {TableCols} FROM {TableName}
+                               WHERE AggregateId IN (SELECT AggregateId FROM {TableName}
+                                                    WHERE EventName = @EventName AND json_extract(Data, '$.User.UserId') = @UserId)
+                               ORDER BY AggregateId, AggregateVersion";
+
+            using var conn = CreateConnection(true);
+
+            var events = conn.Query<DbEvent>(sql, new
+                {
+                    UserId = user.UserId,
+                    EventName = EventName.WorkTimeCreated,
+                })
+                .MapToEvents(_mapper)
+                .GroupBy(e => e.AggregateId);
+
+
+            var workTimes = new List<WorkTime>();
+            
+            foreach (var aggEvents in events)
+            {
+                workTimes.Add(WorkTime.FromEvents(aggEvents));   
+            }
+
+            return workTimes;
         }
 
         public WorkTime? Find(User user, DateTime date)
@@ -170,11 +192,6 @@ namespace Infrastructure.Repositories
             using var trans = conn.BeginTransaction();
 
             var result = conn.Execute(sql, new {snapshotEvent.AggregateId, snapshotEvent.AggregateVersion});
-
-            if (result == 0)
-            {
-                throw new Exception($"Cannot find {snapshotEvent.AggregateId} aggregate with event ver gt {snapshotEvent.AggregateVersion}");
-            }
 
             trans.Commit();
         }

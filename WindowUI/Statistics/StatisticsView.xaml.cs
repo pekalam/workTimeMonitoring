@@ -11,5 +11,7 @@ namespace WindowUI.Statistics
         {
             InitializeComponent();
         }
+
+        
     }
 }

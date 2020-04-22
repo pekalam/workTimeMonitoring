@@ -32,8 +32,8 @@ namespace Infrastructure
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
-                .TypeHandle);
+            // System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
+            //     .TypeHandle);
 
             containerProvider.Resolve<IEventAggregator>().GetEvent<InfrastructureModuleLoaded>().Publish(this);
         }

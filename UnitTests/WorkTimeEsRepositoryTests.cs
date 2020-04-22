@@ -9,6 +9,7 @@ using Xunit;
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Infrastructure.Tests
 {
+    [Collection("sqlite")]
     public abstract class WorkTimeEsRepositoryTests
     {
         protected IWorkTimeEsRepository _repository;
@@ -150,7 +151,7 @@ namespace Infrastructure.Tests
         [Fact]
         public void FindLatestFromSnapshot_returns_latest_aggregate_from_snapshot()
         {
-            var user = UserTestUtils.CreateTestUser(1);
+            var user = UserTestUtils.CreateTestUser();
             var workTime = WorkTimeTestUtils.CreateManual(user);
             workTime.StartManually();
             var snap = workTime.TakeSnapshot();
@@ -175,6 +176,32 @@ namespace Infrastructure.Tests
         {
             var user = UserTestUtils.CreateTestUser(900);
             _repository.FindLatestFromSnapshot(user).Should().BeNull();
+        }
+
+        [Fact]
+        public void Find_all_finds_all_full_aggregates()
+        {
+            var user = UserTestUtils.CreateTestUser();
+            var workTime1 = WorkTimeTestUtils.CreateManual(user);
+            workTime1.StartManually();
+            _repository.Save(workTime1);
+
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddHours(1);
+
+            var workTime2 = WorkTimeTestUtils.CreateManual(user);
+            workTime2.StartManually();
+            _repository.Save(workTime2);
+
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddHours(2);
+
+            var workTime3 = WorkTimeTestUtils.CreateManual(user);
+            workTime3.StartManually();
+            _repository.Save(workTime3);
+
+
+            var found = _repository.FindAll(user, null, null);
+
+            found.Count.Should().Be(3);
         }
     }
 }

@@ -252,7 +252,9 @@ namespace Domain.WorkTimeAggregate
             foreach (var ev in events.Skip(1))
             {
                 workTime.AsDynamic().Apply(ev);
+                workTime.AggregateVersion++;
             }
+            
 
             return workTime;
         }

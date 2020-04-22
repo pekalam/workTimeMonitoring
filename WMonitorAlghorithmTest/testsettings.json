@@ -5,6 +5,9 @@
   "eventGathering": {
     "MouseEventWindowSz": "5000",
     "MouseEventMonitorWindowSz": "250",
-    "MouseEventBufferSz": "0" 
+    "KeyboardEventWindowSz": "5000",
+    "KeyboardEventMonitorWindowSz": "250",
+    "MouseEventBufferSz": "0",
+    "KeyboardEventBufferSz": "0"
   } 
 }

@@ -109,7 +109,7 @@
                     <mah:HamburgerMenuGlyphItem>
                         <mah:HamburgerMenuGlyphItem.Tag>
                             <mainWindow:NavigationItemViewModel Label="Start work"
-     
+                                                                NavigationItem="{x:Static mainWindow:NavigationItems.StartMonitor}"
                                                                 IconName="BusinessTimeSolid"/>
                         </mah:HamburgerMenuGlyphItem.Tag>
                     </mah:HamburgerMenuGlyphItem>
@@ -117,7 +117,7 @@
                     <mah:HamburgerMenuGlyphItem>
                         <mah:HamburgerMenuGlyphItem.Tag>
                             <mainWindow:NavigationItemViewModel Label="Your statistics"
- 
+                                                                NavigationItem="{x:Static mainWindow:NavigationItems.Statistics}"
                                                      IconName="ChartPieSolid"/>
                         </mah:HamburgerMenuGlyphItem.Tag>
                     </mah:HamburgerMenuGlyphItem>
@@ -130,14 +130,14 @@
                     <mah:HamburgerMenuGlyphItem>
                         <mah:HamburgerMenuGlyphItem.Tag>
                             <mainWindow:NavigationItemViewModel Label="Profile"
-          
+                                                                NavigationItem="{x:Static mainWindow:NavigationItems.Profile}"
                                                                 IconName="UserSolid"/>
                         </mah:HamburgerMenuGlyphItem.Tag>
                     </mah:HamburgerMenuGlyphItem>
                     <mah:HamburgerMenuGlyphItem>
                         <mah:HamburgerMenuGlyphItem.Tag>
                             <mainWindow:NavigationItemViewModel Label="Settings"
-          
+                                                                NavigationItem="{x:Static mainWindow:NavigationItems.Settings}"
                                                               IconName="CogSolid"/>
                         </mah:HamburgerMenuGlyphItem.Tag>
                     </mah:HamburgerMenuGlyphItem>
@@ -146,7 +146,7 @@
 
         </mah:HamburgerMenu>
         <Grid Grid.Column="1" Background="White" >
-            <ContentControl Grid.Column="1" HorizontalAlignment="Stretch" prism:RegionManager.RegionName="ContentRegion" Margin="5,0,5,5" />
+            <ContentControl Grid.Column="1" HorizontalAlignment="Stretch" prism:RegionManager.RegionName="{x:Static mainWindow:MainWindowRegions.MainContentRegion}" Margin="5,0,5,5" />
         </Grid>
     </Grid>
 </UserControl>

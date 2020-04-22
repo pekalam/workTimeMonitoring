@@ -31,6 +31,10 @@ namespace WorkTimeAlghorithm.StateMachine
                 bool faceDetected, faceRecognized;
 
                 using var frame = _captureService.CaptureSingleFrame();
+#if DEV_MODE
+                Application.Current.Dispatcher.Invoke(() => Cv2.ImShow("frame", frame));
+#endif
+
                 var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);
                 if (rects.Length == 0)
                 {

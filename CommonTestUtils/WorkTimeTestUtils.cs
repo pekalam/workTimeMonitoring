@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using Domain;
 using Domain.User;
 using Domain.WorkTimeAggregate;
@@ -12,12 +14,14 @@ namespace DomainTestUtils
 
         public static WorkTime CreateManual()
         {
-            return new WorkTime(_id--, UserTestUtils.CreateTestUser(), null, DateTime.UtcNow.AddMinutes(10));
+            Debug.WriteLine(_id);
+            return new WorkTime(Interlocked.Decrement(ref _id), UserTestUtils.CreateTestUser(), null, DateTime.UtcNow.AddMinutes(10));
         }
 
         public static WorkTime CreateManual(User user)
         {
-            return new WorkTime(_id--, user, null, DateTime.UtcNow.AddMinutes(10));
+            Debug.WriteLine(_id);
+            return new WorkTime(Interlocked.Decrement(ref _id), user, null, DateTime.UtcNow.AddMinutes(10));
         }
 
         public static WorkTime CreateStartedManually()

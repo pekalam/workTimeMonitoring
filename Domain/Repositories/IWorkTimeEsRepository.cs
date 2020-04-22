@@ -9,7 +9,7 @@ namespace Domain.Repositories
     {
         public int CountForUser(User.User user);
         public void Save(WorkTime workTime);
-        public List<WorkTime> FindAll(User.User user, DateTime startDate, DateTime endDate);
+        public List<WorkTime> FindAll(User.User user, DateTime? startDate, DateTime? endDate);
         public WorkTime? Find(User.User user, DateTime date);
         public WorkTime? FindFromSnapshot(WorkTimeSnapshotCreated snapshotEvent);
         public WorkTime? FindLatestFromSnapshot(User.User user);

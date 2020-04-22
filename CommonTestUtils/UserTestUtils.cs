@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using Domain.User;
 
 namespace DomainTestUtils
@@ -10,7 +12,8 @@ namespace DomainTestUtils
 
         public static User CreateTestUser()
         {
-            return new User(_id--, new Username("mpekala"));
+            Debug.WriteLine("u " + _id);
+            return new User(Interlocked.Decrement(ref _id), new Username("mpekala"));
         }
 
         public static User CreateTestUser(long id)

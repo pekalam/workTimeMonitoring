@@ -57,16 +57,21 @@ namespace WindowUI.StartWork
                 SetProperty(ref _started, value);
                 if (value)
                 {
-                    if (AutoStart)
-                    {
-                        TimerDate = EndDate.Value.Subtract(StartDate.Value);
-                    }
-                    else
-                    {
-                        TimerDate = EndDate.Value.Subtract(DateTime.Now);
-                    }
+                    SetTimerDate(EndDate.Value);
                     StartTimer();
                 }
+            }
+        }
+
+        public void SetTimerDate(DateTime endDate)
+        {
+            if (AutoStart)
+            {
+                TimerDate = endDate.Subtract(StartDate.Value);
+            }
+            else
+            {
+                TimerDate = endDate.Subtract(DateTime.Now);
             }
         }
 
@@ -148,6 +153,10 @@ namespace WindowUI.StartWork
         {
             _vm = vm;
             _vm.Started = _workTimeModuleService.AlgorithmStarted;
+            if (_workTimeModuleService.AlgorithmStarted)
+            {
+                _vm.SetTimerDate(_workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime());
+            }
         }
 
         public DelegateCommand StartWorkCommand { get; private set; }

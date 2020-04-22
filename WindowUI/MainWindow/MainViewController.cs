@@ -42,10 +42,10 @@ namespace WindowUI.MainWindow
         {
             _vm = vm;
 
-            if (_workTimeModuleService.TryRestore())
-            {
-                _notifier.ShowInformation("Continuing stoppped monitoring");
-            }
+            // if (_workTimeModuleService.TryRestore())
+            // {
+            //     _notifier.ShowInformation("Continuing stoppped monitoring");
+            // }
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {

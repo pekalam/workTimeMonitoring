@@ -10,6 +10,7 @@ using WindowUI.FaceInitialization;
 using WindowUI.LoginWindow;
 using WindowUI.MainWindow;
 using WindowUI.StartWork;
+using WindowUI.Statistics;
 
 namespace WindowUI
 {
@@ -26,6 +27,8 @@ namespace WindowUI
             containerRegistry.RegisterForNavigation<MainWindowView>();
             containerRegistry.RegisterForNavigation<FaceInitializationView>();
             containerRegistry.RegisterForNavigation<StartWorkView>();
+            containerRegistry.RegisterForNavigation<StatisticsView>();
+
             containerRegistry.GetContainer()
                 .RegisterType<IFaceInitializationController, FaceInitializationController>();
 

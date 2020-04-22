@@ -1,0 +1,5 @@
+{
+  "sqlite": {
+    "ConnectionString": "Data Source=F:\\WorktimeMeasurement\\testappdb.db;"
+  }
+}

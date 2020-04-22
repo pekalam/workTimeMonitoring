@@ -10,6 +10,7 @@ using MahApps.Metro.Controls;
 using Prism.Regions;
 using WindowUI.FaceInitialization;
 using WindowUI.StartWork;
+using WindowUI.Statistics;
 
 namespace WindowUI.MainWindow
 {
@@ -53,11 +54,16 @@ namespace WindowUI.MainWindow
             {
                 throw new ArgumentException("Null tag value of menu item");
             }
-            ServiceLocator.Current.GetInstance<IRegionManager>().Regions["ContentRegion"].RequestNavigate(nameof(StartWorkView));
 
-
-            if (ModuleCommands.Navigate.CanExecute(navItemVm.NavigationItem))
+            var regionManager = ServiceLocator.Current.GetInstance<IRegionManager>();
+            switch (navItemVm.NavigationItem)
             {
+                case NavigationItems.StartMonitor:
+                    regionManager.Regions[MainWindowRegions.MainContentRegion].RequestNavigate(nameof(StartWorkView));
+                    break;
+                case NavigationItems.Statistics:
+                    regionManager.Regions[MainWindowRegions.MainContentRegion].RequestNavigate(nameof(StatisticsView));
+                    break;
             }
 
         }
