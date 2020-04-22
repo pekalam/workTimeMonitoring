@@ -43,8 +43,8 @@ stages:
           secureFile: 'FaceRecogTestFixtures.zip'
       - task: ExtractFiles@1
         inputs:
-          archiveFilePatterns: 'FaceRecogTestFixtures.zip'
-          destinationFolder: '$(faceRecogTestFixtures.secureFilePath)'
+          archiveFilePatterns: '$(faceRecogTestFixtures.secureFilePath)'
+          destinationFolder: 'FaceRecogTestFixtures'
           cleanDestinationFolder: false
       - task: VSTest@2
         displayName: 'Run unit ests'
