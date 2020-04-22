@@ -10,7 +10,7 @@ pool:
   vmImage: 'windows-2019'
 
 variables:
-  testImgDir: 'FaceRecogTestFixtures'
+  testImgDir: '$(System.DefaultWorkingDirectory)\FaceRecogTestFixtures'
 
 stages:
 - stage: BuildAndTestDebug
@@ -44,12 +44,12 @@ stages:
       - task: ExtractFiles@1
         inputs:
           archiveFilePatterns: '$(faceRecogTestFixtures.secureFilePath)'
-          destinationFolder: '$(System.DefaultWorkingDirectory)\$(testImgDir)'
+          destinationFolder: '$(testImgDir)'
           cleanDestinationFolder: false
       - task: VSTest@2
         displayName: 'Run unit ests'
         inputs:
-          testImgDir: '$(System.DefaultWorkingDirectory)\$(testImgDir)'
+          testImgDir: '$(testImgDir)'
           testSelector: 'testAssemblies'
           testAssemblyVer2: |
             Domain.UnitTests\**\*Tests.dll
