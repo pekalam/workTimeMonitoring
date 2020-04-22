@@ -13,8 +13,8 @@ variables:
   testImgDir: 'FaceRecogTestFixtures'
 
 stages:
-- stage: Build
-  displayName: Build
+- stage: BuildAndTestDebug
+  displayName: BuildAndTestDebug
   jobs:  
   - job: 'Build'
     displayName: 'Build project'
@@ -37,16 +37,6 @@ stages:
           vsVersion: '16.0'
           platform: 'x64'
           configuration: 'Debug'
-      - publish: $(System.DefaultWorkingDirectory)
-        artifact: DebugBuild
-- stage: Test
-  displayName: Test
-  jobs:
-  - job: 'Test'
-    displayName: 'Run tests'
-    steps:
-      - download: current
-        artifact: DebugBuild
       - task: DownloadSecureFile@1
         inputs:
           secureFile: 'FaceRecogTestFixtures.zip'
