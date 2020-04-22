@@ -1,84 +1,79 @@
 ﻿<UserControl x:Class="WindowUI.Statistics.OverallStatisticsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:WindowUI.Statistics"
              xmlns:calcBinding="clr-namespace:CalcBinding;assembly=CalcBinding"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:designer="clr-namespace:WindowUI.__Designer"
-             mc:Ignorable="d" 
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             mc:Ignorable="d"
              Name="root"
-             d:DesignHeight="450" d:DesignWidth="800" d:DataContext="{Binding Source={d:DesignInstance Type=designer:OverallViewModelDesign, IsDesignTimeCreatable=True}}">
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{Binding Source={d:DesignInstance Type=designer:OverallViewModelDesign, IsDesignTimeCreatable=True}}">
     <Grid Background="White">
         <Grid.RowDefinitions>
-            <RowDefinition Height="100"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="100" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="100" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
             <mah:DropDownButton Margin="5" Height="Auto"
-                                                Content="Chart type"
-                                                DisplayMemberPath="Name"
-                                                ItemsSource="{x:Null}">
-                <mah:DropDownButton.ItemContainerStyle>
-                    <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
-                        <Setter Property="Command"
-                                                Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type mah:DropDownButton}}, Path=DataContext.GenreDropDownMenuItemCommand}" />
-                        <Setter Property="CommandParameter" Value="{Binding Name}" />
-                    </Style>
-                </mah:DropDownButton.ItemContainerStyle>
+                                Content="Chart type"
+                                ItemsSource="{Binding ChartTypes}">
                 <mah:DropDownButton.Icon>
                     <iconPacks:PackIconMaterial Margin="6" Kind="Audiobook" />
                 </mah:DropDownButton.Icon>
             </mah:DropDownButton>
         </StackPanel>
 
-        <wpf:PieChart Grid.Row="1" Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800" DataTooltip="{x:Null}" Series="{Binding PieSeries}">
-        </wpf:PieChart>
+        <wpf:PieChart Grid.Row="1" Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
+                      DataTooltip="{x:Null}" Series="{Binding PieSeries}" />
         <Grid Grid.Row="2" Visibility="{Binding Path=Visibility, ElementName=root}">
             <StackPanel Margin="0,10,0,0">
                 <mah:RangeSlider Margin="0,10,0,10"
-                                                 MaxWidth="800"
-                                                 mah:SliderHelper.ChangeValueBy="LargeChange"
-                                                 mah:SliderHelper.EnableMouseWheel="MouseHover"
-                                                 AutoToolTipPlacement="TopLeft"
-                                                 LargeChange="10"
-                                                 LowerValue="{Binding LowerDate}"
-                                                 Maximum="{Binding MaxDays}"
-                                                 Minimum="{Binding MinDays}"
-                                                 UpperValue="{Binding UpperDate}"
-                                                 Orientation="Horizontal"
-                                                 SmallChange="1"
-                                                 IsSnapToTickEnabled="True"
-                                                 Style="{DynamicResource MahApps.Styles.RangeSlider.Win10}"
-                                                 >
+                                 MaxWidth="800"
+                                 mah:SliderHelper.ChangeValueBy="LargeChange"
+                                 mah:SliderHelper.EnableMouseWheel="MouseHover"
+                                 AutoToolTipPlacement="TopLeft"
+                                 LargeChange="10"
+                                 LowerValue="{Binding LowerDate}"
+                                 Maximum="{Binding MaxDays}"
+                                 Minimum="{Binding MinDays}"
+                                 UpperValue="{Binding UpperDate}"
+                                 Orientation="Horizontal"
+                                 SmallChange="1"
+                                 IsSnapToTickEnabled="True"
+                                 Style="{DynamicResource MahApps.Styles.RangeSlider.Win10}">
                     <mah:RangeSlider.AutoToolTipRangeValuesTemplate>
                         <DataTemplate DataType="mah:RangeSliderAutoTooltipValues">
                             <UniformGrid Columns="2" Rows="2">
                                 <TextBlock HorizontalAlignment="Right" Text="From:" />
-                                <TextBlock HorizontalAlignment="Right" Text="{Binding LowerValue, StringFormat='{}{0:N2}'}" />
+                                <TextBlock HorizontalAlignment="Right"
+                                           Text="{Binding LowerValue, StringFormat='{}{0:N2}'}" />
                                 <TextBlock HorizontalAlignment="Right" Text="To:" />
-                                <TextBlock HorizontalAlignment="Right" Text="{Binding UpperValue, StringFormat='{}{0:N2}'}" />
+                                <TextBlock HorizontalAlignment="Right"
+                                           Text="{Binding UpperValue, StringFormat='{}{0:N2}'}" />
                             </UniformGrid>
                         </DataTemplate>
                     </mah:RangeSlider.AutoToolTipRangeValuesTemplate>
                 </mah:RangeSlider>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,10">
                     <mah:DateTimePicker Margin="0,0,20,0"
-                                                        mah:TextBoxHelper.ClearTextButton="True"
-                                                        mah:TextBoxHelper.UseFloatingWatermark="False"
-                                                        HandVisibility="HourMinute"
-                                                        IsClockVisible="True"
-                                                        SelectedDateTime="{Binding MinDate}"/>
+                                        mah:TextBoxHelper.ClearTextButton="True"
+                                        mah:TextBoxHelper.UseFloatingWatermark="False"
+                                        HandVisibility="HourMinute"
+                                        IsClockVisible="True"
+                                        SelectedDateTime="{Binding MinDate}" />
                     <mah:DateTimePicker Margin="20,0,0,0"
                                         mah:TextBoxHelper.ClearTextButton="True"
                                         mah:TextBoxHelper.UseFloatingWatermark="False"
                                         HandVisibility="HourMinute"
                                         IsClockVisible="True"
-                                        SelectedDateTime="{Binding MaxDate}"/>
+                                        SelectedDateTime="{Binding MaxDate}" />
                 </StackPanel>
             </StackPanel>
 

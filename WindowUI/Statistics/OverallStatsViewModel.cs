@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LiveCharts;
 using Prism.Mvvm;
 using Prism.Regions;
@@ -16,6 +17,7 @@ namespace WindowUI.Statistics
         private int _minDays;
         private DateTime _maxDate;
         private DateTime _minDate;
+        private List<string> _chartTypes = new List<string>(){ "Pie chart", "Column chart" };
 
         public OverallStatsViewModel(OverallStatsController controller)
         {
@@ -64,6 +66,11 @@ namespace WindowUI.Statistics
             set => SetProperty(ref _minDate, value);
         }
 
+        public List<string> ChartTypes
+        {
+            get => _chartTypes;
+            set => SetProperty(ref _chartTypes, value);
+        }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {

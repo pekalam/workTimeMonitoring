@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Domain.Repositories;
-using Domain.Services;
 using Domain.WorkTimeAggregate.Events;
-using ReflectionMagic;
 
 [assembly: InternalsVisibleTo("Domain.UnitTests")]
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
@@ -15,34 +11,6 @@ namespace Domain.WorkTimeAggregate
     internal static class InternalTimeService
     {
         public static Func<DateTime> GetCurrentDateTime = () => DateTime.UtcNow;
-    }
-
-    public class WorkTimeBuildService
-    {
-        private readonly IWorkTimeEsRepository _repository;
-        private readonly IWorkTimeIdGeneratorService _idGenerator;
-
-        public WorkTimeBuildService(IWorkTimeEsRepository repository, IWorkTimeIdGeneratorService idGenerator)
-        {
-            _repository = repository;
-            _idGenerator = idGenerator;
-        }
-
-        public WorkTime CreateStartedManually(User.User user, DateTime endDate, bool start = false)
-        {
-            var id = _idGenerator.GenerateId();
-
-            //todo long
-            var workTime = new WorkTime(id, user, null, endDate);
-            if (start)
-            {
-                workTime.StartManually();
-            }
-            _repository.Save(workTime);
-            workTime.MarkPendingEventsAsHandled();
-            return workTime;
-        }
-
     }
 
     public class WorkTimeSnapshot
@@ -54,11 +22,12 @@ namespace Domain.WorkTimeAggregate
         public bool AutoStart { get; set; }
     }
 
-    public class WorkTime
+    public partial class WorkTime
     {
         private readonly List<Event> _pendingEvents = new List<Event>();
         private readonly List<MouseAction> _mouseActionEvents = new List<MouseAction>();
         private readonly List<KeyboardAction> _keyboardActionEvents = new List<KeyboardAction>();
+        private readonly List<FaceRecognitionFailure> _recognitionFailureEvents = new List<FaceRecognitionFailure>();
 
 
         internal WorkTime(long aggregateId, User.User user, DateTime? startDate, DateTime endDate)
@@ -83,8 +52,7 @@ namespace Domain.WorkTimeAggregate
         public IReadOnlyList<Event> PendingEvents => _pendingEvents;
         public IReadOnlyList<MouseAction> MouseActionEvents => _mouseActionEvents;
         public IReadOnlyList<KeyboardAction> KeyboardActionEvents => _keyboardActionEvents;
-
-        public void MarkPendingEventsAsHandled() => _pendingEvents.Clear();
+        public IReadOnlyList<FaceRecognitionFailure> FaceRecognitionFailures => _recognitionFailureEvents;
 
         private void AddEvent(Event ev)
         {
@@ -159,12 +127,21 @@ namespace Domain.WorkTimeAggregate
         {
             _keyboardActionEvents.Clear();
             _mouseActionEvents.Clear();
+            _recognitionFailureEvents.Clear();
+        }
+
+        internal void AddRecognitionFailure(bool faceDetected, bool faceRecognized)
+        {
+            CheckIsStarted();
+
+            var ev = new FaceRecognitionFailure(AggregateId, InternalTimeService.GetCurrentDateTime(), faceRecognized, faceDetected);
+            _recognitionFailureEvents.Add(ev);
+            AddEvent(ev);
         }
 
         public WorkTimeSnapshotCreated TakeSnapshot()
         {
-            _mouseActionEvents.Clear();
-            _keyboardActionEvents.Clear();
+            ClearEvents();
             var snapshot = new WorkTimeSnapshot()
             {
                 StartDate = StartDate,
@@ -190,111 +167,9 @@ namespace Domain.WorkTimeAggregate
             AggregateVersion = workTimeSnapshotEvent.AggregateVersion;
             FromSnapshot = true;
             _pendingEvents.Clear();
-            _mouseActionEvents.Clear();
-            _keyboardActionEvents.Clear();
+            ClearEvents();
 
             Apply(workTimeSnapshotEvent);
         }
-
-        private void Apply(WorkTimeSnapshotCreated snapshotCreated)
-        {
-            var snap = snapshotCreated.Snapshot;
-            StartDate = snap.StartDate;
-            User = snap.User;
-            EndDate = snap.EndDate;
-            AutoStart = snap.AutoStart;
-            DateCreated = snap.DateCreated;
-        }
-
-        private void Apply(KeyboardAction keyboardAction)
-        {
-            _keyboardActionEvents.Add(keyboardAction);
-        }
-
-        private void Apply(MouseAction mouseAction)
-        {
-            _mouseActionEvents.Add(mouseAction);
-        }
-
-        private void Apply(WorkTimeStarted workTimeStarted)
-        {
-            StartDate = workTimeStarted.StartDate;
-        } 
-
-        private void Apply(WorkTimeCreated workTimeCreated)
-        {
-            StartDate = workTimeCreated.StartDate;
-            EndDate = workTimeCreated.EndDate;
-            DateCreated = workTimeCreated.DateCreated;
-            User = workTimeCreated.User;
-            AutoStart = workTimeCreated.AutoStart;
-        }
-
-        public static WorkTime CreateFromSnapshot(WorkTimeSnapshotCreated snapshotCreated)
-        {
-            var workTime = new WorkTime();
-            workTime.AggregateId = snapshotCreated.AggregateId;
-            workTime.AggregateVersion = snapshotCreated.AggregateVersion;
-            workTime.FromSnapshot = true;
-            workTime.Apply(snapshotCreated);
-            return workTime;
-        }
-
-        public static WorkTime CreateFromSnapshot(IEnumerable<Event> events)
-        {
-            var snap = events.First() as WorkTimeSnapshotCreated;
-            if (snap == null)
-            {
-                throw new Exception("First event not snapshot");
-            }
-            var workTime = CreateFromSnapshot(snap);
-
-            foreach (var ev in events.Skip(1))
-            {
-                workTime.AsDynamic().Apply(ev);
-                workTime.AggregateVersion++;
-            }
-            
-
-            return workTime;
-        }
-
-        public static WorkTime FromEvents(IEnumerable<Event> events)
-        {
-            var workTime = new WorkTime();
-            Event last = null;
-            foreach (var ev in events)
-            {
-                if (last == null)
-                {
-                    if (ev.AggregateVersion != 1)
-                    {
-                        throw new Exception($"Cannot create aggregate starting from event version {ev.AggregateVersion}");
-                    }
-
-                    workTime.AggregateId = ev.AggregateId;
-                }
-
-                workTime.AsDynamic().Apply(ev);
-                last = ev;
-            }
-
-            if (last == null)
-            {
-                throw new Exception("empty event list");
-            }
-
-            workTime.AggregateVersion = last.AggregateVersion;
-
-            return workTime;
-        }
     }
-
-
-    //
-    // public class NoAction : Event { }
-    //
-    // public class Away : Event { }
-
-
 }

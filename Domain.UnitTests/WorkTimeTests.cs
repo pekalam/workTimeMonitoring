@@ -78,13 +78,17 @@ namespace Domain.UnitTests
 
             workTime.StartManually();
             workTime.AddMouseAction(_testMkEvent);
+            workTime.AddKeyboardAction(_testMkEvent);
+            workTime.AddRecognitionFailure(true, false);
 
             workTime.TakeSnapshot();
 
+            workTime.KeyboardActionEvents.Count.Should().Be(0);
             workTime.MouseActionEvents.Count.Should().Be(0);
-            workTime.PendingEvents.Count.Should().Be(4);
+            workTime.FaceRecognitionFailures.Count.Should().Be(0);
+            workTime.PendingEvents.Count.Should().Be(6);
             workTime.PendingEvents.Last().Should().BeOfType<WorkTimeSnapshotCreated>();
-            workTime.AggregateVersion.Should().Be(4);
+            workTime.AggregateVersion.Should().Be(6);
         }
 
         [Fact]
@@ -96,6 +100,7 @@ namespace Domain.UnitTests
             workTime.StartManually();
             workTime.AddMouseAction(_testMkEvent);
             workTime.AddKeyboardAction(_testMkEvent);
+            workTime.AddRecognitionFailure(true, false);
 
 
             var recreated = WorkTimeAggregate.WorkTime.FromEvents(workTime.PendingEvents);
@@ -106,12 +111,17 @@ namespace Domain.UnitTests
                 return options.Excluding(time => time.StartDate)
                     .Excluding(t => t.KeyboardActionEvents)
                     .Excluding(t => t.MouseActionEvents)
+                    .Excluding(t => t.FaceRecognitionFailures)
                     .Excluding(time => time.EndDate)
                     .Excluding(time => time.DateCreated);
             });
-            DateTimeTestExtentsions.SafeCompare(recreated.StartDate.Value, workTime.StartDate.Value);
-            DateTimeTestExtentsions.SafeCompare(recreated.EndDate, workTime.EndDate);
-            DateTimeTestExtentsions.SafeCompare(recreated.DateCreated, now);
+            recreated.StartDate.Value.SafeCompare(workTime.StartDate.Value);
+            recreated.EndDate.SafeCompare(workTime.EndDate);
+            recreated.DateCreated.SafeCompare(now);
+
+            recreated.KeyboardActionEvents.Count.Should().Be(1);
+            recreated.MouseActionEvents.Count.Should().Be(1);
+            recreated.FaceRecognitionFailures.Count.Should().Be(1);
         }
 
         [Fact]

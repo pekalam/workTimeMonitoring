@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Domain;
 using Domain.Repositories;
 using Domain.WorkTimeAggregate;
@@ -17,6 +18,7 @@ namespace Infrastructure.Tests
         public WorkTimeEsRepositoryTests()
         {
             _repository = CreateRepository();
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow;
         }
 
         protected abstract IWorkTimeEsRepository CreateRepository();
@@ -56,10 +58,9 @@ namespace Infrastructure.Tests
             workTime.StartManually();
             workTime.AddMouseAction(new MouseKeyboardEvent());
             workTime.AddKeyboardAction(new MouseKeyboardEvent());
-            
+
             _repository.Save(workTime);
             workTime.PendingEvents.Count.Should().Be(4);
-
             workTime.MarkPendingEventsAsHandled();
 
             var found = _repository.Find(workTime.User, workTime.DateCreated);
@@ -174,7 +175,7 @@ namespace Infrastructure.Tests
         [Fact]
         public void FindLatestFromSnapshot_returns_null_if_does_not_exist()
         {
-            var user = UserTestUtils.CreateTestUser(900);
+            var user = UserTestUtils.CreateTestUser();
             _repository.FindLatestFromSnapshot(user).Should().BeNull();
         }
 

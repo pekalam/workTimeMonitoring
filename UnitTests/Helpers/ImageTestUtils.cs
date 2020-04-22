@@ -9,7 +9,7 @@ namespace Infrastructure.Tests
     {
         public ImageTestUtils()
         {
-            TestImgDir = Environment.GetEnvironmentVariable(nameof(TestImgDir));
+            TestImgDir = Environment.GetEnvironmentVariable("TESTIMGDIR");
             if (!Directory.Exists(TestImgDir))
             {
                 throw new Exception($"Directory {TestImgDir} doesn't exist");

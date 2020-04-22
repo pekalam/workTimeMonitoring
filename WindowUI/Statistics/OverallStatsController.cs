@@ -6,10 +6,31 @@ using System.Windows.Threading;
 using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
+using Domain.WorkTimeAggregate.Events;
+using LiveCharts;
 using LiveCharts.Wpf;
 
 namespace WindowUI.Statistics
 {
+    public static class StatsPieSeriesExtensions
+    {
+        public static IEnumerable<PieSeries> MousePieSeries(this IEnumerable<MouseAction> events)
+        {
+            var series = new PieSeries();
+            series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
+            series.Title = "Mouse";
+            return new[] {series};
+        }
+
+        public static IEnumerable<PieSeries> KeyboardPieSeries(this IEnumerable<KeyboardAction> events)
+        {
+            var series = new PieSeries();
+            series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
+            series.Title = "Keyboard";
+            return new[] {series};
+        }
+    }
+
     public class OverallStatsController
     {
         private OverallStatsViewModel _vm;
@@ -26,18 +47,6 @@ namespace WindowUI.Statistics
             _authenticationService = authenticationService;
         }
 
-        private PieSeries GetMousePieSeries(PieSeries series)
-        {
-            series.Title = "Mouse";
-            return series;
-        }
-
-        private PieSeries GetKeyboardPieSeries(PieSeries series)
-        {
-            series.Title = "Keyboard";
-            return series;
-        }
-
         private void SetupDateSlider()
         {
             var first = _workTimes.First();
@@ -45,7 +54,7 @@ namespace WindowUI.Statistics
 
 
             _startDate = new DateTime(first.DateCreated.Year, first.DateCreated.Month, first.DateCreated.Day);
-            _endDate = new DateTime(last.EndDate.Year, last.EndDate.Month, last.EndDate.Day,23,59,59);
+            _endDate = new DateTime(last.EndDate.Year, last.EndDate.Month, last.EndDate.Day, 23, 59, 59);
 
             var diff = _endDate - _startDate;
 
@@ -63,17 +72,16 @@ namespace WindowUI.Statistics
             var selected = _workTimes.Where(w => _vm.MinDate <= w.DateCreated && _vm.MaxDate >= w.EndDate).ToList();
             var series = selected
                 .SelectMany(w => w.MouseActionEvents)
-                .ToPieSeries().Select(GetMousePieSeries)
+                .MousePieSeries()
                 .Concat(selected
                     .SelectMany(w => w.KeyboardActionEvents)
-                    .ToPieSeries().Select(GetKeyboardPieSeries));
+                    .KeyboardPieSeries());
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
                 _vm.PieSeries.Clear();
                 _vm.PieSeries.AddRange(series);
             }, DispatcherPriority.Input);
-
         }
 
 
@@ -106,6 +114,7 @@ namespace WindowUI.Statistics
             {
                 SetupDateSlider();
             }
+
             _vm.PropertyChanged += VmOnPropertyChanged;
             UpdateChart();
         }
