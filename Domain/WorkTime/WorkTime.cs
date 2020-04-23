@@ -26,164 +26,15 @@ namespace Domain.WorkTimeAggregate
 
     public partial class WorkTime
     {
-        private IEnumerable<UserWorking> GetUserWorkingEvents()
-        {
-            if (_mouseActionEvents.Count == 0 && _keyboardActionEvents.Count == 0)
-            {
-                yield break;
-            }
-
-            DateTime start = _mouseActionEvents.First?.Value.MkEvent.Start ??
-                             _keyboardActionEvents.First.Value.MkEvent.Start;
-
-            while (true)
-            {
-                var firstMouse = _mouseActionEvents.FirstOrDefault(e => e.MkEvent.Start >= start);
-                var firstKeyboard = _keyboardActionEvents.FirstOrDefault(e => e.MkEvent.Start >= start);
-
-                FaceRecognitionFailure? overlappingFailure = null;
-
-                if (firstKeyboard == null && firstMouse == null)
-                {
-                    yield break;
-                }
-
-                overlappingFailure = firstMouse != null
-                    ? _recognitionFailureEvents.FirstOrDefault(e =>
-                        firstMouse.MkEvent.Start >= e.Date &&
-                        firstMouse.MkEvent.Start <= e.Date.AddMilliseconds(e.LengthMs))
-                    : null;
-
-
-                overlappingFailure = overlappingFailure == null && firstKeyboard != null
-                    ? _recognitionFailureEvents.FirstOrDefault(e =>
-                        firstKeyboard.MkEvent.Start >= e.Date &&
-                        firstKeyboard.MkEvent.Start <= e.Date.AddMilliseconds(e.LengthMs))
-                    : null;
-
-
-
-                if (firstKeyboard != null && firstMouse != null)
-                {
-                    if (firstMouse.MkEvent.End < firstKeyboard.MkEvent.End)
-                    {
-                        start = firstKeyboard.MkEvent.Start;
-                    }
-                    else
-                    {
-                        start = firstMouse.MkEvent.Start;
-                    }
-                }
-                else
-                {
-                    start = firstMouse?.MkEvent.Start ?? firstKeyboard.MkEvent.Start;
-                }
-
-                overlappingFailure = overlappingFailure == null
-                    ? _recognitionFailureEvents.FirstOrDefault(e =>
-                        start >= e.Date &&
-                        start <= e.Date.AddMilliseconds(e.LengthMs))
-                    : null;
-
-
-                if (overlappingFailure != null)
-                {
-                    start = overlappingFailure.Date.AddMilliseconds(overlappingFailure.LengthMs);
-                    continue;
-                }
-
-
-                DateTime? newStart = null;
-                if (firstKeyboard != null)
-                {
-                    double idleTime = 0;
-                    var current = _keyboardActionEvents.Find(firstKeyboard);
-                    var next = current.Next;
-                    while (next != null && !_recognitionFailureEvents.Any(e => next.Value.MkEvent.Start >= e.Date &&
-                                                                               next.Value.MkEvent.Start <=
-                                                                               e.Date.AddMilliseconds(e.LengthMs)))
-                    {
-                        idleTime = (long) (next.Value.MkEvent.Start - current.Value.MkEvent.End).TotalMilliseconds;
-                        if (idleTime > 10_000d)
-                        {
-                            break;
-                        }
-
-                        current = next;
-                        next = current.Next;
-                    }
-
-                    newStart = current.Value.MkEvent.End;
-                }
-
-                if (firstMouse != null)
-                {
-                    double idleTime = 0;
-                    var current = _mouseActionEvents.Find(firstMouse);
-                    var next = current.Next;
-                    while (next != null && !_recognitionFailureEvents.Any(e => next.Value.MkEvent.Start >= e.Date &&
-                                                                               next.Value.MkEvent.Start <=
-                                                                               e.Date.AddMilliseconds(e.LengthMs)))
-                    {
-                        idleTime = (long) (next.Value.MkEvent.Start - current.Value.MkEvent.End).TotalMilliseconds;
-                        if (idleTime > 10_000d)
-                        {
-                            break;
-                        }
-
-                        current = next;
-                        next = current.Next;
-                    }
-
-                    if (newStart.HasValue)
-                    {
-                        if (current.Value.MkEvent.End > newStart.Value)
-                        {
-                            newStart = current.Value.MkEvent.End;
-                        }
-                    }
-                    else
-                    {
-                        newStart = current.Value.MkEvent.End;
-                    }
-                }
-
-
-                yield return new UserWorking(AggregateId, start, EventName.UserWorking, newStart.Value);
-
-                start = newStart.Value;
-            }
-        }
-
-
-        private IEnumerable<UserWatchingScreen> GetUserWatchingScreenEvents()
-        {
-            if (_mouseActionEvents.Count == 0 && _keyboardActionEvents.Count == 0)
-            {
-                yield break;
-            }
-
-            var currentMouse = _mouseActionEvents.First;
-            var currentKeyboard = _keyboardActionEvents.First;
-
-            while (currentKeyboard.Next != null || currentMouse.Next != null)
-            {
-                if ((currentMouse.Next.Value.MkEvent.Start - currentMouse.Value.MkEvent.End).TotalMilliseconds > 10_000)
-                {
-                    
-                }
-            }
-        }
     }
 
     public partial class WorkTime
     {
         private readonly List<Event> _pendingEvents = new List<Event>();
-        private readonly LinkedList<MouseAction> _mouseActionEvents = new LinkedList<MouseAction>();
-        private readonly LinkedList<KeyboardAction> _keyboardActionEvents = new LinkedList<KeyboardAction>();
+        private readonly List<MouseAction> _mouseActionEvents = new List<MouseAction>();
+        private readonly List<KeyboardAction> _keyboardActionEvents = new List<KeyboardAction>();
         private readonly List<FaceRecognitionFailure> _recognitionFailureEvents = new List<FaceRecognitionFailure>();
-        private FaceRecognitionFailure? _faceRecognitionFailure;
-
+        private readonly List<UserWatchingScreen> _userWatchingScreenEvents = new List<UserWatchingScreen>();
 
         internal WorkTime(long aggregateId, User.User user, DateTime? startDate, DateTime endDate)
         {
@@ -207,13 +58,11 @@ namespace Domain.WorkTimeAggregate
         public bool FromSnapshot { get; private set; }
 
         public IReadOnlyList<Event> PendingEvents => _pendingEvents;
-        public ICollection<MouseAction> MouseActionEvents => _mouseActionEvents;
-        public ICollection<KeyboardAction> KeyboardActionEvents => _keyboardActionEvents;
+        public IReadOnlyList<MouseAction> MouseActionEvents => _mouseActionEvents;
+        public IReadOnlyList<KeyboardAction> KeyboardActionEvents => _keyboardActionEvents;
         public IReadOnlyList<FaceRecognitionFailure> FaceRecognitionFailures => _recognitionFailureEvents;
+        public IReadOnlyList<UserWatchingScreen> UserWatchingScreen => _userWatchingScreenEvents;
 
-        //implicit events
-        public IEnumerable<UserWorking> UserWorkingEvents => GetUserWorkingEvents();
-        public IEnumerable<UserWatchingScreen> UserWatchingScreenEvents => GetUserWatchingScreenEvents();
 
         private void AddEvent(Event ev)
         {
@@ -273,7 +122,7 @@ namespace Domain.WorkTimeAggregate
             CheckIsStarted();
 
             var ev = new MouseAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
-            _mouseActionEvents.AddLast(ev);
+            _mouseActionEvents.Add(ev);
             AddEvent(ev);
         }
 
@@ -282,7 +131,7 @@ namespace Domain.WorkTimeAggregate
             CheckIsStarted();
 
             var ev = new KeyboardAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
-            _keyboardActionEvents.AddLast(ev);
+            _keyboardActionEvents.Add(ev);
             AddEvent(ev);
         }
 
@@ -293,32 +142,33 @@ namespace Domain.WorkTimeAggregate
             _recognitionFailureEvents.Clear();
         }
 
-        internal void StartRecognitionFailure(bool faceDetected, bool faceRecognized)
+        internal void AddRecognitionFailure(DateTime startDate, bool faceDetected, bool faceRecognized)
         {
             CheckIsStarted();
-            if (_faceRecognitionFailure != null)
-            {
-                throw new Exception("Previous faceRecognitionFailure not stopped");
-            }
 
-            _faceRecognitionFailure = new FaceRecognitionFailure(AggregateId, InternalTimeService.GetCurrentDateTime(),
-                faceRecognized, faceDetected);
+            var end = InternalTimeService.GetCurrentDateTime();
+            if (end <= startDate)
+            {
+                throw new Exception();
+            }
+            var ev = new FaceRecognitionFailure(AggregateId, startDate,
+                faceRecognized, faceDetected, end, (long)(end - startDate).TotalMilliseconds);
+            _recognitionFailureEvents.Add(ev);
+            AddEvent(ev);
         }
 
-        internal void StopRecognitionFailure()
+        internal void AddUserWatchingScreen(DateTime startDate)
         {
             CheckIsStarted();
-            if (_faceRecognitionFailure == null)
+
+            var end = InternalTimeService.GetCurrentDateTime();
+            if (end <= startDate)
             {
-                throw new Exception("faceRecognitionFailure not started");
+                throw new Exception();
             }
-
-            _faceRecognitionFailure.LengthMs =
-                (long) (InternalTimeService.GetCurrentDateTime() - _faceRecognitionFailure.Date).TotalMilliseconds;
-
-            _recognitionFailureEvents.Add(_faceRecognitionFailure);
-            AddEvent(_faceRecognitionFailure);
-            _faceRecognitionFailure = null;
+            var ev = new UserWatchingScreen(AggregateId, startDate, end, (long)(end - startDate).TotalMilliseconds);
+            _userWatchingScreenEvents.Add(ev);
+            AddEvent(ev);
         }
 
         public WorkTimeSnapshotCreated TakeSnapshot()

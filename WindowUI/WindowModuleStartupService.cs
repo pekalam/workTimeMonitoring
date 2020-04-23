@@ -25,7 +25,6 @@ namespace WindowUI
         private void OnAppStarted(MetroWindow shellWindow)
         {
             ShellWindow = shellWindow;
-            //_regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(MainWindowView));
             _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(LoginView));
         }
     }

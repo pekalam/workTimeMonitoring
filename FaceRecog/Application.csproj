@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
-    <ProjectReference Include="..\NotifyBarUI\NotifyBarUI.csproj" />
     <ProjectReference Include="..\WindowUI\WindowUI.csproj" />
   </ItemGroup>
 

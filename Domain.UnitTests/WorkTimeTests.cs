@@ -19,7 +19,11 @@ namespace Domain.UnitTests
     public class WorkTimeTests
     {
         private readonly User.User _user = new User.User(1, new Username("mpekala"));
-        private MouseKeyboardEvent _testMkEvent = new MouseKeyboardEvent();
+        private MouseKeyboardEvent _testMkEvent = new MouseKeyboardEvent()
+        {
+            Start = InternalTimeService.GetCurrentDateTime(),
+            End = InternalTimeService.GetCurrentDateTime().AddMinutes(1),
+        };
 
         public WorkTimeTests()
         {
@@ -84,8 +88,8 @@ namespace Domain.UnitTests
             workTime.StartManually();
             workTime.AddMouseAction(_testMkEvent);
             workTime.AddKeyboardAction(_testMkEvent);
-            workTime.StartRecognitionFailure(true, false);
-            workTime.StopRecognitionFailure();
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(1);
+            workTime.AddRecognitionFailure(DateTime.UtcNow, true, false);
 
             workTime.TakeSnapshot();
 
@@ -106,8 +110,8 @@ namespace Domain.UnitTests
             workTime.StartManually();
             workTime.AddMouseAction(_testMkEvent);
             workTime.AddKeyboardAction(_testMkEvent);
-            workTime.StartRecognitionFailure(true, false);
-            workTime.StopRecognitionFailure();
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(1);
+            workTime.AddRecognitionFailure(DateTime.UtcNow, true, false);
 
 
             var recreated = WorkTimeAggregate.WorkTime.FromEvents(workTime.PendingEvents);
@@ -150,88 +154,10 @@ namespace Domain.UnitTests
             workTime.PendingEvents.Count.Should().Be(0);
             workTime.MouseActionEvents.Count.Should().Be(0);
             workTime.KeyboardActionEvents.Count.Should().Be(0);
+            workTime.UserWatchingScreen.Count.Should().Be(0);
+            workTime.FaceRecognitionFailures.Count.Should().Be(0);
             workTime.AggregateVersion.Should().Be(5);
             workTime.FromSnapshot.Should().BeTrue();
-        }
-
-        [Fact]
-        public void StartStop_faceRecognitionFailure_generates_valid_event()
-        {
-            var workTime = WorkTimeTestUtils.CreateManual();
-            workTime.StartManually();
-            workTime.MarkPendingEventsAsHandled();
-
-            var now = DateTime.UtcNow;
-            InternalTimeService.GetCurrentDateTime = () => now;
-
-            workTime.StartRecognitionFailure(true, false);
-            workTime.PendingEvents.Count.Should().Be(0);
-            workTime.FaceRecognitionFailures.Count.Should().Be(0);
-
-            var nextTime = now.AddMinutes(40);
-            var diffMs = (nextTime - now).TotalMilliseconds;
-            InternalTimeService.GetCurrentDateTime = () => nextTime;
-
-            workTime.StopRecognitionFailure();
-
-            workTime.FaceRecognitionFailures.Count.Should().Be(1);
-
-            workTime.FaceRecognitionFailures.First().LengthMs.Should().Be((long) diffMs);
-        }
-
-        private MouseKeyboardEvent CreateTestMkEvent()
-        {
-            var m1 = new MouseKeyboardEvent();
-            m1.TotalTime = 1500;
-            m1.Start = InternalTimeService.GetCurrentDateTime();
-            m1.End = InternalTimeService.GetCurrentDateTime().AddSeconds(60);
-            return m1;
-        }
-
-        [Fact]
-        public void UserWorking_implicit_event_is_generated()
-        {
-            var workTime = WorkTimeTestUtils.CreateManual();
-            workTime.StartManually();
-            workTime.MarkPendingEventsAsHandled();
-
-            workTime.UserWorkingEvents.Count().Should().Be(0);
-
-            workTime.AddMouseAction(CreateTestMkEvent());
-
-            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddSeconds(2);
-
-            var k = CreateTestMkEvent();
-            workTime.AddKeyboardAction(k);
-
-            workTime.UserWorkingEvents.Count().Should().Be(1);
-            workTime.UserWorkingEvents.First().EndDate.SafeCompare(k.End, 10);
-
-            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(2);
-
-            var m = CreateTestMkEvent();
-            workTime.AddMouseAction(m);
-
-            workTime.UserWorkingEvents.Count().Should().Be(2);
-            workTime.UserWorkingEvents.Last().EndDate.SafeCompare(m.End, 10);
-
-
-            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(4);
-
-            workTime.StartRecognitionFailure(true, false);
-
-            workTime.AddMouseAction(CreateTestMkEvent());
-
-            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(4).AddMilliseconds(1000);
-
-            workTime.AddMouseAction(CreateTestMkEvent());
-
-            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(4).AddMilliseconds(1400);
-
-
-            workTime.StopRecognitionFailure();
-
-            workTime.UserWorkingEvents.Count().Should().Be(2);
         }
     }
 

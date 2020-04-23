@@ -22,12 +22,12 @@ namespace Domain.WorkTimeAggregate
 
         private void Apply(KeyboardAction keyboardAction)
         {
-            _keyboardActionEvents.AddLast(keyboardAction);
+            _keyboardActionEvents.Add(keyboardAction);
         }
 
         private void Apply(MouseAction mouseAction)
         {
-            _mouseActionEvents.AddLast(mouseAction);
+            _mouseActionEvents.Add(mouseAction);
         }
 
         private void Apply(WorkTimeStarted workTimeStarted)
@@ -38,6 +38,11 @@ namespace Domain.WorkTimeAggregate
         private void Apply(FaceRecognitionFailure faceRecognitionFailure)
         {
             _recognitionFailureEvents.Add(faceRecognitionFailure);
+        }
+
+        private void Apply(UserWatchingScreen ev)
+        {
+            _userWatchingScreenEvents.Add(ev);
         }
 
         private void Apply(WorkTimeCreated workTimeCreated)

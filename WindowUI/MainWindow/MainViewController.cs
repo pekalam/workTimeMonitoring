@@ -42,27 +42,27 @@ namespace WindowUI.MainWindow
         {
             _vm = vm;
 
-            // if (_workTimeModuleService.TryRestore())
-            // {
-            //     _notifier.ShowInformation("Continuing stoppped monitoring");
-            // }
-
-            Dispatcher.CurrentDispatcher.InvokeAsync(() =>
+            if (_workTimeModuleService.TryRestore())
             {
-                if (ShouldStartInitFaceStep())
+                _notifier.ShowInformation("Continuing stoppped monitoring");
+            }
+            else
+            {
+                Dispatcher.CurrentDispatcher.InvokeAsync(() =>
                 {
-                    if (ShowInitFaceStepDialog())
+                    if (ShouldStartInitFaceStep())
                     {
-                        _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+                        if (ShowInitFaceStepDialog())
+                        {
+                            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+                        }
+                        else
+                        {
+                            Application.Current.Shutdown();
+                        }
                     }
-                    else
-                    {
-                        Application.Current.Shutdown();
-                    }
-                }
-            });
-
-
+                });
+            }
         }
 
         private bool ShouldStartInitFaceStep()

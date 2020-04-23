@@ -4,7 +4,7 @@ namespace Domain.WorkTimeAggregate.Events
 {
     public class FaceRecognitionFailure : Event
     {
-        public FaceRecognitionFailure(long aggregateId, DateTime date, bool faceRecognized, bool faceDetected) : base(aggregateId, date, EventName.FaceRecognitionFailure)
+        public FaceRecognitionFailure(long aggregateId, DateTime date, bool faceRecognized, bool faceDetected, DateTime endDate, long lengthMs) : base(aggregateId, date, EventName.FaceRecognitionFailure)
         {
             if (faceDetected && faceRecognized)
             {
@@ -12,10 +12,13 @@ namespace Domain.WorkTimeAggregate.Events
             }
             FaceRecognized = faceRecognized;
             FaceDetected = faceDetected;
+            EndDate = endDate;
+            LengthMs = lengthMs;
         }
 
         public bool FaceRecognized { get; }
         public bool FaceDetected { get; }
-        public long LengthMs { get; set; }
+        public DateTime EndDate { get; }
+        public long LengthMs { get; }
     }
 }

@@ -54,11 +54,16 @@ namespace Domain.WorkTimeAggregate
                 End = _start.Value.AddMilliseconds(_timeline.Last()),
                 TotalTime = SumTime(),
             };
+            Reset();
+            return ev;
+        }
+
+        public void Reset()
+        {
             _currentTimeLineStart = null;
             _currentTimeLineEvents.Clear();
             _timeline.Clear();
             _start = null;
-            return ev;
         }
 
         private void AddNewEvent(MonitorEvent ev)

@@ -14,7 +14,7 @@ namespace WindowUI.Statistics
 {
     public static class StatsPieSeriesExtensions
     {
-        public static IEnumerable<PieSeries> MousePieSeries(this IEnumerable<MouseAction> events)
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<MouseAction> events)
         {
             var series = new PieSeries();
             series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
@@ -22,7 +22,7 @@ namespace WindowUI.Statistics
             return new[] {series};
         }
 
-        public static IEnumerable<PieSeries> KeyboardPieSeries(this IEnumerable<KeyboardAction> events)
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<KeyboardAction> events)
         {
             var series = new PieSeries();
             series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
@@ -30,11 +30,19 @@ namespace WindowUI.Statistics
             return new[] {series};
         }
 
-        public static IEnumerable<PieSeries> UserWorkingPieSeries(this IEnumerable<UserWorking> events)
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<UserWatchingScreen> events)
         {
             var series = new PieSeries();
-            series.Values = new ChartValues<int>(new int[] { (int) events.Sum(e => (e.EndDate - e.Date).TotalMilliseconds) });
-            series.Title = "Working";
+            series.Values = new ChartValues<long>(new long[] { events.Sum(e => e.TotalTimeMs) });
+            series.Title = "Watching screen";
+            return new[] { series };
+        }
+
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<FaceRecognitionFailure> events)
+        {
+            var series = new PieSeries();
+            series.Values = new ChartValues<long>(new long[] { events.Sum(e => e.LengthMs) });
+            series.Title = "Away";
             return new[] { series };
         }
     }
@@ -79,11 +87,10 @@ namespace WindowUI.Statistics
         {
             var selected = _workTimes.Where(w => _vm.MinDate <= w.DateCreated && _vm.MaxDate >= w.EndDate).ToList();
             var series = selected
-                .SelectMany(w => w.MouseActionEvents)
-                .MousePieSeries()
-                .Concat(selected
-                    .SelectMany(w => w.KeyboardActionEvents)
-                    .KeyboardPieSeries());
+                .SelectMany(w => w.MouseActionEvents).ToPieSeries()
+                .Concat(selected.SelectMany(w => w.KeyboardActionEvents).ToPieSeries())
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen).ToPieSeries())
+                .Concat(selected.SelectMany(s => s.FaceRecognitionFailures).ToPieSeries()).ToList();
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {

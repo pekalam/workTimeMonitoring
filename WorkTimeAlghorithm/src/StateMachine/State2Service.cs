@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net.Mail;
+using System.Threading.Tasks;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Serilog;
@@ -25,26 +26,36 @@ namespace WorkTimeAlghorithm.StateMachine
             _config = configurationService.Get<State2Configuration>("state2");
         }
 
+
+
         public async Task Enter(WMonitorAlghorithm.State state, StateMachine<WMonitorAlghorithm.Triggers, WMonitorAlghorithm.States> sm, WorkTime workTime)
         {
             state.CanCapureMouseKeyboard = true;
 
             _workTimeEventService.StartTempChanges();
+            _workTimeEventService.StartRecognitionFailure();
+
+            bool faceDetected = false, faceRecognized = false;
 
             foreach (var timeMs in _config.RetryDelays)
             {
 
-                var (faceDetected, faceRecognized) = await _faceRecognition.RecognizeFace(workTime.User);
+                (faceDetected, faceRecognized) = await _faceRecognition.RecognizeFace(workTime.User);
 
 
                 if (!faceDetected && timeMs == _config.FaceDetectionDelayThreshold)
                 {
+                    state.CanCapureMouseKeyboard = false;
+                    _workTimeEventService.DiscardTempChanges();
+                    _workTimeEventService.AddRecognitionFailure(false, faceRecognized);
                     sm.Next(WMonitorAlghorithm.Triggers.NoFace);
                     return;
                 }
 
                 if (faceRecognized && faceDetected)
                 {
+                    _workTimeEventService.StopRecognitionFailure();
+                    _workTimeEventService.CommitTempChanges();
                     sm.Next(WMonitorAlghorithm.Triggers.FaceRecog);
                     return;
                 }
@@ -54,15 +65,14 @@ namespace WorkTimeAlghorithm.StateMachine
                 await Task.Delay(timeMs);
             }
 
+            _workTimeEventService.DiscardTempChanges();
+            _workTimeEventService.AddRecognitionFailure(faceDetected, faceRecognized);
             sm.Next(WMonitorAlghorithm.Triggers.FaceNotRecog);
         }
 
         public void Exit(WMonitorAlghorithm.Triggers trigger)
         {
-            if (trigger == WMonitorAlghorithm.Triggers.FaceRecog)
-            {
-                _workTimeEventService.CommitTempChanges();
-            }
+
         }
     }
 }
