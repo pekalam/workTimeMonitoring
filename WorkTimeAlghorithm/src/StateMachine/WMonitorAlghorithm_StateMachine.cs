@@ -33,7 +33,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
         private async void State3Action(Triggers t)
         {
-            await _state3.Enter(_state, _sm, _workTime);
+            await _state3.Enter(_state, _sm, _workTime, this);
         }
 
 

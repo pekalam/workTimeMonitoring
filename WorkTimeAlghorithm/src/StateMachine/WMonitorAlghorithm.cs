@@ -9,12 +9,14 @@ namespace WorkTimeAlghorithm.StateMachine
 {
     public partial class WMonitorAlghorithm
     {
-        private MouseKeyboardMonitorService _mouseKeyboardMonitor = new MouseKeyboardMonitorService();
-        private WorkTimeEventService _workTimeEventService;
-        private State2Service _state2;
-        private State3Service _state3;
-        private State5Service _state5 = new State5Service();
+        private readonly MouseKeyboardMonitorService _mouseKeyboardMonitor = new MouseKeyboardMonitorService();
+        private readonly WorkTimeEventService _workTimeEventService;
+        private readonly State2Service _state2;
+        private readonly State3Service _state3;
+        private readonly State5Service _state5 = new State5Service();
         private WorkTime _workTime;
+
+        public event Action<(bool faceDetected, bool faceRecognized)> State3DetectionResult; 
 
         public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService)
         {

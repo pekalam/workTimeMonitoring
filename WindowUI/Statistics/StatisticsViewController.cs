@@ -1,18 +1,30 @@
-﻿namespace WindowUI.Statistics
+﻿using Domain.Repositories;
+using Domain.User;
+using Prism.Events;
+
+namespace WindowUI.Statistics
 {
+
     public class StatisticsViewController
     {
-        private readonly WorkTimeModuleService _workTimeModuleService;
         private StatisticsViewModel _vm;
+        private IAuthenticationService _authenticationService;
+        private IWorkTimeEsRepository _repository;
 
-        public StatisticsViewController(WorkTimeModuleService workTimeModuleService)
+        public StatisticsViewController(IAuthenticationService authenticationService, IWorkTimeEsRepository repository)
         {
-            _workTimeModuleService = workTimeModuleService;
+            _authenticationService = authenticationService;
+            _repository = repository;
         }
 
         public void Init(StatisticsViewModel vm)
         {
             _vm = vm;
+
+            if (_repository.CountForUser(_authenticationService.User) == 0)
+            {
+                _vm.IsShowingStats = false;
+            }
         }
     }
 }
