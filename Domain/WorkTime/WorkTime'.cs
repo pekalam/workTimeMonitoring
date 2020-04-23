@@ -22,12 +22,12 @@ namespace Domain.WorkTimeAggregate
 
         private void Apply(KeyboardAction keyboardAction)
         {
-            _keyboardActionEvents.Add(keyboardAction);
+            _keyboardActionEvents.AddLast(keyboardAction);
         }
 
         private void Apply(MouseAction mouseAction)
         {
-            _mouseActionEvents.Add(mouseAction);
+            _mouseActionEvents.AddLast(mouseAction);
         }
 
         private void Apply(WorkTimeStarted workTimeStarted)

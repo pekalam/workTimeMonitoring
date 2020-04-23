@@ -9,6 +9,7 @@ using Unity;
 using WindowUI.FaceInitialization;
 using WindowUI.LoginWindow;
 using WindowUI.MainWindow;
+using WindowUI.Profile;
 using WindowUI.StartWork;
 using WindowUI.Statistics;
 
@@ -28,6 +29,7 @@ namespace WindowUI
             containerRegistry.RegisterForNavigation<FaceInitializationView>();
             containerRegistry.RegisterForNavigation<StartWorkView>();
             containerRegistry.RegisterForNavigation<StatisticsView>();
+            containerRegistry.RegisterForNavigation<ProfileView>();
 
             containerRegistry.GetContainer()
                 .RegisterType<IFaceInitializationController, FaceInitializationController>();
@@ -37,6 +39,9 @@ namespace WindowUI
 
             containerRegistry.GetContainer()
                 .RegisterType<ILoginViewController, LoginViewController>();
+
+            containerRegistry.GetContainer()
+                .RegisterType<IProfileViewController, ProfileViewController>();
 
             containerRegistry.GetContainer().RegisterSingleton<WorkTimeModuleService>();
 

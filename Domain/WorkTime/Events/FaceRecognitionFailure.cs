@@ -16,5 +16,6 @@ namespace Domain.WorkTimeAggregate.Events
 
         public bool FaceRecognized { get; }
         public bool FaceDetected { get; }
+        public long LengthMs { get; set; }
     }
 }

@@ -29,6 +29,14 @@ namespace WindowUI.Statistics
             series.Title = "Keyboard";
             return new[] {series};
         }
+
+        public static IEnumerable<PieSeries> UserWorkingPieSeries(this IEnumerable<UserWorking> events)
+        {
+            var series = new PieSeries();
+            series.Values = new ChartValues<int>(new int[] { (int) events.Sum(e => (e.EndDate - e.Date).TotalMilliseconds) });
+            series.Title = "Working";
+            return new[] { series };
+        }
     }
 
     public class OverallStatsController

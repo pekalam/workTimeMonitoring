@@ -9,6 +9,7 @@ using Infrastructure.Repositories;
 using MahApps.Metro.Controls;
 using Prism.Regions;
 using WindowUI.FaceInitialization;
+using WindowUI.Profile;
 using WindowUI.StartWork;
 using WindowUI.Statistics;
 
@@ -63,6 +64,9 @@ namespace WindowUI.MainWindow
                     break;
                 case NavigationItems.Statistics:
                     regionManager.Regions[MainWindowRegions.MainContentRegion].RequestNavigate(nameof(StatisticsView));
+                    break;
+                case NavigationItems.Profile:
+                    regionManager.Regions[MainWindowRegions.MainContentRegion].RequestNavigate(nameof(ProfileView));
                     break;
             }
 

@@ -24,7 +24,7 @@ namespace Domain.Services
         private readonly MouseKeyboardEventBuilder _keyboardEventBuilder;
         private readonly IWorkTimeUow _uow;
         private readonly IWorkTimeEsRepository _repository;
-        private WorkTime _workTime;
+        private WorkTime? _workTime;
             
         public WorkTimeEventService(IWorkTimeUow uow, IWorkTimeEsRepository repository, IConfigurationService configurationService)
         {

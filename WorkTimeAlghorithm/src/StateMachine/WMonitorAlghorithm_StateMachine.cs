@@ -12,7 +12,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
         internal enum States
         {
-            s1,s2,s3,s5,s6
+            s1,s2,s3,s5
         }
 
         internal class State
@@ -62,16 +62,9 @@ namespace WorkTimeAlghorithm.StateMachine
 
                 .CreateState(States.s5)
                 .Ignoring()
-                .Transition(Triggers.MouseMv, States.s6)
-                .Transition(Triggers.KeyboardMv, States.s6)
                 .Transition(Triggers.FaceNotRecog, States.s2)
                 .Enter(async t => await _state5.Enter(_state, _sm))
                 .Exit(t => _state5.Exit())
-                .End()
-                
-                .CreateState(States.s6)
-                .Ignoring()
-                .Enter(async t => await _state6.Enter(_state, _sm))
                 .End()
 
                 .Build(States.s1);

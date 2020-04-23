@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
@@ -10,21 +11,18 @@ namespace WorkTimeAlghorithm.StateMachine
     {
         private MouseKeyboardMonitorService _mouseKeyboardMonitor = new MouseKeyboardMonitorService();
         private WorkTimeEventService _workTimeEventService;
-        private AlghorithmFaceRecognition _faceRecognition;
         private State2Service _state2;
         private State3Service _state3;
         private State5Service _state5 = new State5Service();
-        private State6Service _state6 = new State6Service();
         private WorkTime _workTime;
 
-        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService)
+        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService)
         {
             _mouseKeyboardMonitor.KeyboardAction.Subscribe(OnKeyboardAction);
             _mouseKeyboardMonitor.MouseMoveAction.Subscribe(OnMouseAction);
             _workTimeEventService = workTimeEventService;
-            _faceRecognition = faceRecognition;
-            _state2 = new State2Service(faceRecognition, workTimeEventService);
-            _state3 = new State3Service(faceRecognition, workTimeEventService);
+            _state2 = new State2Service(faceRecognition, workTimeEventService, configurationService);
+            _state3 = new State3Service(faceRecognition, workTimeEventService, configurationService);
             InitStateMachine();
         }
 
