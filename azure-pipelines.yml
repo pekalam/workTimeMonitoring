@@ -39,6 +39,7 @@ stages:
           configuration: 'Debug'
   - job: 'Test'
     displayName: 'Run tests'
+    dependsOn: 'Build'
     steps:
       - task: DownloadSecureFile@1
         name: faceRecogTestFixtures
@@ -71,6 +72,7 @@ stages:
           searchFolder: '$(System.DefaultWorkingDirectory)'
   - job: 'Publish'
     displayName: 'Publish release version'
+    dependsOn: 'Test'
     steps:
       - task: DotNetCoreCLI@2
         displayName: 'Run dotnet publish'
