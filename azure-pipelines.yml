@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- redesign
+- master
 
 pool:
   vmImage: 'windows-2019'
@@ -13,11 +13,11 @@ variables:
   testImgDir: '$(System.DefaultWorkingDirectory)\FaceRecogTestFixtures'
 
 stages:
-- stage: BuildAndTestDebug
-  displayName: BuildAndTestDebug
+- stage: ReleaseStage
+  displayName: ReleaseStage
   jobs:  
-  - job: 'Build'
-    displayName: 'Build project'
+  - job: 'ReleaseJob'
+    displayName: 'Build, Test, Publish'
     steps:
       - task: UseDotNet@2
         displayName: 'Use .NET Core sdk 3.1'
@@ -47,7 +47,7 @@ stages:
           destinationFolder: '$(testImgDir)'
           cleanDestinationFolder: false
       - task: VSTest@2
-        displayName: 'Run unit ests'
+        displayName: 'Run unit tests'
         inputs:
           testImgDir: '$(testImgDir)'
           testSelector: 'testAssemblies'
@@ -67,9 +67,15 @@ stages:
             !**\obj\**
           searchFolder: '$(System.DefaultWorkingDirectory)'
       - task: DotNetCoreCLI@2
-        displayName: 'Publish x64 Release version'
+        displayName: 'Run dotnet publish'
         inputs:
           command: 'publish'
           publishWebProjects: false
           projects: 'Application\Application.csproj'
           arguments: '-c Release -r win-x64 -o AppRelease'
+      - task: ZipAndDropBox@0
+        displayName: 'Send to dropbox'
+        inputs:
+          sourceDir: '$(System.DefaultWorkingDirectory)\AppRelease'
+          zipPath: 'Application.zip'
+          dropboxtoken: '$(DropboxToken)'
