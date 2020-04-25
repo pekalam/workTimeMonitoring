@@ -51,9 +51,6 @@ namespace WindowUI.LoginWindow
         public void Init(LoginViewModel vm)
         {
             _vm = vm;
-
-            _authenticationService.Login("test", "pass");
-            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(MainWindowView));
         }
     }
 }

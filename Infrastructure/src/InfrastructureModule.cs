@@ -20,6 +20,7 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
+using Serilog.Events;
 using ToastNotifications;
 using ToastNotifications.Lifetime;
 using ToastNotifications.Position;
@@ -28,12 +29,47 @@ using WorkTimeAlghorithm;
 
 namespace Infrastructure
 {
+    internal static class LoggingConfiguration
+    {
+        private const string OutputTemplate =
+            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Properties}{NewLine}{Exception}";
+
+        [Conditional("RELEASE")]
+        private static void ConfigureRelease(LoggerConfiguration c)
+        {
+            c.Enrich.WithThreadId().Enrich.WithMemoryUsage()
+                .MinimumLevel.Information()
+                .WriteTo.File("log.txt", fileSizeLimitBytes: 1024*1024*512, rollOnFileSizeLimit:true, outputTemplate: OutputTemplate)
+                .WriteTo.Console(outputTemplate: OutputTemplate);
+        }
+
+        private static void ConfigureDebug(LoggerConfiguration c)
+        {
+#if RELEASE
+#else
+            c.Enrich.WithThreadId().Enrich.WithMemoryUsage()
+                .MinimumLevel.Debug()
+                .WriteTo.Console(outputTemplate: OutputTemplate);
+#endif
+        }
+
+        public static void Configure()
+        {
+            var config = new LoggerConfiguration();
+            ConfigureRelease(config);
+            ConfigureDebug(config);
+
+
+            Log.Logger = config.CreateLogger();
+        }
+    }
+
     public class InfrastructureModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            // System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
-            //     .TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
+                .TypeHandle);
 
             containerProvider.Resolve<IEventAggregator>().GetEvent<InfrastructureModuleLoaded>().Publish(this);
         }
@@ -46,11 +82,7 @@ namespace Infrastructure
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .CreateLogger();
-
+            LoggingConfiguration.Configure();
             containerRegistry.RegisterInstance<ILogger>(Log.Logger);
 
             containerRegistry.RegisterInstance<IMapper>(new MapperConfiguration(cfg =>
@@ -115,7 +147,6 @@ namespace Infrastructure
     {
         internal static void Init()
         {
-            Application.Current.DispatcherUnhandledException += CurrentOnDispatcherUnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
             TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
         }
@@ -123,11 +154,6 @@ namespace Infrastructure
         public static void Handle(Exception e)
         {
             Log.Logger.Fatal(e, "Unhandled exception");
-        }
-
-        public static void CurrentOnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            Log.Logger.Fatal(e.Exception, "Unhandled exception");
         }
 
         public static void TaskSchedulerOnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)

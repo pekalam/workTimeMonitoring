@@ -45,7 +45,7 @@ namespace WorkTimeAlghorithm
             var right = landmarks[FacePart.Chin].First(p => p.X == landmarks[FacePart.Chin].Max(v => v.X));
 
             #region DEBUG
-#if SHOW_MARKERS
+#if DEV_MODE
             Cv2.Ellipse(frame, new RotatedRect(new Point2f(noseTop.X, noseTop.Y), new Size2f(2, 2), 0), Scalar.Yellow);
             Cv2.Ellipse(frame, new RotatedRect(new Point2f(left.X, left.Y), new Size2f(2, 2), 0), Scalar.Violet);
             Cv2.Ellipse(frame, new RotatedRect(new Point2f(right.X, right.Y), new Size2f(2, 2), 0), Scalar.PaleGreen);
@@ -70,7 +70,7 @@ namespace WorkTimeAlghorithm
             var rightEye = landmarks[FacePart.RightEyebrow].Last();
 
             #region DEBUG
-#if SHOW_MARKERS
+#if DEV_MODE
             Cv2.Ellipse(frame, new RotatedRect(new Point2f(leftEye.X, leftEye.Y), new Size2f(2, 2), 0), Scalar.Red);
             Cv2.Ellipse(frame, new RotatedRect(new Point2f(rightEye.X, rightEye.Y), new Size2f(2, 2), 0), Scalar.Red);
 #endif
@@ -108,7 +108,7 @@ namespace WorkTimeAlghorithm
             }
 
             #region DEBUG
-#if SHOW_MARKERS
+#if DEV_MODE
             foreach (var facePart in Enum.GetValues(typeof(FacePart)).Cast<FacePart>())
             {
                 foreach (var landmark in landmarks)

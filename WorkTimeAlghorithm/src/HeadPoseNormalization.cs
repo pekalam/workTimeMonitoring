@@ -126,7 +126,7 @@ namespace WorkTimeAlghorithm
                 .Select(v => v.i).First();
 
 
-#if SHOW_MARKERS
+#if DEV_MODE
             foreach (var i in innerEyesAndBottomLip)
             {
                 Cv2.Ellipse(dst,
