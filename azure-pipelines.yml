@@ -72,4 +72,4 @@ stages:
           command: 'publish'
           publishWebProjects: false
           projects: 'FaceRecog\Application.csproj'
-          arguments: '-c Release -r win-x64'
+          arguments: '-c Release -r win-x64 -o AppRelease'
