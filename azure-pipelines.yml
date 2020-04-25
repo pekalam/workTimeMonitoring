@@ -16,8 +16,8 @@ stages:
 - stage: ReleaseStage
   displayName: ReleaseStage
   jobs:  
-  - job: 'Build'
-    displayName: 'Build project'
+  - job: 'ReleaseJob'
+    displayName: 'Build, Test, Publish'
     steps:
       - task: UseDotNet@2
         displayName: 'Use .NET Core sdk 3.1'
@@ -37,10 +37,6 @@ stages:
           vsVersion: '16.0'
           platform: 'x64'
           configuration: 'Debug'
-  - job: 'Test'
-    displayName: 'Run tests'
-    dependsOn: 'Build'
-    steps:
       - task: DownloadSecureFile@1
         name: faceRecogTestFixtures
         inputs:
@@ -70,10 +66,6 @@ stages:
             !**\*TestAdapter.dll
             !**\obj\**
           searchFolder: '$(System.DefaultWorkingDirectory)'
-  - job: 'Publish'
-    displayName: 'Publish release version'
-    dependsOn: 'Test'
-    steps:
       - task: DotNetCoreCLI@2
         displayName: 'Run dotnet publish'
         inputs:
