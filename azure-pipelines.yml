@@ -19,53 +19,7 @@ stages:
   - job: 'Build'
     displayName: 'Build project'
     steps:
-      - task: UseDotNet@2
-        displayName: 'Use .NET Core sdk 3.1'
-        inputs:
-          packageType: 'sdk'
-          version: '3.1.101'
-      - task: DotNetCoreCLI@2
-        displayName: 'Restore packages'
-        inputs:
-          command: 'restore'
-          projects: '**\*.csproj'
-          feedsToUse: 'select'
-      - task: VSBuild@1
-        displayName: 'Build solution'
-        inputs:
-          solution: 'FaceRecog.sln'
-          vsVersion: '16.0'
-          platform: 'x64'
-          configuration: 'Debug'
-      - task: DownloadSecureFile@1
-        name: faceRecogTestFixtures
-        inputs:
-          secureFile: 'FaceRecogTestFixtures.zip'
-      - task: ExtractFiles@1
-        inputs:
-          archiveFilePatterns: '$(faceRecogTestFixtures.secureFilePath)'
-          destinationFolder: '$(testImgDir)'
-          cleanDestinationFolder: false
-      - task: VSTest@2
-        displayName: 'Run unit ests'
-        inputs:
-          testImgDir: '$(testImgDir)'
-          testSelector: 'testAssemblies'
-          testAssemblyVer2: |
-            Domain.UnitTests\**\*Tests.dll
-            WorkTimeAlghorithm.UnitTests\**\*Tests.dll
-            !**\*TestAdapter.dll
-            !**\obj\**
-          searchFolder: '$(System.DefaultWorkingDirectory)'
-      - task: VSTest@2
-        displayName: 'Run integration tests'
-        inputs:
-          testSelector: 'testAssemblies'
-          testAssemblyVer2: |
-            Infrastructure.Tests\**\*Tests.dll
-            !**\*TestAdapter.dll
-            !**\obj\**
-          searchFolder: '$(System.DefaultWorkingDirectory)'
+
       - task: DotNetCoreCLI@2
         displayName: 'Publish x64 Release version'
         inputs:
@@ -73,3 +27,8 @@ stages:
           publishWebProjects: false
           projects: 'Application\Application.csproj'
           arguments: '-c Release -r win-x64 -o AppRelease'
+      - task: ZipAndDropBox@0
+        inputs:
+          sourceDir: '$(System.DefaultWorkingDirectory)\AppRelease'
+          zipPath: 'Application.zip'
+          dropboxtoken: '$(DropboxToken)'
