@@ -68,7 +68,7 @@ namespace WindowUI.MainWindow
         private bool ShouldStartInitFaceStep()
         {
             var user = _authenticationService.User;
-            if (_testImageRepository.GetReferenceImages(user).Count >= 3)
+            if (_testImageRepository.GetReferenceImages(user).Count >= InitFaceService.MinImages)
             {
                 return false;
             }

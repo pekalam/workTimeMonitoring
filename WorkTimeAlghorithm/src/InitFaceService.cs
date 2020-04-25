@@ -32,6 +32,8 @@ namespace WorkTimeAlghorithm
 
     public class InitFaceService
     {
+        public const int MinImages = 3;
+
         private readonly ITestImageRepository _testImageRepository;
         private readonly IDnFaceRecognition _dnFaceRecognition;
         private readonly IHcFaceDetection _faceDetection;
@@ -188,7 +190,7 @@ namespace WorkTimeAlghorithm
                     tasks.Add(CreateFaceValidationTask(face1, face2, faceEncodings[^2], faceEncodings[^1], ct));
                 }
 
-                if (testImages.Count == 3)
+                if (testImages.Count == MinImages)
                 {
                     interrupted = false;
                     ReportInitFaceProgress(null, state: WorkTimeAlghorithm.InitFaceProgress.PhotosTaken);

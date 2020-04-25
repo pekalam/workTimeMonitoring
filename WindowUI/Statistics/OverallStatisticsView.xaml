@@ -14,21 +14,23 @@
              Name="root"
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{Binding Source={d:DesignInstance Type=designer:OverallViewModelDesign, IsDesignTimeCreatable=True}}">
-    <Grid Background="White">
+    <UserControl.Resources>
+        <local:DateTimeRangeConverter x:Key="dateTimeRangeConverter"/>
+    </UserControl.Resources>
+    <Grid Background="White" >
         <Grid.RowDefinitions>
-            <RowDefinition Height="100" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0">
-            <mah:DropDownButton Margin="5" Height="Auto"
-                                Content="Chart type"
-                                ItemsSource="{Binding ChartTypes}">
-                <mah:DropDownButton.Icon>
-                    <iconPacks:PackIconMaterial Margin="6" Kind="Audiobook" />
-                </mah:DropDownButton.Icon>
-            </mah:DropDownButton>
-        </StackPanel>
+        <Grid Margin="10,30,0,20" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding MinDate, Converter={StaticResource ResourceKey=dateTimeRangeConverter}, ConverterParameter=True}" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" FontSize="18"/>
+            <TextBlock Text="{Binding MaxDate, Converter={StaticResource ResourceKey=dateTimeRangeConverter}, ConverterParameter=False}" Grid.Column="1" HorizontalAlignment="Center" TextAlignment="Center" FontWeight="Bold" FontSize="18"/>
+        </Grid>
 
         <wpf:PieChart Grid.Row="1" Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
                       DataTooltip="{x:Null}" Series="{Binding PieSeries}" />
@@ -67,13 +69,13 @@
                                         mah:TextBoxHelper.UseFloatingWatermark="False"
                                         HandVisibility="HourMinute"
                                         IsClockVisible="True"
-                                        SelectedDateTime="{Binding MinDate}" />
+                                        SelectedDateTime="{Binding MinDate, UpdateSourceTrigger=LostFocus}" />
                     <mah:DateTimePicker Margin="20,0,0,0"
                                         mah:TextBoxHelper.ClearTextButton="True"
                                         mah:TextBoxHelper.UseFloatingWatermark="False"
                                         HandVisibility="HourMinute"
                                         IsClockVisible="True"
-                                        SelectedDateTime="{Binding MaxDate}" />
+                                        SelectedDateTime="{Binding MaxDate, UpdateSourceTrigger=LostFocus}" />
                 </StackPanel>
             </StackPanel>
 

@@ -24,10 +24,12 @@ namespace WindowUI.FaceInitialization
         ICommand StepInfoRetryClick { get; }
         ICommand StartFaceInitCommand { get; }
         ICommand BackCommand { get; }
+        void Exit();
     }
 
     public class FaceInitializationController : IFaceInitializationController
     {
+        private ICommand _userPanelNavigation;
         private FaceInitializationViewModel _vm;
         private readonly ICaptureService _captureService;
         private readonly IHcFaceDetection _faceDetection;
@@ -88,7 +90,8 @@ namespace WindowUI.FaceInitialization
             _vm.ShowOverlay("Initializing camera...");
 
 
-
+            _userPanelNavigation = new DelegateCommand(() => { }, () => false);
+            WindowUiModuleCommands.NavigateProfile.RegisterCommand(_userPanelNavigation);
 
             await StartInitFaceStep();
         }
@@ -97,6 +100,11 @@ namespace WindowUI.FaceInitialization
         public ICommand StepInfoRetryClick { get; }
         public ICommand StartFaceInitCommand { get; }
         public ICommand BackCommand { get; }
+
+        public void Exit()
+        {
+            WindowUiModuleCommands.NavigateProfile.UnregisterCommand(_userPanelNavigation);
+        }
 
         private async Task StartInitFaceStep()
         {

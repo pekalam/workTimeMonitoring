@@ -6,47 +6,9 @@ using System.Windows.Threading;
 using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
-using Domain.WorkTimeAggregate.Events;
-using LiveCharts;
-using LiveCharts.Wpf;
 
 namespace WindowUI.Statistics
 {
-    public static class StatsPieSeriesExtensions
-    {
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<MouseAction> events)
-        {
-            var series = new PieSeries();
-            series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
-            series.Title = "Mouse";
-            return new[] {series};
-        }
-
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<KeyboardAction> events)
-        {
-            var series = new PieSeries();
-            series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
-            series.Title = "Keyboard";
-            return new[] {series};
-        }
-
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<UserWatchingScreen> events)
-        {
-            var series = new PieSeries();
-            series.Values = new ChartValues<long>(new long[] { events.Sum(e => e.TotalTimeMs) });
-            series.Title = "Watching screen";
-            return new[] { series };
-        }
-
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<FaceRecognitionFailure> events)
-        {
-            var series = new PieSeries();
-            series.Values = new ChartValues<long>(new long[] { events.Sum(e => e.LengthMs) });
-            series.Title = "Away";
-            return new[] { series };
-        }
-    }
-
     public class OverallStatsController
     {
         private OverallStatsViewModel _vm;
@@ -104,7 +66,12 @@ namespace WindowUI.Statistics
         {
             _vm.MinDate = _startDate.AddDays(_vm.LowerDate - _vm.MinDays);
             _vm.MaxDate = _endDate.AddDays(-(_vm.MaxDays - _vm.UpperDate));
-            UpdateChart();
+        }
+
+        private void UpdateDayRange()
+        {
+            _vm.MinDays = 0;
+            _vm.MaxDays = (int) (_vm.MaxDate - _vm.MinDate).TotalDays;
         }
 
         private void VmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -113,10 +80,20 @@ namespace WindowUI.Statistics
             {
                 case nameof(OverallStatsViewModel.LowerDate):
                     UpdateDates();
-                    return;
+                    UpdateChart();
+                    break;
                 case nameof(OverallStatsViewModel.UpperDate):
                     UpdateDates();
-                    return;
+                    UpdateChart();
+                    break;
+                case nameof(OverallStatsViewModel.MinDate):
+                    UpdateChart();
+                    UpdateDayRange();
+                    break;
+                case nameof(OverallStatsViewModel.MaxDate):
+                    UpdateChart();
+                    UpdateDayRange();
+                    break;
             }
         }
 

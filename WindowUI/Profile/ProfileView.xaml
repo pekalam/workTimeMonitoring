@@ -1,9 +1,43 @@
-﻿<UserControl x:Class="WindowUI.Profile.ProfileView"
+﻿<UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"             
-             prism:ViewModelLocator.AutoWireViewModel="True">
-    <Grid>
-            
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d" x:Class="WindowUI.Profile.ProfileView"             
+             prism:ViewModelLocator.AutoWireViewModel="True" d:DesignWidth="1200" d:DesignHeight="800">
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" MinWidth="180"/>
+            <ColumnDefinition Width="3*" MinWidth="200"/>
+        </Grid.ColumnDefinitions>
+        <Border BorderThickness="0,0,1,0" BorderBrush="Black">
+            <StackPanel Margin="0,20,0,0">
+                <iconPacks:PackIconFontAwesome Kind="UserSolid"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,20,0,30"
+                                               VerticalAlignment="Center" Width="150" Height="150"/>
+                <TextBlock Text="{Binding Username}" TextAlignment="Center" FontSize="20"/>
+            </StackPanel>
+        </Border>
+        <StackPanel Grid.Column="1" Margin="20,20,20,0">
+            <TextBlock Text="User images:" Margin="0,0,0,15" FontSize="16"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Image Source="{Binding ReferenceImgs[0]}"/>
+                <Image Margin="5,0,0,0" Grid.Column="1" Source="{Binding ReferenceImgs[1]}"/>
+                <Image Margin="5,0,0,0" Grid.Column="2" Source="{Binding ReferenceImgs[2]}"/>
+            </Grid>
+            <StackPanel Orientation="Horizontal">
+
+            </StackPanel>
+            <TextBlock Margin="0,20,0,0" Text="Click to restart initialization step" FontSize="14"/>
+            <Button Margin="0,10,0,0" HorizontalAlignment="Left" Content="Restart"></Button>
+        </StackPanel>
+        
     </Grid>
 </UserControl>

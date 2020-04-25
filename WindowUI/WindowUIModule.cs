@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using System.Windows;
 using CommonServiceLocator;
+using Prism.Commands;
 using Prism.Ioc;
 using Prism.Modularity;
+using Prism.Regions;
 using Prism.Unity;
 using Unity;
 using WindowUI.FaceInitialization;
@@ -15,6 +17,16 @@ using WindowUI.Statistics;
 
 namespace WindowUI
 {
+    public static class WindowUiModuleCommands
+    {
+        public static CompositeCommand NavigateProfile { get; }
+
+        static WindowUiModuleCommands()
+        {
+            NavigateProfile = new CompositeCommand();
+        }
+    }
+
     public class WindowUiModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)

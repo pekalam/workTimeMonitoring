@@ -7,6 +7,7 @@ using CommonServiceLocator;
 using Infrastructure;
 using Infrastructure.Repositories;
 using MahApps.Metro.Controls;
+using Prism.Commands;
 using Prism.Regions;
 using WindowUI.FaceInitialization;
 using WindowUI.Profile;
@@ -30,6 +31,10 @@ namespace WindowUI.MainWindow
             {
                 GlobalExceptionHandler.Handle(e);
             }
+            WindowUiModuleCommands.NavigateProfile.RegisterCommand(new DelegateCommand(() =>
+                {
+                    HamburgerMenuControl.SelectedOptionsIndex = 0;
+                }));
         }
 
         private void HamburgerMenuControl_HamburgerButtonClick(object sender, System.Windows.RoutedEventArgs e)

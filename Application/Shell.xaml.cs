@@ -1,12 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 using CommonServiceLocator;
 using Gma.System.MouseKeyHook;
 using Infrastructure;
 using Infrastructure.Messaging;
 using MahApps.Metro.Controls;
+using Prism.Commands;
 using Prism.Events;
+using Prism.Mvvm;
+using Prism.Regions;
+using WindowUI.MainWindow;
+using WindowUI.Profile;
 
 namespace Application
 {
