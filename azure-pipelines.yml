@@ -66,3 +66,10 @@ stages:
             !**\*TestAdapter.dll
             !**\obj\**
           searchFolder: '$(System.DefaultWorkingDirectory)'
+      - task: DotNetCoreCLI@2
+        displayName: 'Publish x64 Release version'
+        inputs:
+          command: 'publish'
+          publishWebProjects: false
+          projects: 'FaceRecog\Application.csproj'
+          arguments: '-c Release -r win-x64'
