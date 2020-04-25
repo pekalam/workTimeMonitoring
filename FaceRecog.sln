@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29926.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "FaceRecog\Application.csproj", "{B855B6EB-14F0-41C8-88E0-B0BF33A33155}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{B855B6EB-14F0-41C8-88E0-B0BF33A33155}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Tests", "UnitTests\Infrastructure.Tests.csproj", "{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Tests", "Infrastructure.Tests\Infrastructure.Tests.csproj", "{1B4FDBCE-A76A-45A8-9F1E-7D863CE09802}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{20AE21FC-8E7E-4C44-B319-6B1F8B0D0285}"
 EndProject

@@ -62,7 +62,7 @@ stages:
         inputs:
           testSelector: 'testAssemblies'
           testAssemblyVer2: |
-            UnitTests\**\*Tests.dll
+            Infrastructure.Tests\**\*Tests.dll
             !**\*TestAdapter.dll
             !**\obj\**
           searchFolder: '$(System.DefaultWorkingDirectory)'
@@ -71,5 +71,5 @@ stages:
         inputs:
           command: 'publish'
           publishWebProjects: false
-          projects: 'FaceRecog\Application.csproj'
+          projects: 'Application\Application.csproj'
           arguments: '-c Release -r win-x64 -o AppRelease'
