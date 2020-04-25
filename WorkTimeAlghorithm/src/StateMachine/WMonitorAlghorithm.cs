@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading.Tasks;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
@@ -62,10 +63,10 @@ namespace WorkTimeAlghorithm.StateMachine
             }
         }
 
-        public void Start()
+        public async void Start()
         {
             _mouseKeyboardMonitor.Start();
-            _sm.Next(Triggers.Start);
+            await _sm.NextAsync(Triggers.Start);
         }
     }
 }

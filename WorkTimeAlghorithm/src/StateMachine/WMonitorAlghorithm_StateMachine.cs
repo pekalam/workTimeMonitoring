@@ -24,18 +24,7 @@ namespace WorkTimeAlghorithm.StateMachine
 #if DEV_MODE
         private StateMachineVis<Triggers, States> _vis;
 #endif
-        private State _state = new State();
-
-        private async void State2Action(Triggers t)
-        {
-            await _state2.Enter(_state, _sm, _workTime);
-        }
-
-        private async void State3Action(Triggers t)
-        {
-            await _state3.Enter(_state, _sm, _workTime, this);
-        }
-
+        private readonly State _state = new State();
 
         private void BuildStateMachine()
         {
@@ -46,7 +35,7 @@ namespace WorkTimeAlghorithm.StateMachine
                 .End()
 
                 .CreateState(States.s2)
-                .Enter(State2Action)
+                .EnterAsync((t) => _state2.Enter(_state, _sm, _workTime))
                 .Exit(t => _state2.Exit(t))
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.FaceNotRecog, States.s3)
@@ -56,14 +45,14 @@ namespace WorkTimeAlghorithm.StateMachine
 
                 .CreateState(States.s3)
                 .Ignoring()
-                .Enter(State3Action)
+                .EnterAsync(t => _state3.Enter(_state, _sm, _workTime, this))
                 .Transition(Triggers.FaceRecog, States.s5)
                 .End()
 
                 .CreateState(States.s5)
                 .Ignoring()
                 .Transition(Triggers.FaceNotRecog, States.s2)
-                .Enter(async t => await _state5.Enter(_state, _sm))
+                .EnterAsync(t => _state5.Enter(_state, _sm))
                 .Exit(t => _state5.Exit())
                 .End()
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows;
 using Infrastructure;
-using NotifyBarUI;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
@@ -19,7 +18,6 @@ namespace Application
             base.ConfigureModuleCatalog(moduleCatalog);
             moduleCatalog.AddModule<InfrastructureModule>();
             moduleCatalog.AddModule<WindowUiModule>();
-            moduleCatalog.AddModule<NotifyBarUIModule>();
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)

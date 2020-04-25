@@ -1,4 +1,5 @@
-﻿using System.Net.Mail;
+﻿using System;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
@@ -32,6 +33,7 @@ namespace WorkTimeAlghorithm.StateMachine
         {
             state.CanCapureMouseKeyboard = true;
 
+            throw new Exception();
             _workTimeEventService.StartTempChanges();
             _workTimeEventService.StartRecognitionFailure();
 
@@ -40,7 +42,7 @@ namespace WorkTimeAlghorithm.StateMachine
             foreach (var timeMs in _config.RetryDelays)
             {
 
-                (faceDetected, faceRecognized) = await _faceRecognition.RecognizeFace(workTime.User);
+                (faceDetected, faceRecognized) = await _faceRecognition.RecognizeFace(workTime.User).ConfigureAwait(false);
 
 
                 if (!faceDetected && timeMs == _config.FaceDetectionDelayThreshold)
@@ -62,7 +64,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
 
                 Log.Logger.Debug($"Starting {timeMs} state 2 delay");
-                await Task.Delay(timeMs);
+                await Task.Delay(timeMs).ConfigureAwait(false);
             }
 
             _workTimeEventService.DiscardTempChanges();
