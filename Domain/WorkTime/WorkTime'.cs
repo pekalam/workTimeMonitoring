@@ -10,6 +10,12 @@ namespace Domain.WorkTimeAggregate
     {
         public void MarkPendingEventsAsHandled() => _pendingEvents.Clear();
 
+        private void AddEvent(Event ev)
+        {
+            ev.AggregateVersion = ++AggregateVersion;
+            _pendingEvents.Add(ev);
+        }
+
         private void Apply(WorkTimeSnapshotCreated snapshotCreated)
         {
             var snap = snapshotCreated.Snapshot;
@@ -43,6 +49,16 @@ namespace Domain.WorkTimeAggregate
         private void Apply(UserWatchingScreen ev)
         {
             _userWatchingScreenEvents.Add(ev);
+        }
+
+        private void Apply(WorkTimeInterrupted ev)
+        {
+            _lastInterruptedEvent = ev;
+        }
+
+        private void Apply(WorkTimeRestored ev)
+        {
+            _lastInterruptedEvent = null;
         }
 
         private void Apply(WorkTimeCreated workTimeCreated)

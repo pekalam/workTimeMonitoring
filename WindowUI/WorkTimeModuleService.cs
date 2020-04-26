@@ -4,6 +4,8 @@ using System.Text;
 using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
+using Infrastructure.Messaging;
+using Prism.Events;
 using WorkTimeAlghorithm.StateMachine;
 
 namespace WindowUI
@@ -11,16 +13,21 @@ namespace WindowUI
     public class WorkTimeModuleService
     {
         private readonly IAuthenticationService _authenticationService;
-        private readonly WorkTimeBuildService _workTimeBuildService;
+        private readonly WorkTimeBuildService _buildService;
         private readonly WMonitorAlghorithm _alghorithm;
-        private readonly IWorkTimeEsRepository _workTimeRepository;
+        private readonly WorkTimeRestoreService _restoreService;
+        private readonly IWorkTimeEsRepository _repository;
 
-        public WorkTimeModuleService(IAuthenticationService authenticationService, WorkTimeBuildService workTimeBuildService, WMonitorAlghorithm alghorithm, IWorkTimeEsRepository workTimeRepository)
+        public WorkTimeModuleService(IAuthenticationService authenticationService, WorkTimeBuildService buildService,
+            WMonitorAlghorithm alghorithm, IWorkTimeEsRepository repository, WorkTimeRestoreService restoreService
+            ,IEventAggregator ea)
         {
             _authenticationService = authenticationService;
-            _workTimeBuildService = workTimeBuildService;
+            _buildService = buildService;
             _alghorithm = alghorithm;
-            _workTimeRepository = workTimeRepository;
+            _repository = repository;
+            _restoreService = restoreService;
+            ea.GetEvent<AppShuttingDownEvent>().Subscribe(() => _restoreService.SetInterrupted(CurrentWorkTime), true);
         }
 
         public bool AlgorithmStarted { get; private set; }
@@ -28,7 +35,7 @@ namespace WindowUI
 
         public void StartNew(DateTime? start, DateTime end)
         {
-            var created = _workTimeBuildService.CreateStartedManually(_authenticationService.User, end, true);
+            var created = _buildService.CreateStartedManually(_authenticationService.User, end, true);
             StartAlgorithm(created);
         }
 
@@ -42,26 +49,31 @@ namespace WindowUI
 
         public void Pause()
         {
-            throw new NotImplementedException();
+            CurrentWorkTime.Pause();
+            _alghorithm.Pause();
+        }
+
+        public void Resume()
+        {
+            CurrentWorkTime.Resume();
+            _alghorithm.Resume();
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            CurrentWorkTime.Stop();
+            _alghorithm.Stop();
         }
 
         public bool TryRestore()
         {
             var user = _authenticationService.User;
-            var restoredWorkTime = _workTimeRepository.FindLatestFromSnapshot(user);
-            if (restoredWorkTime != null)
+            if (_restoreService.Restore(user, out var restored))
             {
-                if (restoredWorkTime.EndDate > DateTime.UtcNow)
-                {
-                    StartAlgorithm(restoredWorkTime);
-                    return true;
-                }
+                StartAlgorithm(restored);
+                return true;
             }
+
             return false;
         }
     }

@@ -1,4 +1,4 @@
-﻿<application:AcrylicWindow x:Class="Application.Shell"
+﻿<mah:MetroWindow x:Class="Application.Shell"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,11 +9,11 @@
              xmlns:application="clr-namespace:Application"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:windowUi="clr-namespace:WindowUI;assembly=WindowUI"
-             AllowsTransparency="True"
              ResizeMode="CanResize"
+             Background="{x:Null}"
              IgnoreTaskbarOnMaximize="False"
              mc:Ignorable="d"
-             Title="Shell" Height="800" Width="1200" Background="{x:Null}" >
+             Title="Shell" Height="800" Width="1200" >
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands ShowLastSeparator="False">
             <Button Content="User"
@@ -28,4 +28,4 @@
         <ContentControl
             regions:RegionManager.RegionName="{x:Static infrastructure:ShellRegions.MainRegion}" />
     </Grid>
-</application:AcrylicWindow>
+</mah:MetroWindow>
