@@ -30,6 +30,7 @@ namespace MouseKeyboardMonitorServiceTest
             InitializeComponent();
             _service.MouseMoveAction.ObserveOn(SynchronizationContext.Current).Subscribe((e) => Console.WriteLine($"Mouse action: {e.TotalTimeMs}"));
             _service.KeyboardAction.ObserveOn(SynchronizationContext.Current).Subscribe((e) => Console.WriteLine($"Keyboard action: {e.TotalTimeMs}"));
+            _service.Start();
         }
     }
 }

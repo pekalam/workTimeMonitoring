@@ -24,7 +24,7 @@
                         </Grid>
                         <StackPanel Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock Text="No statistics available" FontSize="30"/>
-                            <TextBlock Text="Monitoring not started" HorizontalAlignment="Center" FontSize="22"/>
+                            <!-- <TextBlock Text="" HorizontalAlignment="Center" FontSize="22"/> -->
                         </StackPanel>
                     </Grid>
                 </ScrollViewer>

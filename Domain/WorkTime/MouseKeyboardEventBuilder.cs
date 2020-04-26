@@ -12,14 +12,16 @@ namespace Domain.WorkTimeAggregate
 
         private readonly int _windowSizeMs;
         private readonly int _monitorEventWindowSizeMs;
+        private readonly string _executable;
 
         private int? _currentTimeLineStart;
         private DateTime? _start;
 
-        public MouseKeyboardEventBuilder(int windowSizeMs, int monitorEventWindowSizeMs)
+        public MouseKeyboardEventBuilder(int windowSizeMs, int monitorEventWindowSizeMs, string executable)
         {
             _windowSizeMs = windowSizeMs;
             _monitorEventWindowSizeMs = monitorEventWindowSizeMs;
+            _executable = executable;
         }
 
         private int SumTime()
@@ -53,6 +55,7 @@ namespace Domain.WorkTimeAggregate
                 Start = _start.Value,
                 End = _start.Value.AddMilliseconds(_timeline.Last()),
                 TotalTime = SumTime(),
+                Executable = _executable
             };
             Reset();
             return ev;

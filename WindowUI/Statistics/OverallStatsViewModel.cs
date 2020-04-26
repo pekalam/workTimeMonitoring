@@ -17,7 +17,7 @@ namespace WindowUI.Statistics
         private int _minDays;
         private DateTime _maxDate;
         private DateTime _minDate;
-        private List<string> _chartTypes = new List<string>(){ "Pie chart", "Column chart" };
+        private List<string> _chartTypes = new List<string>(){ "Applications", "Summary" };
 
         public OverallStatsViewModel(OverallStatsController controller)
         {

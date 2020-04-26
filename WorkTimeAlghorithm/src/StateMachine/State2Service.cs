@@ -33,7 +33,6 @@ namespace WorkTimeAlghorithm.StateMachine
         {
             state.CanCapureMouseKeyboard = true;
 
-            throw new Exception();
             _workTimeEventService.StartTempChanges();
             _workTimeEventService.StartRecognitionFailure();
 

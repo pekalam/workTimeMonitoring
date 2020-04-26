@@ -14,7 +14,7 @@ namespace Domain.UnitTests
 
         public MouseKeyboardEventReducerServiceTest()
         {
-            _service = new MouseKeyboardEventBuilder(60_000, 1000);
+            _service = new MouseKeyboardEventBuilder(60_000, 1000, "C:\\example\\example.exe");
         }
 
 

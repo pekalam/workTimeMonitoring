@@ -6,5 +6,6 @@ namespace Domain.WorkTimeAggregate.Events
     {
         public int TotalTimeMs;
         public DateTime EventStart;
+        public string? Executable;
     }
 }

@@ -15,4 +15,8 @@ namespace Domain.Repositories
         public WorkTime? FindLatestFromSnapshot(User.User user);
         public void Rollback(WorkTimeSnapshotCreated snapshot);
     }
+
+    public interface IWorkTimeFinder
+    {
+    }
 }

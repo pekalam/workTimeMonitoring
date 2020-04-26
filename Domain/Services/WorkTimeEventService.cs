@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Timers;
 using Domain.Repositories;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
@@ -21,27 +22,47 @@ namespace Domain.Services
         public int WatchingScreenThreshold { get; set; } = 30_000;
     }
 
+    internal class MKEventBuilders
+    {
+        private WorkTimeEventServiceSettings _config;
+
+        public MKEventBuilders(WorkTimeEventServiceSettings config, string executable)
+        {
+            _config = config;
+            MouseEventBuilder = new MouseKeyboardEventBuilder(_config.MouseEventWindowSz, _config.MouseEventMonitorWindowSz, executable);
+            KeyboardEventBuilder = new MouseKeyboardEventBuilder(_config.KeyboardEventWindowSz, _config.KeyboardEventMonitorWindowSz, executable);
+        }
+
+        public readonly MouseKeyboardEventBuilder MouseEventBuilder;
+        public readonly MouseKeyboardEventBuilder KeyboardEventBuilder;
+    }
+
+
+
     public class WorkTimeEventService
     {
-        private readonly MouseKeyboardEventBuilder _mouseEventBuilder;
-        private readonly MouseKeyboardEventBuilder _keyboardEventBuilder;
+        private readonly Dictionary<string, MKEventBuilders> _eventBuilders = new Dictionary<string, MKEventBuilders>();
+        private readonly MouseKeyboardEventBuilder _allMouseBuilder;
+        private readonly MouseKeyboardEventBuilder _allKeyboardBuilder;
         private readonly IWorkTimeUow _uow;
         private readonly IWorkTimeEsRepository _repository;
+        private readonly WorkTimeEventServiceSettings _config;
         private WorkTime? _workTime;
         private DateTime? _lastMkEvent;
         private DateTime? _recognitionFailureStart;
-        private WorkTimeEventServiceSettings _config;
+        private string? _lastActiveWinExecutable;
+
 
         public WorkTimeEventService(IWorkTimeUow uow, IWorkTimeEsRepository repository, IConfigurationService configurationService)
         {
             var settings = configurationService.Get<WorkTimeEventServiceSettings>("eventGathering");
-            _mouseEventBuilder = new MouseKeyboardEventBuilder(settings.MouseEventWindowSz, settings.MouseEventMonitorWindowSz);
-            _keyboardEventBuilder = new MouseKeyboardEventBuilder(settings.KeyboardEventWindowSz, settings.KeyboardEventMonitorWindowSz);
             _uow = uow;
             _repository = repository;
             _config = settings;
             MouseEventBufferSz = settings.MouseEventBufferSz;
             KeyboardEventBufferSz = settings.KeyboardEventBufferSz;
+            _allKeyboardBuilder = new MouseKeyboardEventBuilder(_config.KeyboardEventWindowSz, _config.KeyboardEventMonitorWindowSz, string.Empty);
+            _allMouseBuilder = new MouseKeyboardEventBuilder(_config.MouseEventWindowSz, _config.MouseEventMonitorWindowSz, string.Empty);
         }
 
         public int MouseEventBufferSz { get; set; }
@@ -50,6 +71,8 @@ namespace Domain.Services
         public void SetWorkTime(WorkTime workTime)
         {
             _lastMkEvent = InternalTimeService.GetCurrentDateTime();
+            //todo current active wind
+            _lastActiveWinExecutable = "Unknown";
             _workTime = workTime;
         }
 
@@ -102,21 +125,46 @@ namespace Domain.Services
                 if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
                 {
                     Debug.WriteLine("Adding user watching screen");
-                    _workTime?.AddUserWatchingScreen(_lastMkEvent.Value);
+                    _workTime?.AddUserWatchingScreen(_lastMkEvent.Value, _lastActiveWinExecutable);
                 }
             }
 
             _lastMkEvent = ev.EventStart;
+            _lastActiveWinExecutable = ev.Executable ?? "Unknown";
+        }
+
+        private MKEventBuilders GetEventBuilder(string? executable)
+        {
+            if (executable == null)
+            {
+                Debug.WriteLine("Null executable");
+                executable = "Unknown";
+            }
+            if (_eventBuilders.TryGetValue(executable, out var builders))
+            {
+                return builders;
+            }
+            else
+            {
+                builders =  new MKEventBuilders(_config, executable);
+                _eventBuilders[executable] = builders;
+                return builders;
+            }
         }
 
         public void AddMouseEvent(MonitorEvent ev)
         {
             Debug.Assert(_workTime != null);
             TryAddUserWatchingScreenEvent(ev);
-            if (_mouseEventBuilder.AddEvent(ev, out var created))
+            if (GetEventBuilder(ev.Executable).MouseEventBuilder.AddEvent(ev, out var created))
             {
                 _workTime.AddMouseAction(created);
                 SaveIfBufferSz();
+                _allMouseBuilder.AddEvent(ev, out created);
+            }
+            else if (_allMouseBuilder.AddEvent(ev, out created))
+            {
+                SaveIfBufferSz();   
             }
         }
 
@@ -124,9 +172,14 @@ namespace Domain.Services
         {
             Debug.Assert(_workTime != null);
             TryAddUserWatchingScreenEvent(ev);
-            if (_keyboardEventBuilder.AddEvent(ev, out var created))
+            if (GetEventBuilder(ev.Executable).KeyboardEventBuilder.AddEvent(ev, out var created))
             {
                 _workTime.AddKeyboardAction(created);
+                SaveIfBufferSz();
+                _allKeyboardBuilder.AddEvent(ev, out created);
+            }
+            else if (_allKeyboardBuilder.AddEvent(ev, out created))
+            {
                 SaveIfBufferSz();
             }
         }
@@ -134,17 +187,20 @@ namespace Domain.Services
         private void Flush()
         {
             Debug.Assert(_workTime != null);
-            var keyboard = _keyboardEventBuilder.Flush();
-            var mouse = _mouseEventBuilder.Flush();
-
-            if (keyboard != null)
+            foreach (var builders in _eventBuilders.Values)
             {
-                _workTime.AddKeyboardAction(keyboard);
-            }
+                var mouse = builders.MouseEventBuilder.Flush();
+                var keyboard = builders.KeyboardEventBuilder.Flush();
 
-            if (mouse != null)
-            {
-                _workTime.AddMouseAction(mouse);
+                if (keyboard != null)
+                {
+                    _workTime.AddKeyboardAction(keyboard);
+                }
+
+                if (mouse != null)
+                {
+                    _workTime.AddMouseAction(mouse);
+                }
             }
         }
 
@@ -169,6 +225,7 @@ namespace Domain.Services
         private void SaveIfBufferSz()
         {
             Debug.Assert(_workTime != null);
+            Flush();
             if (_workTime.KeyboardActionEvents.Count > KeyboardEventBufferSz)
             {
                 Debug.WriteLine($"Keyboard events count ({_workTime.KeyboardActionEvents.Count}) exceeded buffer sz {KeyboardEventBufferSz}");
@@ -198,8 +255,11 @@ namespace Domain.Services
             Debug.Assert(_workTime != null);
             Debug.WriteLine("Discarding temp changes");
             _lastMkEvent = null;
-            _keyboardEventBuilder.Reset();
-            _mouseEventBuilder.Reset();
+            foreach (var builders in _eventBuilders.Values)
+            {
+                builders.MouseEventBuilder.Reset();
+                builders.KeyboardEventBuilder.Reset();
+            }
             _uow.Rollback();
             _uow.Unregister(_workTime);
         }

@@ -1,6 +1,6 @@
 {
   "sqlite": {
-    "ConnectionString": "Data Source=.\\testappdb.db;"
+    "ConnectionString": "Data Source=F:\\WorktimeMeasurement\\testappdb.db;"
   },
   "eventGathering": {
     "MouseEventWindowSz": "5000",
@@ -8,6 +8,7 @@
     "KeyboardEventWindowSz": "5000",
     "KeyboardEventMonitorWindowSz": "250",
     "MouseEventBufferSz": "0",
-    "KeyboardEventBufferSz": "0"
+    "KeyboardEventBufferSz": "0",
+    "WatchingScreenThreshold":  "2000" 
   } 
 }
