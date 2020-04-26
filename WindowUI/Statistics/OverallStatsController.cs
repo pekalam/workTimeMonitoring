@@ -42,72 +42,147 @@ namespace WindowUI.Statistics
 
             _vm.MaxDays = (int) diff.TotalDays;
             _vm.MinDays = 0;
-            _vm.UpperDate = _vm.MaxDays;
-            _vm.LowerDate = _vm.MinDays;
+            _vm.UpperDays = _vm.MaxDays;
+            _vm.LowerDays = _vm.MinDays;
             _vm.MinDate = _startDate;
             _vm.MaxDate = _endDate;
+            _vm.SelectedMinDate = _startDate;
+            _vm.SelectedMaxDate = _endDate;
         }
 
-        private void UpdateChart()
+        private void UpdateApplicationsSeries(List<WorkTime> selected)
         {
-            var selected = _workTimes.Where(w => _vm.MinDate <= w.DateCreated && _vm.MaxDate >= w.EndDate).ToList();
             var series = selected
                 .SelectMany(w => w.MouseActionEvents)
                 .GroupBy(a => a.MkEvent.Executable)
                 .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
                 .SelectMany(s => s)
-                
+
                 .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
                     .GroupBy(a => a.MkEvent.Executable)
                     .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
                     .SelectMany(s => s))
-                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
-                        .GroupBy(a => a.Executable)
-                        .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
-                        .SelectMany(s => s))
-                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
-                            .ToList();
 
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
+                    .GroupBy(a => a.Executable)
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .SelectMany(s => s))
+
+                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
+                .ToList();
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
-                _vm.PieSeries.Clear();
-                _vm.PieSeries.AddRange(series);
+                _vm.ApplicationsSeries.Clear();
+                _vm.ApplicationsSeries.AddRange(series);
             }, DispatcherPriority.Input);
         }
 
+        private void UpdateSummarySeries(List<WorkTime> selected)
+        {
+            var series = selected.SelectMany(w => w.MouseActionEvents).ToPieSeries()
+                .Concat(selected.SelectMany(w => w.KeyboardActionEvents).ToPieSeries())
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen).ToPieSeries())
+                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries()).ToList();
+
+            Dispatcher.CurrentDispatcher.InvokeAsync(() =>
+            {
+                _vm.SummarySeries.Clear();
+                _vm.SummarySeries.AddRange(series);
+            }, DispatcherPriority.Input);
+        }
+
+        private void UpdateSingleApplicationSeries(List<WorkTime> selected)
+        {
+            _vm.Executables = selected.SelectMany(w => w.MouseActionEvents).Select(w => w.MkEvent.Executable)
+                .Concat(selected.SelectMany(w => w.KeyboardActionEvents).Select(w => w.MkEvent.Executable))
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen).Select(w => w.Executable))
+                .Distinct().ToList();
+
+            var series = selected.SelectMany(w => w.MouseActionEvents)
+                .Where(a => a.MkEvent.Executable == _vm.SelectedExecutable).ToPieSeries()
+                .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
+                    .Where(a => a.MkEvent.Executable == _vm.SelectedExecutable).ToPieSeries())
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
+                    .Where(a => a.Executable == _vm.SelectedExecutable).ToPieSeries()).ToList();
+
+            Dispatcher.CurrentDispatcher.InvokeAsync(() =>
+            {
+                _vm.SingleApplicationSeries.Clear();
+                _vm.SingleApplicationSeries.AddRange(series);
+            }, DispatcherPriority.Input);
+        }
+
+        private void UpdateMonitorignsList(List<WorkTime> selected)
+        {
+            _vm.Monitorings = selected.Select(s => new WorkTimeViewModel(s)).ToList();
+        }
+
+        private void UpdateChart()
+        {
+            var selected = _workTimes.Where(w => _vm.SelectedMinDate <= w.DateCreated && _vm.SelectedMaxDate >= w.EndDate).ToList();
+
+            switch (_vm.SelectedChartType)
+            {
+                case OverallStatsChartTypes.Applications:
+                    UpdateApplicationsSeries(selected);
+                    break;
+                case OverallStatsChartTypes.Summary:
+                    UpdateSummarySeries(selected);
+                    break;
+                case OverallStatsChartTypes.Monitorings:
+                    UpdateMonitorignsList(selected);
+                    break;
+                case OverallStatsChartTypes.SingleApplication:
+                    UpdateSingleApplicationSeries(selected);
+                    break;
+            }
+
+        }
 
         private void UpdateDates()
         {
-            _vm.MinDate = _startDate.AddDays(_vm.LowerDate - _vm.MinDays);
-            _vm.MaxDate = _endDate.AddDays(-(_vm.MaxDays - _vm.UpperDate));
+            _vm.SelectedMinDate = _startDate.AddDays(_vm.LowerDays - _vm.MinDays);
+            _vm.SelectedMaxDate = _endDate.AddDays(-(_vm.MaxDays - _vm.UpperDays));
         }
 
-        private void UpdateDayRange()
+        private void UpdateDateRange()
         {
+            _startDate = _vm.MinDate;
+            _endDate = _vm.MaxDate;
+            var diff = _endDate - _startDate;
+            _vm.MaxDays = (int)diff.TotalDays;
             _vm.MinDays = 0;
-            _vm.MaxDays = (int) (_vm.MaxDate - _vm.MinDate).TotalDays;
         }
+
 
         private void VmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case nameof(OverallStatsViewModel.LowerDate):
+                case nameof(OverallStatsViewModel.LowerDays):
                     UpdateDates();
                     UpdateChart();
                     break;
-                case nameof(OverallStatsViewModel.UpperDate):
+                case nameof(OverallStatsViewModel.UpperDays):
                     UpdateDates();
                     UpdateChart();
                     break;
                 case nameof(OverallStatsViewModel.MinDate):
+                    UpdateDateRange();
+                    UpdateDates();
                     UpdateChart();
-                    UpdateDayRange();
                     break;
                 case nameof(OverallStatsViewModel.MaxDate):
+                    UpdateDateRange();
+                    UpdateDates();
                     UpdateChart();
-                    UpdateDayRange();
+                    break;
+                case nameof(OverallStatsViewModel.SelectedChartType):
+                    UpdateChart();
+                    break;
+                case nameof(OverallStatsViewModel.SelectedExecutable):
+                    UpdateChart();
                     break;
             }
         }
