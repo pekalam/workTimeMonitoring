@@ -253,6 +253,7 @@ namespace WindowUI.FaceInitialization
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            _controller.Exit();
         }
     }
 }
