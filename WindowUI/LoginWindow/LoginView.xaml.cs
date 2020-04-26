@@ -32,7 +32,10 @@ namespace WindowUI.LoginWindow
         private void password_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             var vm = (DataContext as LoginViewModel);
-            vm.PasswordValue += e.Text;
+            if (e.Text[0] >= 32 && e.Text[0] <= 126)
+            {
+                vm.PasswordValue += e.Text;
+            }
         }
     }
 }
