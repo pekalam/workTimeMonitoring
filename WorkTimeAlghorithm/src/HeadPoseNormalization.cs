@@ -129,7 +129,7 @@ namespace WorkTimeAlghorithm
 #if DEV_MODE
             foreach (var i in innerEyesAndBottomLip)
             {
-                Cv2.Ellipse(dst,
+                Cv2.Ellipse(src,
                     new RotatedRect(new Point2f(points[i].X, points[i].Y), new Size2f(5, 5), 0),
                     Scalar.Red);
             }
