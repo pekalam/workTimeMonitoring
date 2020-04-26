@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
+using LiveCharts;
+using LiveCharts.Wpf;
 
 namespace WindowUI.Statistics
 {
@@ -49,10 +52,22 @@ namespace WindowUI.Statistics
         {
             var selected = _workTimes.Where(w => _vm.MinDate <= w.DateCreated && _vm.MaxDate >= w.EndDate).ToList();
             var series = selected
-                .SelectMany(w => w.MouseActionEvents).ToPieSeries()
-                .Concat(selected.SelectMany(w => w.KeyboardActionEvents).ToPieSeries())
-                .Concat(selected.SelectMany(w => w.UserWatchingScreen).ToPieSeries())
-                .Concat(selected.SelectMany(s => s.FaceRecognitionFailures).ToPieSeries()).ToList();
+                .SelectMany(w => w.MouseActionEvents)
+                .GroupBy(a => a.MkEvent.Executable)
+                .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                .SelectMany(s => s)
+                
+                .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
+                    .GroupBy(a => a.MkEvent.Executable)
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .SelectMany(s => s))
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
+                        .GroupBy(a => a.Executable)
+                        .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                        .SelectMany(s => s))
+                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
+                            .ToList();
+
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {

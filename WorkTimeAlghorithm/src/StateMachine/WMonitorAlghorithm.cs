@@ -10,7 +10,7 @@ namespace WorkTimeAlghorithm.StateMachine
 {
     public partial class WMonitorAlghorithm
     {
-        private readonly MouseKeyboardMonitorService _mouseKeyboardMonitor = new MouseKeyboardMonitorService();
+        private readonly IMouseKeyboardMonitorService _mouseKeyboardMonitor;
         private readonly WorkTimeEventService _workTimeEventService;
         private readonly State2Service _state2;
         private readonly State3Service _state3;
@@ -19,8 +19,9 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public event Action<(bool faceDetected, bool faceRecognized)> State3DetectionResult; 
 
-        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService)
+        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService, IMouseKeyboardMonitorService mouseKeyboardMonitor)
         {
+            _mouseKeyboardMonitor = mouseKeyboardMonitor;
             _mouseKeyboardMonitor.KeyboardAction.Subscribe(OnKeyboardAction);
             _mouseKeyboardMonitor.MouseMoveAction.Subscribe(OnMouseAction);
             _workTimeEventService = workTimeEventService;

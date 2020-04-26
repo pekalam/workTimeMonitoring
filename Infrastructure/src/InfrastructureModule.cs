@@ -110,6 +110,7 @@ namespace Infrastructure
                 .RegisterType<IWorkTimeIdGeneratorService, SqliteWorkTimeIdGeneratorService>();
             containerRegistry.GetContainer().RegisterType<IAuthDataRepository, SqliteAuthDataRepository>();
             containerRegistry.GetContainer().RegisterType<IUserRepository, SqliteUserRepository>();
+            containerRegistry.GetContainer().RegisterType<IMouseKeyboardMonitorService, MouseKeyboardMonitorService>();
 
             containerRegistry.GetContainer().RegisterSingleton<WorkTimeEventService>();
 

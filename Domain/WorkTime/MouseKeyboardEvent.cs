@@ -8,5 +8,6 @@ namespace Domain.WorkTimeAggregate
         public DateTime End { get; set; }
         public int[] EventsTimeline { get; set; }
         public int TotalTime { get; set; }
+        public string Executable { get; set; }
     }
 }

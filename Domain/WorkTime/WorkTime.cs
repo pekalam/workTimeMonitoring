@@ -157,7 +157,7 @@ namespace Domain.WorkTimeAggregate
             AddEvent(ev);
         }
 
-        internal void AddUserWatchingScreen(DateTime startDate)
+        internal void AddUserWatchingScreen(DateTime startDate, string executable)
         {
             CheckIsStarted();
 
@@ -166,7 +166,7 @@ namespace Domain.WorkTimeAggregate
             {
                 throw new Exception();
             }
-            var ev = new UserWatchingScreen(AggregateId, startDate, end, (long)(end - startDate).TotalMilliseconds);
+            var ev = new UserWatchingScreen(AggregateId, startDate, end, (long)(end - startDate).TotalMilliseconds, executable);
             _userWatchingScreenEvents.Add(ev);
             AddEvent(ev);
         }

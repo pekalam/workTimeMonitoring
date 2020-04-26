@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using Domain;
 using Domain.WorkTimeAggregate.Events;
 using Gma.System.MouseKeyHook;
+using Serilog;
 
 namespace WorkTimeAlghorithm
 {
@@ -13,13 +18,25 @@ namespace WorkTimeAlghorithm
     {
         IObservable<MonitorEvent> MouseMoveAction { get; }
         IObservable<MonitorEvent> KeyboardAction { get; }
+        void Start();
     }
+
 
     public class MouseKeyboardMonitorService : IMouseKeyboardMonitorService
     {
-        private const int KeyboardDelay = 1000;
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
 
-        private IKeyboardMouseEvents _hook;
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern int GetWindowThreadProcessId(IntPtr handle, out uint processId);
+
+        
+
+        private const int KeyboardDelay = 1000;
+        private IntPtr _lastWin = IntPtr.Zero;
+        private string? _lastWinExePath;
+
+        private IKeyboardMouseEvents? _hook;
         private readonly Subject<int> _mouseMoveSubject = new Subject<int>();
         private readonly Subject<MonitorEvent> _mouseMoveActionSubject = new Subject<MonitorEvent>();
         private readonly Subject<int> _keyboardSubject = new Subject<int>();
@@ -38,13 +55,14 @@ namespace WorkTimeAlghorithm
                 .Subscribe(v =>
                 {
                     var ms = (int)(v.Timestamp.DateTime - _mouseStart.Value).TotalMilliseconds - 200;
-                    Debug.WriteLine($"Mouse action {ms}");
+                    Debug.WriteLine($"Mouse action {ms} {GetActiveWindowExecutable()}");
 
                     if (ms > 0)
                     {
                         _mouseMoveActionSubject.OnNext(new MonitorEvent()
                         {
                             EventStart = _mouseStart.Value, TotalTimeMs = ms,
+                            Executable = GetActiveWindowExecutable(),
                         });
                     }
 
@@ -58,7 +76,7 @@ namespace WorkTimeAlghorithm
                 .Subscribe(v =>
                 {
                     var ms = (int)(v.Timestamp.DateTime - _keyboardStart.Value).TotalMilliseconds - KeyboardDelay;
-                    Debug.WriteLine($"Keyboard action {ms}");
+                    Debug.WriteLine($"Keyboard action {ms} {GetActiveWindowExecutable()}");
 
                     if (ms > 0)
                     {
@@ -66,12 +84,40 @@ namespace WorkTimeAlghorithm
                         {
                             EventStart = _keyboardStart.Value,
                             TotalTimeMs = ms,
+                            Executable = GetActiveWindowExecutable(),
                         });
                     }
 
                     _keyboardStart = null;
                 });
 
+        }
+
+        private string? GetActiveWindowExecutable([CallerMemberName] string method = "")
+        {
+            var hWin = GetForegroundWindow();
+            if (hWin != _lastWin)
+            {
+                GetWindowThreadProcessId(hWin, out var pid);
+                _lastWin = hWin;
+                try
+                {
+                    var path = Process.GetProcessById((int)pid).MainModule?.FileName;
+                    _lastWinExePath = path?.Split('\\', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                    return _lastWinExePath;
+                }
+                catch (Exception e)
+                {
+                    Log.Logger.Debug(e, $"{method} GetProccessById exception. pid: {pid} hWin: {hWin}");
+                    _lastWin = IntPtr.Zero;
+                }
+            }
+            else
+            {
+                return _lastWinExePath;
+            }
+
+            return null;
         }
 
         public void Start()
