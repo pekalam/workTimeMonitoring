@@ -140,6 +140,7 @@ namespace Domain.Services
                 Debug.WriteLine("Null executable");
                 executable = "Unknown";
             }
+
             if (_eventBuilders.TryGetValue(executable, out var builders))
             {
                 return builders;

@@ -14,13 +14,14 @@ namespace WindowUI.Statistics
         {
             var series = new PieSeries();
             series.Fill = Brushes.BlueViolet;
+            var ms = events.Sum(e => e.MkEvent.TotalTime);
             if (label != null)
             {
                 series.LabelPoint = _ => label;
+                series.DataLabels = true;
             }
-            series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
+            series.Values = new ChartValues<int>(new int[] {ms});
             series.Title = "Mouse";
-            series.DataLabels = true;
             return new[] {series};
         }
 
@@ -28,13 +29,14 @@ namespace WindowUI.Statistics
         {
             var series = new PieSeries();
             series.Fill = Brushes.Coral;
+            var ms = events.Sum(e => e.MkEvent.TotalTime);
             if (label != null)
             {
                 series.LabelPoint = _ => label;
+                series.DataLabels = true;
             }
-            series.Values = new ChartValues<int>(new int[] {events.Sum(e => e.MkEvent.TotalTime)});
+            series.Values = new ChartValues<int>(new int[] {ms});
             series.Title = "Keyboard";
-            series.DataLabels = true;
             return new[] {series};
         }
 
@@ -42,13 +44,14 @@ namespace WindowUI.Statistics
         {
             var series = new PieSeries();
             series.Fill = Brushes.HotPink;
+            var ms = events.Sum(e => e.TotalTimeMs);
             if (label != null)
             {
                 series.LabelPoint = _ => label;
+                series.DataLabels = true;
             }
-            series.Values = new ChartValues<long>(new long[] { events.Sum(e => e.TotalTimeMs) });
+            series.Values = new ChartValues<long>(new long[] { ms });
             series.Title = "Watching screen";
-            series.DataLabels = true;
             return new[] { series };
         }
 
@@ -56,13 +59,14 @@ namespace WindowUI.Statistics
         {
             var series = new PieSeries();
             series.Fill = Brushes.DarkGray;
+            var ms = events.Sum(e => e.LengthMs);
             if (label != null)
             {
                 series.LabelPoint = _ => label;
+                series.DataLabels = true;
             }
-            series.Values = new ChartValues<long>(new long[] { events.Sum(e => e.LengthMs) });
+            series.Values = new ChartValues<long>(new long[] { ms });
             series.Title = "Away";
-            series.DataLabels = true;
             return new[] { series };
         }
     }

@@ -1,45 +1,84 @@
 ﻿using System;
 using System.Collections.Generic;
+using Domain.WorkTimeAggregate;
 using LiveCharts;
+using LiveCharts.Wpf;
 using Prism.Mvvm;
 using Prism.Regions;
 
 namespace WindowUI.Statistics
 {
+    public enum OverallStatsChartTypes
+    {
+        Applications,Summary,Monitorings,SingleApplication
+    }
+
     public class OverallStatsViewModel : BindableBase, INavigationAware
     {
         private readonly OverallStatsController _controller;
 
-        private SeriesCollection _pieSeries = new SeriesCollection();
-        private int _lowerDate;
-        private int _upperDate;
+        private SeriesCollection _applicationsSeries = new SeriesCollection();
+        private SeriesCollection _singleApplicationSeries = new SeriesCollection();
+        private SeriesCollection _summarySeries = new SeriesCollection();
+        private int _lowerDays;
+        private int _upperDays;
         private int _maxDays;
         private int _minDays;
         private DateTime _maxDate;
         private DateTime _minDate;
-        private List<string> _chartTypes = new List<string>(){ "Applications", "Summary" };
+        private List<OverallStatsChartTypes> _chartTypes = new List<OverallStatsChartTypes>(){ OverallStatsChartTypes.Applications, OverallStatsChartTypes.Summary, OverallStatsChartTypes.Monitorings, OverallStatsChartTypes.SingleApplication };
+        private OverallStatsChartTypes _selectedChartType = OverallStatsChartTypes.Applications;
+        private List<WorkTimeViewModel> _monitorings = new List<WorkTimeViewModel>();
+        private DateTime _selectedMinDate;
+        private DateTime _selectedMaxDate;
+        private List<string> _executables;
+        private string _selectedExecutable;
 
         public OverallStatsViewModel(OverallStatsController controller)
         {
             _controller = controller;
         }
 
-        public SeriesCollection PieSeries
+        public SeriesCollection ApplicationsSeries
         {
-            get => _pieSeries;
-            set => SetProperty(ref _pieSeries, value);
+            get => _applicationsSeries;
+            set => SetProperty(ref _applicationsSeries, value);
         }
 
-        public int LowerDate
+        public SeriesCollection SummarySeries
         {
-            get => _lowerDate;
-            set => SetProperty(ref _lowerDate, value);
+            get => _summarySeries;
+            set => SetProperty(ref _summarySeries, value);
         }
 
-        public int UpperDate
+        public SeriesCollection SingleApplicationSeries
         {
-            get => _upperDate;
-            set => SetProperty(ref _upperDate, value);
+            get => _singleApplicationSeries;
+            set => SetProperty(ref _singleApplicationSeries, value);
+        }
+
+        public List<string> Executables
+        {
+            get => _executables;
+            set => SetProperty(ref _executables, value);
+        }
+
+        public string SelectedExecutable
+        {
+            get => _selectedExecutable;
+            set => SetProperty(ref _selectedExecutable, value);
+        }
+
+        public int LowerDays
+        {
+            get => _lowerDays;
+            set => SetProperty(ref _lowerDays, value);
+        }
+
+        public int UpperDays
+        {
+            get => _upperDays;
+            set => SetProperty(ref _upperDays, value);
         }
 
         public int MaxDays
@@ -66,10 +105,34 @@ namespace WindowUI.Statistics
             set => SetProperty(ref _minDate, value);
         }
 
-        public List<string> ChartTypes
+        public DateTime SelectedMaxDate
+        {
+            get => _selectedMaxDate;
+            set => SetProperty(ref _selectedMaxDate, value);
+        }
+
+        public DateTime SelectedMinDate
+        {
+            get => _selectedMinDate;
+            set => SetProperty(ref _selectedMinDate, value);
+        }
+
+        public List<OverallStatsChartTypes> ChartTypes
         {
             get => _chartTypes;
             set => SetProperty(ref _chartTypes, value);
+        }
+
+        public OverallStatsChartTypes SelectedChartType
+        {
+            get => _selectedChartType;
+            set => SetProperty(ref _selectedChartType, value);
+        }
+
+        public List<WorkTimeViewModel> Monitorings
+        {
+            get => _monitorings;
+            set => SetProperty(ref _monitorings, value);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
