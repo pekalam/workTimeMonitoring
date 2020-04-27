@@ -20,11 +20,6 @@ namespace WindowUI.Statistics
         public void Init(StatisticsViewModel vm)
         {
             _vm = vm;
-
-            if (_repository.CountForUser(_authenticationService.User) == 0)
-            {
-                _vm.IsShowingStats = false;
-            }
         }
     }
 }

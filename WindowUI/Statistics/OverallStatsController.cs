@@ -12,6 +12,33 @@ using LiveCharts.Wpf;
 
 namespace WindowUI.Statistics
 {
+    internal static class WorkTimeStatsExtensions
+    {
+        public static List<PieSeries> ToApplicationsPieSeries(this List<WorkTime> selected)
+        {
+            var series = selected
+                .SelectMany(w => w.MouseActionEvents)
+                .GroupBy(a => a.MkEvent.Executable)
+                .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                .SelectMany(s => s)
+
+                .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
+                    .GroupBy(a => a.MkEvent.Executable)
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .SelectMany(s => s))
+
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
+                    .GroupBy(a => a.Executable)
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .SelectMany(s => s))
+
+                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
+                .ToList();
+
+            return series;
+        }
+    }
+
     public class OverallStatsController
     {
         private OverallStatsViewModel _vm;
@@ -52,24 +79,7 @@ namespace WindowUI.Statistics
 
         private void UpdateApplicationsSeries(List<WorkTime> selected)
         {
-            var series = selected
-                .SelectMany(w => w.MouseActionEvents)
-                .GroupBy(a => a.MkEvent.Executable)
-                .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
-                .SelectMany(s => s)
-
-                .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
-                    .GroupBy(a => a.MkEvent.Executable)
-                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
-                    .SelectMany(s => s))
-
-                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
-                    .GroupBy(a => a.Executable)
-                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
-                    .SelectMany(s => s))
-
-                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
-                .ToList();
+            var series = selected.ToApplicationsPieSeries();
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
@@ -121,6 +131,13 @@ namespace WindowUI.Statistics
         private void UpdateChart()
         {
             var selected = _workTimes.Where(w => _vm.SelectedMinDate <= w.DateCreated && _vm.SelectedMaxDate >= w.EndDate).ToList();
+
+            if (selected.Count == 0)
+            {
+                _vm.IsShowingStats = false;
+                return;
+            }
+            _vm.IsShowingStats = true;
 
             switch (_vm.SelectedChartType)
             {
@@ -195,6 +212,10 @@ namespace WindowUI.Statistics
             if (_workTimes.Count > 0)
             {
                 SetupDateSlider();
+            }
+            else
+            {
+                _vm.IsShowingStats = false;
             }
 
             _vm.PropertyChanged += VmOnPropertyChanged;

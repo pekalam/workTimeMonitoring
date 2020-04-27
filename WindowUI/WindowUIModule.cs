@@ -44,6 +44,9 @@ namespace WindowUI
             containerRegistry.RegisterForNavigation<ProfileView>();
 
             containerRegistry.GetContainer()
+                .RegisterType<IDailyStatsViewController, DailyStatsViewController>();
+
+            containerRegistry.GetContainer()
                 .RegisterType<IFaceInitializationController, FaceInitializationController>();
 
             containerRegistry.GetContainer()

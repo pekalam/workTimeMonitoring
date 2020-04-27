@@ -33,6 +33,7 @@ namespace WindowUI.Statistics
         private DateTime _selectedMaxDate;
         private List<string> _executables;
         private string _selectedExecutable;
+        private bool _isShowingStats = true;
 
         public OverallStatsViewModel(OverallStatsController controller)
         {
@@ -133,6 +134,12 @@ namespace WindowUI.Statistics
         {
             get => _monitorings;
             set => SetProperty(ref _monitorings, value);
+        }
+
+        public bool IsShowingStats
+        {
+            get => _isShowingStats;
+            set => SetProperty(ref _isShowingStats, value);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)

@@ -72,24 +72,60 @@ namespace Infrastructure.Repositories
             trans.Commit();
         }
 
-
-        public List<WorkTime> FindAll(User user, DateTime? startDate, DateTime? endDate)
+        private IEnumerable<IGrouping<long, Event>> AllForUser(User user, SQLiteConnection conn)
         {
             var sql = $@"SELECT {TableCols} FROM {TableName}
                                WHERE AggregateId IN (SELECT AggregateId FROM {TableName}
                                                     WHERE EventName = @EventName AND json_extract(Data, '$.User.UserId') = @UserId)
                                ORDER BY AggregateId, AggregateVersion";
 
-            using var conn = CreateConnection(true);
-
-            var events = conn.Query<DbEvent>(sql, new
+            return conn.Query<DbEvent>(sql, new
                 {
                     UserId = user.UserId,
                     EventName = EventName.WorkTimeCreated,
                 })
                 .MapToEvents(_mapper)
                 .GroupBy(e => e.AggregateId);
+        }
 
+        private IEnumerable<IGrouping<long, Event>> AllForUserInRange(User user, DateTime startDate, DateTime endDate,
+            SQLiteConnection conn)
+        {
+            var sql = $@"SELECT {TableCols} FROM {TableName}
+                               WHERE AggregateId IN (SELECT AggregateId FROM {TableName}
+                                                    WHERE EventName = @EventName AND json_extract(Data, '$.User.UserId') = @UserId
+                                                    AND json_extract(Data, '$.DateCreated') >= @StartDate
+                                                    AND json_extract(Data, '$.EndDate') <= @EndDate) 
+                               ORDER BY AggregateId, AggregateVersion";
+
+            return conn.Query<DbEvent>(sql, new
+                {
+                    UserId = user.UserId,
+                    EventName = EventName.WorkTimeCreated,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                })
+                .MapToEvents(_mapper)
+                .GroupBy(e => e.AggregateId);
+        }
+
+        public List<WorkTime> FindAll(User user, DateTime? startDate, DateTime? endDate)
+        {
+            using var conn = CreateConnection(true);
+
+            IEnumerable<IGrouping<long, Event>> events = null;
+            if (startDate == null && endDate == null)
+            {
+                events = AllForUser(user, conn);
+            }else if (startDate != null && endDate != null)
+            {
+                events = AllForUserInRange(user, startDate.Value, endDate.Value, conn);
+            }
+
+            if (events == null)
+            {
+                throw new ArgumentException();
+            }
 
             var workTimes = new List<WorkTime>();
             
@@ -119,7 +155,12 @@ namespace Infrastructure.Repositories
                     Date = date,
                     EventName=EventName.WorkTimeCreated,
                 })
-                .MapToEvents(_mapper);
+                .MapToEvents(_mapper).ToList();
+
+            if (events.Count == 0)
+            {
+                return null;
+            }
 
             var workTime = WorkTime.FromEvents(events);
 

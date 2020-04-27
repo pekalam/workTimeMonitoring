@@ -18,21 +18,20 @@
                 <ScrollViewer Margin="2"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
-                    <Grid>
-                        <Grid Visibility="{c:Binding IsShowingStats, FalseToVisibility=Hidden}">
+
+                        <Grid>
                             <statistics:OverallStatisticsView DataContext="{Binding OverallStatsViewModel}"/>
                         </Grid>
-                        <StackPanel Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="No statistics available" FontSize="30"/>
-                            <!-- <TextBlock Text="" HorizontalAlignment="Center" FontSize="22"/> -->
-                        </StackPanel>
-                    </Grid>
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Daily">
                 <ScrollViewer Margin="2"
                               HorizontalScrollBarVisibility="Auto"
-                              VerticalScrollBarVisibility="Auto" />
+                              VerticalScrollBarVisibility="Auto" >
+                    <Grid>
+                            <statistics:DailyStatsView DataContext="{Binding DailyStatsViewModel}"/>
+                        </Grid>
+                </ScrollViewer>
             </TabItem>
         </mah:MetroAnimatedSingleRowTabControl>
     </Grid>
