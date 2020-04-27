@@ -1,5 +1,12 @@
 {
   "sqlite": {
     "ConnectionString": "Data Source=F:\\WorktimeMeasurement\\testappdb.db;"
-  }
+  },
+  "faceRecognition": {
+    "Location": "."
+  },
+  "faceDetection": {
+    "ProfileModel": "haarcascade_profileface.xml",
+    "FrontalModel": "haarcascade_frontalface_default.xml"
+  } 
 }

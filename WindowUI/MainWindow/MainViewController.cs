@@ -5,10 +5,7 @@ using Domain.User;
 using Infrastructure;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Regions;
-using ToastNotifications;
-using ToastNotifications.Lifetime;
-using ToastNotifications.Messages;
-using ToastNotifications.Position;
+
 using WindowUI.FaceInitialization;
 using WorkTimeAlghorithm;
 
@@ -25,15 +22,13 @@ namespace WindowUI.MainWindow
         private readonly ITestImageRepository _testImageRepository;
         private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _regionManager;
-        private Notifier _notifier;
         private readonly WorkTimeModuleService _workTimeModuleService;
 
 
-        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager, IAuthenticationService authenticationService, Notifier notifier, WorkTimeModuleService workTimeModuleService)
+        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager, IAuthenticationService authenticationService,  WorkTimeModuleService workTimeModuleService)
         {
             _regionManager = regionManager;
             _authenticationService = authenticationService;
-            _notifier = notifier;
             _workTimeModuleService = workTimeModuleService;
             _testImageRepository = testImageRepository;
         }
@@ -44,7 +39,7 @@ namespace WindowUI.MainWindow
 
             if (_workTimeModuleService.TryRestore())
             {
-                _notifier.ShowInformation("Continuing stoppped monitoring");
+                //_notifier.ShowInformation("Continuing stoppped monitoring");
             }
             else
             {

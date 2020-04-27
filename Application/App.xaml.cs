@@ -4,6 +4,8 @@ using System.Windows;
 using CommonServiceLocator;
 using Infrastructure;
 using Infrastructure.Messaging;
+using NotificationsW8;
+using NotificationsWpf;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -24,6 +26,11 @@ namespace Application
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
             base.ConfigureModuleCatalog(moduleCatalog);
+#if MSIX_RELEASE
+            moduleCatalog.AddModule<NotificationsW8Module>();
+#else
+            moduleCatalog.AddModule<NotificationsWpfModule>();
+#endif
             moduleCatalog.AddModule<InfrastructureModule>();
             moduleCatalog.AddModule<WindowUiModule>();
         }

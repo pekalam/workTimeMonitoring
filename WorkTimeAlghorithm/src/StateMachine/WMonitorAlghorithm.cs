@@ -82,7 +82,7 @@ namespace WorkTimeAlghorithm.StateMachine
         public void Resume()
         {
             _sm.NextAsync(Triggers.Resume);
-            _workTimeEventService.ResumeStopped();
+            _workTimeEventService.ResetLastEvents();
         }
 
         public void Stop()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Domain.Services;
 using OpenCvSharp;
 
 namespace WorkTimeAlghorithm
@@ -11,6 +12,12 @@ namespace WorkTimeAlghorithm
         Rect[] DetectFrontalThenProfileFaces(Mat frame);
     }
 
+    public class HcFaceDetectionSettings
+    {
+        public string ProfileModel { get; set; } = "haarcascade_profileface.xml";
+        public string FrontalModel { get; set; } = "haarcascade_frontalface_default.xml";
+    }
+
     public class HcFaceDetection : IHcFaceDetection
     {
         private readonly CascadeClassifier _frontClassifier;
@@ -18,10 +25,11 @@ namespace WorkTimeAlghorithm
 
         private Rect? _prevFirst;
 
-        public HcFaceDetection()
+        public HcFaceDetection(IConfigurationService config)
         {
-            _frontClassifier = new CascadeClassifier("haarcascade_frontalface_default.xml");
-            _profileClassifier = new CascadeClassifier("haarcascade_profileface.xml");
+            var settings = config.Get<HcFaceDetectionSettings>("faceDetection");
+            _frontClassifier = new CascadeClassifier(settings.FrontalModel);
+            _profileClassifier = new CascadeClassifier(settings.ProfileModel);
         }
 
         private Rect[] RemoveOverlapping(Rect[] rects)

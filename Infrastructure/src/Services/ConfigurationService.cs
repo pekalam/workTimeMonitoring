@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Domain;
@@ -12,6 +13,7 @@ namespace Infrastructure.Services
     public class ConfigurationService : IConfigurationService
     {
         private readonly IConfigurationRoot? _root;
+        private Dictionary<string, Func<object>> _customFactories = new Dictionary<string, Func<object>>();
 
         public ConfigurationService(string configurationFilePath)
         {
@@ -26,8 +28,16 @@ namespace Infrastructure.Services
 
         }
 
-        public T Get<T>(string sectionName) where T : new()
+        public T Get<T>(string sectionName) where T : class, new()
         {
+            if (_customFactories.ContainsKey(sectionName))
+            {
+                if (!(_customFactories[sectionName]() is T inst))
+                {
+                    throw new Exception("Invalid custom type");
+                }
+                return inst;
+            }
             if (_root != null)
             {
                 var config = _root.GetSection(sectionName).Get<T>();
@@ -41,6 +51,11 @@ namespace Infrastructure.Services
             }
 
             return new T();
+        }
+
+        public void RegisterCustomInstance<T>(string sectionName, Func<T> factory) where T : class
+        {
+            _customFactories[sectionName] = factory;
         }
     }
 }

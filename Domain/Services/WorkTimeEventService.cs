@@ -100,7 +100,7 @@ namespace Domain.Services
 
         public void StopRecognitionFailure() => _recognitionFailureStart = null;
 
-        public void ResumeStopped()
+        public void ResetLastEvents()
         {
             _lastActiveWinExecutable = null;
             _lastMkEvent = null;
