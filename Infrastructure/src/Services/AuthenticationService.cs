@@ -9,7 +9,7 @@ namespace Infrastructure.src.Services
 {
     internal class AuthenticationService : IAuthenticationService
     {
-        private BehaviorSubject<User?> _loggedInUser = new BehaviorSubject<User?>(null);
+        private readonly BehaviorSubject<User?> _loggedInUser = new BehaviorSubject<User?>(null);
         private User? _loggedIn;
         private readonly IAuthDataRepository _authDataRepository;
         private readonly IUserRepository _userRepository;
@@ -20,7 +20,7 @@ namespace Infrastructure.src.Services
             _userRepository = userRepository;
         }
 
-        private void SetUser(User user)
+        private void SetUser(User? user)
         {
             _loggedIn = user;
             _loggedInUser.OnNext(user);

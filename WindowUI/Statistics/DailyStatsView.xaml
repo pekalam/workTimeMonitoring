@@ -26,6 +26,13 @@
 
         <wpf:PieChart Grid.Row="1" Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
                       DataTooltip="{x:Null}" Series="{Binding ApplicationsSeries}" >
+            <wpf:PieChart.Resources>
+                <Style TargetType="wpf:PieSeries">
+                    <Setter Property="DataLabels" Value="True"></Setter>
+                    <Setter Property="Foreground" Value="#303030"></Setter>
+                    <Setter Property="LabelPosition" Value="OutsideSlice"></Setter>
+                </Style>
+            </wpf:PieChart.Resources>
             <wpf:PieChart.ChartLegend>
                 <local:ApplicationChartLegend />
             </wpf:PieChart.ChartLegend>

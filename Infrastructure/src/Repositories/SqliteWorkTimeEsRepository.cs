@@ -113,7 +113,7 @@ namespace Infrastructure.Repositories
         {
             using var conn = CreateConnection(true);
 
-            IEnumerable<IGrouping<long, Event>> events = null;
+            IEnumerable<IGrouping<long, Event>>? events = null;
             if (startDate == null && endDate == null)
             {
                 events = AllForUser(user, conn);

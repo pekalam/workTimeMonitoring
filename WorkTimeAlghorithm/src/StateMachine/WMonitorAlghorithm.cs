@@ -96,6 +96,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public void Stop()
         {
+            _mouseKeyboardMonitor.Stop();
             _sm.Next(Triggers.Stop);
             _state.CanCapureMouseKeyboard = false;
 #if DEBUG

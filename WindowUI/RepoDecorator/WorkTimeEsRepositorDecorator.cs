@@ -34,15 +34,17 @@ namespace WindowUI.RepoProxy
         public List<WorkTime> FindAll(User user, DateTime? startDate, DateTime? endDate)
         {
             var found = _repository.FindAll(user, startDate, endDate);
-            for (int i = 0; i < found.Count; i++)
+            if (_moduleService.CurrentWorkTime != null)
             {
-                if (found[i].AggregateId == _moduleService.CurrentWorkTime.AggregateId)
+                for (int i = 0; i < found.Count; i++)
                 {
-                    found[i] = WorkTime.Combine(found[i], _moduleService.CurrentWorkTime);
-                    break;
+                    if (found[i].AggregateId == _moduleService.CurrentWorkTime.AggregateId)
+                    {
+                        found[i] = WorkTime.Combine(found[i], _moduleService.CurrentWorkTime);
+                        break;
+                    }
                 }
             }
-
             return found;
         }
 
@@ -53,7 +55,7 @@ namespace WindowUI.RepoProxy
             {
                 return null;
             }
-            if (found.AggregateId == _moduleService.CurrentWorkTime.AggregateId)
+            if (found.AggregateId == _moduleService.CurrentWorkTime?.AggregateId)
             {
                 return WorkTime.Combine(found, _moduleService.CurrentWorkTime);
             }
@@ -68,7 +70,7 @@ namespace WindowUI.RepoProxy
             {
                 return null;
             }
-            if (found.AggregateId == _moduleService.CurrentWorkTime.AggregateId)
+            if (found.AggregateId == _moduleService.CurrentWorkTime?.AggregateId)
             {
                 return WorkTime.Combine(found, _moduleService.CurrentWorkTime);
             }
@@ -84,7 +86,7 @@ namespace WindowUI.RepoProxy
             {
                 return null;
             }
-            if (found.AggregateId == _moduleService.CurrentWorkTime.AggregateId)
+            if (found.AggregateId == _moduleService.CurrentWorkTime?.AggregateId)
             {
                 return WorkTime.Combine(found, _moduleService.CurrentWorkTime);
             }

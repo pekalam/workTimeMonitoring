@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Domain.WorkTimeAggregate.Events;
 
 [assembly: InternalsVisibleTo("Domain.UnitTests")]
@@ -39,7 +37,14 @@ namespace Domain.WorkTimeAggregate
         internal WorkTime(long aggregateId, User.User user, DateTime? startDate, DateTime endDate)
         {
             AggregateId = aggregateId;
-            Create(user, startDate, endDate);
+
+            StartDate = startDate;
+            AutoStart = startDate.HasValue;
+            User = user;
+            EndDate = endDate;
+            var now = InternalTimeService.GetCurrentDateTime();
+            DateCreated = now;
+            AddEvent(new WorkTimeCreated(AggregateId, now, StartDate, EndDate, DateCreated, User, AutoStart));
         }
 
         private WorkTime()
@@ -68,17 +73,6 @@ namespace Domain.WorkTimeAggregate
         public IReadOnlyList<FaceRecognitionFailure> FaceRecognitionFailures => _recognitionFailureEvents;
         public IReadOnlyList<UserWatchingScreen> UserWatchingScreen => _userWatchingScreenEvents;
 
-
-        private void Create(User.User user, DateTime? startDate, DateTime endDate)
-        {
-            StartDate = startDate;
-            AutoStart = startDate.HasValue;
-            User = user;
-            EndDate = endDate;
-            var now = InternalTimeService.GetCurrentDateTime();
-            DateCreated = now;
-            AddEvent(new WorkTimeCreated(AggregateId, now, StartDate, EndDate, DateCreated, User, AutoStart));
-        }
 
         private void CheckIsStarted()
         {
@@ -143,6 +137,7 @@ namespace Domain.WorkTimeAggregate
             CheckNotInterrupted();
 
             StoppedByUser = true;
+            AddEvent(new WorkTimeStoppedByUser(AggregateId, InternalTimeService.GetCurrentDateTime()));
         }
 
         public void Pause()

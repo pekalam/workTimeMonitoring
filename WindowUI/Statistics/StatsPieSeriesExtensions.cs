@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Domain.WorkTimeAggregate.Events;
@@ -10,6 +11,8 @@ namespace WindowUI.Statistics
 {
     public static class StatsPieSeriesExtensions
     {
+        private const int MsThreshold = 1000;
+
         private static string TimeStr(long ms)
         {
             if (ms >= 36_000)
@@ -22,35 +25,32 @@ namespace WindowUI.Statistics
             }
         }
 
-        private static PieSeries CreateSeries(long ms, string label = null)
+        private static PieSeries CreateSeries(long ms, string label = "")
         {
             var series = new PieSeries();
-            if (label != null)
-            {
-                series.LabelPoint = _ => label + "\n" + TimeStr(ms);
-                series.DataLabels = true;
-            }
+            series.LabelPoint = _ => label + TimeStr(ms);
+            series.DataLabels = true;
             series.Values = new ChartValues<long>(new[] { ms });
             return series;
         }
 
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<MouseAction> events, string label = null)
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<MouseAction> events, string label = "")
         {
             var ms = events.Sum(e => e.MkEvent.TotalTime);
-            if (ms <= 0)
+            if (ms <= MsThreshold)
             {
                 return Enumerable.Empty<PieSeries>();
             }
             var series = CreateSeries(ms, label);
-            series.Fill = Brushes.BlueViolet;
+            series.Fill = Brushes.DeepSkyBlue;
             series.Title = "Mouse";
             return new[] {series};
         }
 
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<KeyboardAction> events, string label = null)
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<KeyboardAction> events, string label = "")
         {
             var ms = events.Sum(e => e.MkEvent.TotalTime);
-            if (ms <= 0)
+            if (ms <= MsThreshold)
             {
                 return Enumerable.Empty<PieSeries>();
             }
@@ -60,10 +60,10 @@ namespace WindowUI.Statistics
             return new[] {series};
         }
 
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<UserWatchingScreen> events, string label = null)
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<UserWatchingScreen> events, string label = "")
         {
             var ms = events.Sum(e => e.TotalTimeMs);
-            if (ms <= 0)
+            if (ms <= MsThreshold)
             {
                 return Enumerable.Empty<PieSeries>();
             }
@@ -73,10 +73,10 @@ namespace WindowUI.Statistics
             return new[] { series };
         }
 
-        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<FaceRecognitionFailure> events, string label = null)
+        public static IEnumerable<PieSeries> ToPieSeries(this IEnumerable<FaceRecognitionFailure> events, string label = "")
         {
             var ms = events.Sum(e => e.LengthMs);
-            if (ms <= 0)
+            if (ms <= MsThreshold)
             {
                 return Enumerable.Empty<PieSeries>();
             }

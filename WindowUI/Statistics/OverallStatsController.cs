@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -21,17 +22,17 @@ namespace WindowUI.Statistics
             var series = selected
                 .SelectMany(w => w.MouseActionEvents)
                 .GroupBy(a => a.MkEvent.Executable)
-                .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                .Select(g => g.AsEnumerable().ToPieSeries(g.Key + "\n"))
                 .SelectMany(s => s)
 
                 .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
                     .GroupBy(a => a.MkEvent.Executable)
-                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key + "\n"))
                     .SelectMany(s => s))
 
                 .Concat(selected.SelectMany(w => w.UserWatchingScreen)
                     .GroupBy(a => a.Executable)
-                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key + "\n"))
                     .SelectMany(s => s))
 
                 .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
@@ -137,6 +138,9 @@ namespace WindowUI.Statistics
 
         public void UpdateChart()
         {
+            Debug.Assert(_authenticationService.User != null);
+            //todo
+            _workTimes = _repository.FindAll(_authenticationService.User, null, null);
             var selected = _workTimes.Where(w => _vm.SelectedMinDate <= w.DateCreated && _vm.SelectedMaxDate >= w.EndDate).ToList();
 
             if (selected.Count == 0)
@@ -214,7 +218,9 @@ namespace WindowUI.Statistics
         public void Init(OverallStatsViewModel vm)
         {
             _vm = vm;
-            _workTimes = _repository.FindAll(_authenticationService.User, null, null);
+
+            _vm.PropertyChanged += VmOnPropertyChanged;
+            UpdateChart();
 
             if (_workTimes.Count > 0)
             {
@@ -224,9 +230,6 @@ namespace WindowUI.Statistics
             {
                 _vm.IsShowingStats = false;
             }
-
-            _vm.PropertyChanged += VmOnPropertyChanged;
-            UpdateChart();
         }
     }
 }

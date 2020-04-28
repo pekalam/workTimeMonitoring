@@ -22,13 +22,13 @@ namespace WindowUI.Statistics
         private int _upperDays;
         private int _maxDays;
         private int _minDays;
-        private DateTime _maxDate;
-        private DateTime _minDate;
+        private DateTime _maxDate = DateTime.Now;
+        private DateTime _minDate = DateTime.Now;
         private List<OverallStatsChartTypes> _chartTypes = new List<OverallStatsChartTypes>(){ OverallStatsChartTypes.Applications, OverallStatsChartTypes.Summary, OverallStatsChartTypes.Monitorings, OverallStatsChartTypes.SingleApplication };
         private OverallStatsChartTypes _selectedChartType = OverallStatsChartTypes.Applications;
         private List<WorkTimeViewModel> _monitorings = new List<WorkTimeViewModel>();
-        private DateTime _selectedMinDate;
-        private DateTime _selectedMaxDate;
+        private DateTime _selectedMinDate = DateTime.Now;
+        private DateTime _selectedMaxDate = DateTime.Now;
         private List<string> _executables;
         private string _selectedExecutable;
         private bool _isShowingStats = true;

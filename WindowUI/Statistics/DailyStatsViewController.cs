@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
@@ -18,7 +19,7 @@ namespace WindowUI.Statistics
     {
         private readonly IWorkTimeEsRepository _repository;
         private readonly IAuthenticationService _authenticationService;
-        private DailyStatsViewModel _vm;
+        private DailyStatsViewModel? _vm;
 
         public DailyStatsViewController([Dependency(nameof(WorkTimeEsRepositorDecorator))] IWorkTimeEsRepository repository, IAuthenticationService authenticationService)
         {
@@ -35,9 +36,11 @@ namespace WindowUI.Statistics
 
         public void UpdateChart()
         {
+            Debug.Assert(_vm != null);
             var start = new DateTime(_vm.SelectedDate.Year, _vm.SelectedDate.Month, _vm.SelectedDate.Day);
             var end = new DateTime(_vm.SelectedDate.Year, _vm.SelectedDate.Month, _vm.SelectedDate.Day, 23, 59, 59);
 
+            Debug.Assert(_authenticationService.User != null);
             List<WorkTime> workTimes = _repository.FindAll(_authenticationService.User, start.ToUniversalTime(), end.ToUniversalTime());
 
             if (workTimes.Count == 0)

@@ -19,6 +19,7 @@ namespace WorkTimeAlghorithm
         IObservable<MonitorEvent> MouseMoveAction { get; }
         IObservable<MonitorEvent> KeyboardAction { get; }
         void Start();
+        void Stop();
     }
 
 
@@ -133,6 +134,13 @@ namespace WorkTimeAlghorithm
             _hook = Hook.GlobalEvents();
             _hook.MouseMoveExt += HookOnMouseMoveExt;
             _hook.KeyUp += HookOnKeyUp;
+        }
+
+        public void Stop()
+        {
+            _hook.MouseMoveExt -= HookOnMouseMoveExt;
+            _hook.KeyUp -= HookOnKeyUp;
+            _hook.Dispose();
         }
 
         private void HookOnKeyUp(object sender, KeyEventArgs e)

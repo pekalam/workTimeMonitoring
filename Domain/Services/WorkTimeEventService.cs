@@ -47,7 +47,6 @@ namespace Domain.Services
         private readonly IWorkTimeUow _uow;
         private readonly IWorkTimeEsRepository _repository;
         private readonly WorkTimeEventServiceSettings _config;
-        private WorkTime? _workTime;
         private DateTime? _lastMkEvent;
         private DateTime? _recognitionFailureStart;
         private string? _lastActiveWinExecutable;
@@ -73,16 +72,16 @@ namespace Domain.Services
             _lastMkEvent = InternalTimeService.GetCurrentDateTime();
             //todo current active wind
             _lastActiveWinExecutable = "Unknown";
-            _workTime = workTime;
+            WorkTime = workTime;
         }
 
-        public WorkTime? WorkTime => _workTime;
-
+        public WorkTime? WorkTime { get; private set; }
 
         private void ValidateRecognitionFailureEvent()
         {
-            var lastMouse = _workTime.MouseActionEvents.LastOrDefault();
-            var lastKey = _workTime.KeyboardActionEvents.LastOrDefault();
+            Debug.Assert(WorkTime != null);
+            var lastMouse = WorkTime.MouseActionEvents.LastOrDefault();
+            var lastKey = WorkTime.KeyboardActionEvents.LastOrDefault();
 
             if (lastMouse?.MkEvent.Start.AddMilliseconds(lastMouse.MkEvent.TotalTime) > _recognitionFailureStart.Value)
             {
@@ -108,7 +107,7 @@ namespace Domain.Services
 
         public void AddRecognitionFailure(bool faceDetected, bool faceRecognized)
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             if (_recognitionFailureStart == null)
             {
                 throw new Exception("Recognition failure not started");
@@ -117,7 +116,7 @@ namespace Domain.Services
 
             Debug.WriteLine("Adding recognition failure");
 
-            _workTime.AddRecognitionFailure(_recognitionFailureStart.Value, faceDetected, faceRecognized);
+            WorkTime.AddRecognitionFailure(_recognitionFailureStart.Value, faceDetected, faceRecognized);
             _recognitionFailureStart = null;
         }
 
@@ -129,7 +128,7 @@ namespace Domain.Services
                 if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
                 {
                     Debug.WriteLine("Adding user watching screen");
-                    _workTime?.AddUserWatchingScreen(_lastMkEvent.Value, _lastActiveWinExecutable);
+                    WorkTime?.AddUserWatchingScreen(_lastMkEvent.Value, _lastActiveWinExecutable);
                 }
             }
 
@@ -159,11 +158,11 @@ namespace Domain.Services
 
         public void AddMouseEvent(MonitorEvent ev)
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             TryAddUserWatchingScreenEvent(ev);
             if (GetEventBuilder(ev.Executable).MouseEventBuilder.AddEvent(ev, out var created))
             {
-                _workTime.AddMouseAction(created);
+                WorkTime.AddMouseAction(created);
                 SaveIfBufferSz();
                 _allMouseBuilder.AddEvent(ev, out created);
             }
@@ -175,11 +174,11 @@ namespace Domain.Services
 
         public void AddKeyboardEvent(MonitorEvent ev)
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             TryAddUserWatchingScreenEvent(ev);
             if (GetEventBuilder(ev.Executable).KeyboardEventBuilder.AddEvent(ev, out var created))
             {
-                _workTime.AddKeyboardAction(created);
+                WorkTime.AddKeyboardAction(created);
                 SaveIfBufferSz();
                 _allKeyboardBuilder.AddEvent(ev, out created);
             }
@@ -191,7 +190,7 @@ namespace Domain.Services
 
         private void Flush()
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             foreach (var builders in _eventBuilders.Values)
             {
                 var mouse = builders.MouseEventBuilder.Flush();
@@ -199,46 +198,46 @@ namespace Domain.Services
 
                 if (keyboard != null)
                 {
-                    _workTime.AddKeyboardAction(keyboard);
+                    WorkTime.AddKeyboardAction(keyboard);
                 }
 
                 if (mouse != null)
                 {
-                    _workTime.AddMouseAction(mouse);
+                    WorkTime.AddMouseAction(mouse);
                 }
             }
         }
 
         private void SavePendingEvents()
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             if (_uow.HasRegistered)
             {
                 Debug.WriteLine("Saving temporary mk events");
                 _uow.Save();
-                _workTime.ClearEvents();
+                WorkTime.ClearEvents();
             }
             else
             {
                 Debug.WriteLine("Saving mk events");
-                _repository.Save(_workTime);
-                _workTime.MarkPendingEventsAsHandled();
-                _workTime.ClearEvents();
+                _repository.Save(WorkTime);
+                WorkTime.MarkPendingEventsAsHandled();
+                WorkTime.ClearEvents();
             }
         }
         
         private void SaveIfBufferSz()
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             Flush();
-            if (_workTime.KeyboardActionEvents.Count > KeyboardEventBufferSz)
+            if (WorkTime.KeyboardActionEvents.Count > KeyboardEventBufferSz)
             {
-                Debug.WriteLine($"Keyboard events count ({_workTime.KeyboardActionEvents.Count}) exceeded buffer sz {KeyboardEventBufferSz}");
+                Debug.WriteLine($"Keyboard events count ({WorkTime.KeyboardActionEvents.Count}) exceeded buffer sz {KeyboardEventBufferSz}");
                 SavePendingEvents();
             }
-            else if (_workTime.MouseActionEvents.Count > MouseEventBufferSz)
+            else if (WorkTime.MouseActionEvents.Count > MouseEventBufferSz)
             {
-                Debug.WriteLine($"Mouse events count ({_workTime.MouseActionEvents.Count}) exceeded buffer sz {MouseEventBufferSz}");
+                Debug.WriteLine($"Mouse events count ({WorkTime.MouseActionEvents.Count}) exceeded buffer sz {MouseEventBufferSz}");
                 SavePendingEvents();
             }
 
@@ -246,18 +245,18 @@ namespace Domain.Services
 
         public void StartTempChanges()
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             Debug.WriteLine("Starting temp changes");
             if (_uow.HasRegistered)
             {
-                _uow.Unregister(_workTime);
+                _uow.Unregister(WorkTime);
             }
-            _uow.RegisterNew(_workTime);
+            _uow.RegisterNew(WorkTime);
         }
 
         public void DiscardTempChanges()
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             Debug.WriteLine("Discarding temp changes");
             _lastMkEvent = null;
             foreach (var builders in _eventBuilders.Values)
@@ -266,15 +265,15 @@ namespace Domain.Services
                 builders.KeyboardEventBuilder.Reset();
             }
             _uow.Rollback();
-            _uow.Unregister(_workTime);
+            _uow.Unregister(WorkTime);
         }
 
         public void CommitTempChanges()
         {
-            Debug.Assert(_workTime != null);
+            Debug.Assert(WorkTime != null);
             Debug.WriteLine("Commiting temp changes");
             _uow.Commit();
-            _uow.Unregister(_workTime);
+            _uow.Unregister(WorkTime);
         }
     }
 }

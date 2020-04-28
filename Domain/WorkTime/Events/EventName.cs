@@ -3,6 +3,6 @@
     public enum EventName
     {
         KeyboardAction, MouseAction, WorkTimeCreated, WorkTimeSnapshotCreated, WorkTimeStarted, FaceRecognitionFailure
-        ,UserWatchingScreen, WorkTimeInterrupted, WorkTimeRestored
+        ,UserWatchingScreen, WorkTimeInterrupted, WorkTimeRestored, StoppedByUser
     }
 }

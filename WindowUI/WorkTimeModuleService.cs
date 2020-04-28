@@ -38,7 +38,7 @@ namespace WindowUI
 
 
         public bool AlgorithmStarted { get; private set; }
-        public WorkTime CurrentWorkTime { get; private set; }
+        public WorkTime? CurrentWorkTime { get; private set; }
 
         public void StartNew(DateTime? start, DateTime end)
         {
@@ -71,6 +71,8 @@ namespace WindowUI
             CurrentWorkTime.Stop();
             _alghorithm.Stop();
             _monitorAlghorithmNotifications.Reset();
+            _repository.Save(CurrentWorkTime);
+            CurrentWorkTime.MarkPendingEventsAsHandled();
         }
 
         public bool TryRestore()

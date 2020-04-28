@@ -22,7 +22,7 @@ namespace Domain.WorkTimeAggregate
             workTime.MarkPendingEventsAsHandled();
         }
 
-        public bool Restore(User.User user, out WorkTime restored)
+        public bool Restore(User.User user, out WorkTime? restored)
         {
             var restoredWorkTime = _repository.FindLatestFromSnapshot(user);
             if (restoredWorkTime != null)

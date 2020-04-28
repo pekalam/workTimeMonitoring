@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using LiveCharts;
 using Prism.Mvvm;
@@ -12,7 +13,7 @@ namespace WindowUI.Statistics
         private DateTime _selectedDate = DateTime.Now;
         private bool _isShowingStats = true;
 
-        public IDailyStatsViewController Controller { get; set; }
+        public IDailyStatsViewController? Controller { get; set; }
 
         public DateTime SelectedDate
         {
@@ -34,6 +35,7 @@ namespace WindowUI.Statistics
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            Debug.Assert(Controller != null);
             Controller.Init(this);
         }
 

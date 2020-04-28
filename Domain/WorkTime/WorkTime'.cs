@@ -61,6 +61,11 @@ namespace Domain.WorkTimeAggregate
             _lastInterruptedEvent = null;
         }
 
+        private void Apply(WorkTimeStoppedByUser ev)
+        {
+            StoppedByUser = true;
+        }
+
         private void Apply(WorkTimeCreated workTimeCreated)
         {
             StartDate = workTimeCreated.StartDate;
@@ -103,7 +108,7 @@ namespace Domain.WorkTimeAggregate
         public static WorkTime FromEvents(IEnumerable<Event> events)
         {
             var workTime = new WorkTime();
-            Event last = null;
+            Event? last = null;
             foreach (var ev in events)
             {
                 if (last == null)
