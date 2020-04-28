@@ -164,7 +164,7 @@ namespace Infrastructure.Tests
             var workTime2 = WorkTimeTestUtils.CreateManual(user);
             workTime2.StartManually();
             var snap2 = workTime2.TakeSnapshot();
-            workTime.AddMouseAction(new MouseKeyboardEvent());
+            workTime2.AddMouseAction(new MouseKeyboardEvent());
             _repository.Save(workTime2);
 
             var found = _repository.FindLatestFromSnapshot(user);

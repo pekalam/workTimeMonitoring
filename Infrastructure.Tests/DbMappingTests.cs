@@ -5,6 +5,7 @@ using Domain.WorkTimeAggregate.Events;
 using DomainTestUtils;
 using FluentAssertions;
 using Infrastructure.Db;
+using Infrastructure.Services;
 using OpenCvSharp;
 using WorkTimeAlghorithm;
 using Xunit;
@@ -23,6 +24,11 @@ namespace Infrastructure.Tests
                 cfg.AddProfile<DbTestImageProfile>();
                 cfg.AddProfile<DbEventProfile>();
             }).CreateMapper();
+        }
+
+        static DbMappingTests()
+        {
+            SharedFaceRecognitionModel.Init(new ConfigurationService(""));
         }
 
         [Fact]

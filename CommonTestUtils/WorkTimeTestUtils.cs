@@ -15,18 +15,18 @@ namespace DomainTestUtils
         public static WorkTime CreateManual()
         {
             Debug.WriteLine(_id);
-            return new WorkTime(Interlocked.Decrement(ref _id), UserTestUtils.CreateTestUser(), null, DateTime.UtcNow.AddMinutes(10));
+            return new WorkTime(Interlocked.Decrement(ref _id), UserTestUtils.CreateTestUser(), null, InternalTimeService.GetCurrentDateTime().AddMinutes(10));
         }
 
         public static WorkTime CreateManual(User user)
         {
             Debug.WriteLine(_id);
-            return new WorkTime(Interlocked.Decrement(ref _id), user, null, DateTime.UtcNow.AddMinutes(10));
+            return new WorkTime(Interlocked.Decrement(ref _id), user, null, InternalTimeService.GetCurrentDateTime().AddMinutes(10));
         }
 
         public static WorkTime CreateStartedManually()
         {
-            var workTime = new WorkTime(_id--, UserTestUtils.CreateTestUser(), null, DateTime.UtcNow.AddMinutes(10));
+            var workTime = new WorkTime(_id--, UserTestUtils.CreateTestUser(), null, InternalTimeService.GetCurrentDateTime().AddMinutes(10));
             workTime.StartManually();
             workTime.MarkPendingEventsAsHandled();
             return workTime;

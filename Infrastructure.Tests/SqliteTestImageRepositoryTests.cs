@@ -21,6 +21,7 @@ namespace Infrastructure.Tests
             var utils = new ImageTestUtils();
             var (rect, face) = utils.GetFaceImg("front");
 
+            SharedFaceRecognitionModel.Init(new ConfigurationService(""));
             FaceEncodings = new DnFaceRecognition().GetFaceEncodings(face);
         }
 
