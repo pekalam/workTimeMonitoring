@@ -37,6 +37,7 @@ stages:
           vsVersion: '16.0'
           platform: 'x64'
           configuration: 'Debug'
+          msbuildArchitecture: x64
       - task: DownloadSecureFile@1
         name: faceRecogTestFixtures
         inputs:
