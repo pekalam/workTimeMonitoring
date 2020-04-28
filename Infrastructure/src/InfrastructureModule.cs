@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +12,7 @@ using Infrastructure.Db;
 using Infrastructure.Messaging;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Infrastructure.src;
 using Infrastructure.src.Repositories;
 using Infrastructure.src.Services;
 using Prism.Events;
@@ -21,60 +21,24 @@ using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
 using Serilog.Events;
-using ToastNotifications;
-using ToastNotifications.Lifetime;
-using ToastNotifications.Position;
 using Unity;
 using WorkTimeAlghorithm;
 
 namespace Infrastructure
 {
-    internal static class LoggingConfiguration
-    {
-        private const string OutputTemplate =
-            "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Properties}{NewLine}{Exception}";
-
-        [Conditional("RELEASE")]
-        private static void ConfigureRelease(LoggerConfiguration c)
-        {
-            c.Enrich.WithThreadId().Enrich.WithMemoryUsage()
-                .MinimumLevel.Information()
-                .WriteTo.File("log.txt", fileSizeLimitBytes: 1024*1024*512, rollOnFileSizeLimit:true, outputTemplate: OutputTemplate)
-                .WriteTo.Console(outputTemplate: OutputTemplate);
-        }
-
-        private static void ConfigureDebug(LoggerConfiguration c)
-        {
-#if RELEASE
-#else
-            c.Enrich.WithThreadId().Enrich.WithMemoryUsage()
-                .MinimumLevel.Debug()
-                .WriteTo.Console(outputTemplate: OutputTemplate);
-#endif
-        }
-
-        public static void Configure()
-        {
-            var config = new LoggerConfiguration();
-            ConfigureRelease(config);
-            ConfigureDebug(config);
-
-
-            Log.Logger = config.CreateLogger();
-        }
-    }
-
     public class InfrastructureModule : IModule
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
-                .TypeHandle);
+            // System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SharedFaceRecognitionModel)
+            //     .TypeHandle);
+            SharedFaceRecognitionModel.Init(containerProvider.Resolve<IConfigurationService>());
+
 
             containerProvider.Resolve<IEventAggregator>().GetEvent<InfrastructureModuleLoaded>().Publish(this);
         }
 
-        private object SettingsFactory<T>(IUnityContainer container) where T : new()
+        private object SettingsFactory<T>(IUnityContainer container) where T : class,new()
         {
             var conf = container.Resolve<IConfigurationService>();
             return conf.Get<T>(nameof(T));
@@ -118,27 +82,8 @@ namespace Infrastructure
             containerRegistry.GetContainer().RegisterSingleton<IAuthenticationService, AuthenticationService>();
 
 
-            containerRegistry.GetContainer().RegisterFactory<Notifier>((container, type, arg3) =>
-            {
-                return new Notifier(cfg =>
-                {
-                    cfg.PositionProvider = new WindowPositionProvider(
-                        parentWindow: Application.Current.MainWindow,
-                        corner: Corner.BottomRight,
-                        offsetX: 0,
-                        offsetY: 0);
-
-                    cfg.LifetimeSupervisor = new TimeAndCountBasedLifetimeSupervisor(
-                        notificationLifetime: TimeSpan.FromSeconds(10),
-                        maximumNotificationCount: MaximumNotificationCount.FromCount(5));
-
-                    cfg.Dispatcher = Application.Current.Dispatcher;
-                });
-            });
-
-
-
             GlobalExceptionHandler.Init();
+            ModuleInit.Init(containerRegistry);
         }
 
 

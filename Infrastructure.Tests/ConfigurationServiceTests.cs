@@ -35,5 +35,20 @@ namespace Infrastructure.Tests
             var instance = service.Get<HeadPositionServiceSettings>("x");
             instance.Should().BeEquivalentTo(new HeadPositionServiceSettings());
         }
+
+        [Fact]
+        public void RegisterCustomInstance_overrides_value_in_settings()
+        {
+            var service = new ConfigurationService("settings.json");
+            service.RegisterCustomInstance<HeadPositionServiceSettings>(nameof(HeadPositionServiceSettings), () => new HeadPositionServiceSettings()
+            {
+                HorizontalPoseThreshold = 99,
+                VerticalPoseThreshold = 99
+            });
+
+            var settings = service.Get<HeadPositionServiceSettings>(nameof(HeadPositionServiceSettings));
+            settings.HorizontalPoseThreshold.Should().Be(99);
+            settings.VerticalPoseThreshold.Should().Be(99);
+        }
     }
 }

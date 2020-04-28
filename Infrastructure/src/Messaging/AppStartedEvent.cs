@@ -40,4 +40,9 @@ namespace Infrastructure.Messaging
     {
 
     }
+
+    public class AppShuttingDownEvent : PubSubEvent
+    {
+
+    }
 }

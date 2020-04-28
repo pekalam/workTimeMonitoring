@@ -10,6 +10,12 @@ namespace Domain.WorkTimeAggregate
     {
         public void MarkPendingEventsAsHandled() => _pendingEvents.Clear();
 
+        private void AddEvent(Event ev)
+        {
+            ev.AggregateVersion = ++AggregateVersion;
+            _pendingEvents.Add(ev);
+        }
+
         private void Apply(WorkTimeSnapshotCreated snapshotCreated)
         {
             var snap = snapshotCreated.Snapshot;
@@ -43,6 +49,16 @@ namespace Domain.WorkTimeAggregate
         private void Apply(UserWatchingScreen ev)
         {
             _userWatchingScreenEvents.Add(ev);
+        }
+
+        private void Apply(WorkTimeInterrupted ev)
+        {
+            _lastInterruptedEvent = ev;
+        }
+
+        private void Apply(WorkTimeRestored ev)
+        {
+            _lastInterruptedEvent = null;
         }
 
         private void Apply(WorkTimeCreated workTimeCreated)
@@ -113,6 +129,33 @@ namespace Domain.WorkTimeAggregate
             workTime.AggregateVersion = last.AggregateVersion;
 
             return workTime;
+        }
+
+        public static WorkTime Combine(WorkTime w1, WorkTime w2)
+        {
+            if (w1.AggregateId != w2.AggregateId)
+            {
+                throw new Exception("Invalid aggregate id");
+            }
+
+            if (w1.AggregateVersion == w2.AggregateVersion)
+            {
+                return w1;
+            }
+
+            WorkTime v1 = w1.AggregateVersion > w2.AggregateVersion ? w2 : w1;
+            WorkTime v2 = w1.AggregateVersion > w2.AggregateVersion ? w1 : w2;
+
+            foreach (var ev in v2.PendingEvents)
+            {
+                if (ev.AggregateVersion > v1.AggregateVersion)
+                {
+                    v1.AsDynamic().Apply(ev);
+                    v1.AddEvent(ev);
+                }
+            }
+
+            return v1;
         }
     }
 }

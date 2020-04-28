@@ -9,9 +9,7 @@
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:designer="clr-namespace:WindowUI.__Designer"
-             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              mc:Ignorable="d"
-             Name="root"
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{Binding Source={d:DesignInstance Type=designer:OverallViewModelDesign, IsDesignTimeCreatable=True}}">
     <UserControl.Resources>
@@ -33,6 +31,7 @@
                 </mah:SplitButton.Icon>
             </mah:SplitButton>
             <mah:SplitButton Margin="10,5,5,5" Height="Auto"
+                             Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.SingleApplication', FalseToVisibility=Collapsed}"
                              SelectedItem="{Binding SelectedExecutable}"
                              ItemsSource="{Binding Executables}">
                 <mah:SplitButton.Icon>
@@ -76,6 +75,9 @@
                 </Style>
             </DataGrid.CellStyle>
         </DataGrid>
+        <Grid Grid.Row="1" Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999" Background="White">
+            <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Grid>
         <Grid Grid.Row="2" Margin="0,10,0,10" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />

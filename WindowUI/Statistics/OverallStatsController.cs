@@ -9,10 +9,44 @@ using Domain.User;
 using Domain.WorkTimeAggregate;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Unity;
+using WindowUI.RepoProxy;
 
 namespace WindowUI.Statistics
 {
-    public class OverallStatsController
+    internal static class WorkTimeStatsExtensions
+    {
+        public static List<PieSeries> ToApplicationsPieSeries(this List<WorkTime> selected)
+        {
+            var series = selected
+                .SelectMany(w => w.MouseActionEvents)
+                .GroupBy(a => a.MkEvent.Executable)
+                .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                .SelectMany(s => s)
+
+                .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
+                    .GroupBy(a => a.MkEvent.Executable)
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .SelectMany(s => s))
+
+                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
+                    .GroupBy(a => a.Executable)
+                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
+                    .SelectMany(s => s))
+
+                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
+                .ToList();
+
+            return series;
+        }
+    }
+
+    public interface IOverallStatsController
+    {
+        void Init(OverallStatsViewModel vm);
+    }
+
+    public class OverallStatsController : IOverallStatsController
     {
         private OverallStatsViewModel _vm;
         private List<WorkTime> _workTimes;
@@ -21,7 +55,7 @@ namespace WindowUI.Statistics
         private DateTime _startDate;
         private DateTime _endDate;
 
-        public OverallStatsController(IWorkTimeEsRepository repository,
+        public OverallStatsController([Dependency(nameof(WorkTimeEsRepositorDecorator))] IWorkTimeEsRepository repository,
             IAuthenticationService authenticationService)
         {
             _repository = repository;
@@ -52,24 +86,7 @@ namespace WindowUI.Statistics
 
         private void UpdateApplicationsSeries(List<WorkTime> selected)
         {
-            var series = selected
-                .SelectMany(w => w.MouseActionEvents)
-                .GroupBy(a => a.MkEvent.Executable)
-                .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
-                .SelectMany(s => s)
-
-                .Concat(selected.SelectMany(w => w.KeyboardActionEvents)
-                    .GroupBy(a => a.MkEvent.Executable)
-                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
-                    .SelectMany(s => s))
-
-                .Concat(selected.SelectMany(w => w.UserWatchingScreen)
-                    .GroupBy(a => a.Executable)
-                    .Select(g => g.AsEnumerable().ToPieSeries(g.Key))
-                    .SelectMany(s => s))
-
-                .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries("Unknown"))
-                .ToList();
+            var series = selected.ToApplicationsPieSeries();
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
@@ -118,9 +135,16 @@ namespace WindowUI.Statistics
             _vm.Monitorings = selected.Select(s => new WorkTimeViewModel(s)).ToList();
         }
 
-        private void UpdateChart()
+        public void UpdateChart()
         {
             var selected = _workTimes.Where(w => _vm.SelectedMinDate <= w.DateCreated && _vm.SelectedMaxDate >= w.EndDate).ToList();
+
+            if (selected.Count == 0)
+            {
+                _vm.IsShowingStats = false;
+                return;
+            }
+            _vm.IsShowingStats = true;
 
             switch (_vm.SelectedChartType)
             {
@@ -195,6 +219,10 @@ namespace WindowUI.Statistics
             if (_workTimes.Count > 0)
             {
                 SetupDateSlider();
+            }
+            else
+            {
+                _vm.IsShowingStats = false;
             }
 
             _vm.PropertyChanged += VmOnPropertyChanged;

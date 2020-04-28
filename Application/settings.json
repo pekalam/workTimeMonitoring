@@ -1,5 +1,21 @@
 {
   "sqlite": {
-    "ConnectionString": "Data Source=.\\appdb.db;"
-  }
+    "ConnectionString": "Data Source=F:\\WorktimeMeasurement\\testappdb.db;"
+  },
+  "faceRecognition": {
+    "Location": "."
+  },
+  "faceDetection": {
+    "ProfileModel": "haarcascade_profileface.xml",
+    "FrontalModel": "haarcascade_frontalface_default.xml"
+  },
+  "eventGathering": {
+    "MouseEventWindowSz": 60000,
+    "MouseEventMonitorWindowSz": 1000,
+    "KeyboardEventWindowSz": 60000,
+    "KeyboardEventMonitorWindowSz": 1000,
+    "MouseEventBufferSz": 5,
+    "KeyboardEventBufferSz": 5,
+    "WatchingScreenThreshold": 3000 
+  } 
 }

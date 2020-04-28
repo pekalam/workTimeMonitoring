@@ -1,18 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Domain.Services;
 using FaceRecognitionDotNet;
 
 namespace WorkTimeAlghorithm
 {
+    public class FaceRecognitionModelSettings
+    {
+        public string Location { get; set; } = ".";
+    }
+
     public static class SharedFaceRecognitionModel
     {
         private static object _lck = new object();
-        private static readonly Task<FaceRecognition> _loadTask;
+        private static Task<FaceRecognition> _loadTask;
 
-        static SharedFaceRecognitionModel()
+
+        public static void Init(IConfigurationService config)
         {
-            _loadTask = Task.Factory.StartNew<FaceRecognition>(() => FaceRecognition.Create("."), TaskCreationOptions.LongRunning);
+            var settings = config.Get<FaceRecognitionModelSettings>("faceRecognition");
+            _loadTask = Task.Factory.StartNew<FaceRecognition>(() => FaceRecognition.Create(settings.Location),
+                TaskCreationOptions.LongRunning);
         }
 
         public static List<FaceEncoding> FaceEncodingsSync(Image image,

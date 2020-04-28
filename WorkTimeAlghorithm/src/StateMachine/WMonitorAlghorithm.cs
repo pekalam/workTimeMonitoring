@@ -17,7 +17,8 @@ namespace WorkTimeAlghorithm.StateMachine
         private readonly State5Service _state5 = new State5Service();
         private WorkTime _workTime;
 
-        public event Action<(bool faceDetected, bool faceRecognized)> State3DetectionResult; 
+        public event Action<(bool faceDetected, bool faceRecognized)> State3Result;
+        public event Action<(bool faceDetected, bool faceRecognized)> State2Result;
 
         public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService, IMouseKeyboardMonitorService mouseKeyboardMonitor)
         {
@@ -27,9 +28,11 @@ namespace WorkTimeAlghorithm.StateMachine
             _workTimeEventService = workTimeEventService;
             _state2 = new State2Service(faceRecognition, workTimeEventService, configurationService);
             _state3 = new State3Service(faceRecognition, workTimeEventService, configurationService);
-            InitStateMachine();
         }
 
+        public bool Paused => _sm.CurrentState.Name == States.PAUSE_STATE;
+        public bool Stopped => _sm.CurrentState.Name == States.STOP_STATE;
+        
         public void SetWorkTime(WorkTime workTime)
         {
             _workTime = workTime;
@@ -38,7 +41,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
         private void OnMouseAction(MonitorEvent ev)
         {
-            if (_state.CanCapureMouseKeyboard)
+            if (_state.CanCapureMouseKeyboard && !_workTime.Paused && !_workTime.Stopped)
             {
                 Debug.WriteLine("Captured mouse action");
                 _workTimeEventService.AddMouseEvent(ev);
@@ -46,13 +49,17 @@ namespace WorkTimeAlghorithm.StateMachine
             }
             else
             {
+                if (_workTime.Stopped)
+                {
+                    Stop();
+                }
                 Debug.WriteLine("Ignoring mouse action");
             }
         }
 
         private void OnKeyboardAction(MonitorEvent ev)
         {
-            if (_state.CanCapureMouseKeyboard)
+            if (_state.CanCapureMouseKeyboard && !_workTime.Paused && !_workTime.Stopped)
             {
                 Debug.WriteLine("Captured keyboard action");
                 _workTimeEventService.AddKeyboardEvent(ev);
@@ -60,14 +67,40 @@ namespace WorkTimeAlghorithm.StateMachine
             }
             else
             {
+                if (_workTime.Stopped)
+                {
+                    Stop();
+                }
                 Debug.WriteLine("Ignoring keyboard action");
             }
         }
 
         public async void Start()
         {
+            InitStateMachine();
             _mouseKeyboardMonitor.Start();
             await _sm.NextAsync(Triggers.Start);
+        }
+
+        public void Pause()
+        {
+            _sm.Next(Triggers.Pause);
+            _state.CanCapureMouseKeyboard = true;
+        }
+
+        public void Resume()
+        {
+            _sm.NextAsync(Triggers.Resume);
+            _workTimeEventService.ResetLastEvents();
+        }
+
+        public void Stop()
+        {
+            _sm.Next(Triggers.Stop);
+            _state.CanCapureMouseKeyboard = false;
+#if DEBUG
+            _vis.Dispose();
+#endif
         }
     }
 }

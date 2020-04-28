@@ -1,4 +1,5 @@
 ﻿using System;
+using Serilog;
 using StateMachineLib;
 
 namespace WorkTimeAlghorithm.StateMachine
@@ -7,12 +8,12 @@ namespace WorkTimeAlghorithm.StateMachine
     {
         internal enum Triggers
         {
-            Start, NoFace, FaceNotRecog, FaceRecog, MouseMv, KeyboardMv
+            Start, NoFace, FaceNotRecog, FaceRecog, MouseMv, KeyboardMv, Pause, Resume,Stop
         }
 
         internal enum States
         {
-            s1,s2,s3,s5
+            s1,s2,s3,s5,PAUSE_STATE,STOP_STATE
         }
 
         internal class State
@@ -35,7 +36,7 @@ namespace WorkTimeAlghorithm.StateMachine
                 .End()
 
                 .CreateState(States.s2)
-                .EnterAsync((t) => _state2.Enter(_state, _sm, _workTime))
+                .EnterAsync((t) => _state2.Enter(_state, _sm, _workTime, this))
                 .Exit(t => _state2.Exit(t))
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.FaceNotRecog, States.s3)
@@ -56,6 +57,11 @@ namespace WorkTimeAlghorithm.StateMachine
                 .Exit(t => _state5.Exit())
                 .End()
 
+                .HoldingGlobState(Triggers.Pause, _ => Log.Logger.Debug("PAUSE"), 
+                    States.PAUSE_STATE, Triggers.Resume)
+
+                .HoldingGlobState(Triggers.Stop, _ => Log.Logger.Debug("STOP"), States.STOP_STATE, Triggers.Stop)
+
                 .Build(States.s1);
         }
 
@@ -63,7 +69,6 @@ namespace WorkTimeAlghorithm.StateMachine
         private void InitStateMachine()
         {
             BuildStateMachine();
-
 #if DEV_MODE
             _vis = new StateMachineVis<Triggers, States>(_sm, pipeName: "graphViz", loggingEnabled: false);
             _vis.Start(@"StateMachineLibVis.exe", "-c graphViz -l 970");

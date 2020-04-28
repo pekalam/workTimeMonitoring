@@ -19,7 +19,7 @@ namespace Application
     /// <summary>
     /// Interaction logic for Shell.xaml
     /// </summary>
-    public partial class Shell : AcrylicWindow
+    public partial class Shell : MetroWindow
     {
         public Shell()
         {
@@ -45,11 +45,12 @@ namespace Application
             this.Hide();
         }
 
+
+
         protected override void OnContentRendered(EventArgs e)
         {
             base.OnContentRendered(e);
             ServiceLocator.Current.GetInstance<IEventAggregator>().GetEvent<AppStartedEvent>().Publish(this);
-            
         }
 
         protected override void OnStateChanged(EventArgs e)
@@ -59,5 +60,7 @@ namespace Application
 
             base.OnStateChanged(e);
         }
+
+
     }
 }

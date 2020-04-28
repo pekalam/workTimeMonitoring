@@ -54,6 +54,10 @@ namespace WorkTimeAlghorithm
                 .Timestamp()
                 .Subscribe(v =>
                 {
+                    if (_mouseStart == null)
+                    {
+                        return;
+                    }
                     var ms = (int)(v.Timestamp.DateTime - _mouseStart.Value).TotalMilliseconds - 200;
                     Debug.WriteLine($"Mouse action {ms} {GetActiveWindowExecutable()}");
 
@@ -75,6 +79,10 @@ namespace WorkTimeAlghorithm
                 .Timestamp()
                 .Subscribe(v =>
                 {
+                    if (_keyboardStart == null)
+                    {
+                        return;
+                    }
                     var ms = (int)(v.Timestamp.DateTime - _keyboardStart.Value).TotalMilliseconds - KeyboardDelay;
                     Debug.WriteLine($"Keyboard action {ms} {GetActiveWindowExecutable()}");
 

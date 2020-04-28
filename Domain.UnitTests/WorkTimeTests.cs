@@ -44,8 +44,116 @@ namespace Domain.UnitTests
             workTime.PendingEvents.Count.Should().Be(1);
             workTime.PendingEvents.First().Should().BeOfType<WorkTimeStarted>();
             workTime.AggregateVersion.Should().Be(2);
+
+            workTime.Started.Should().BeTrue();
+            workTime.Stopped.Should().BeFalse();
+            workTime.Paused.Should().BeFalse();
+            workTime.StoppedByUser.Should().BeFalse();
         }
 
+        [Fact]
+        public void Stop_if_called_stops_workTIme()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.MarkPendingEventsAsHandled();
+            workTime.StartManually();
+
+            workTime.Stop();
+
+            workTime.Started.Should().BeTrue();
+            workTime.Stopped.Should().BeTrue();
+            workTime.StoppedByUser.Should().BeTrue();
+            workTime.Paused.Should().BeFalse();
+        }
+
+        [Fact]
+        public void When_past_end_time_workTime_is_stopped()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.MarkPendingEventsAsHandled();
+            workTime.StartManually();
+
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(11);
+
+            workTime.Started.Should().BeTrue();
+            workTime.Stopped.Should().BeTrue();
+            workTime.StoppedByUser.Should().BeFalse();
+            workTime.Paused.Should().BeFalse();
+        }
+
+        [Fact]
+        public void set_interrupted_stopped_or_paused__does_not_gen_event()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.StartManually();
+            workTime.MarkPendingEventsAsHandled();
+
+            workTime.Pause();
+            workTime.SetInterrupted();
+            workTime.Resume();
+
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(11);
+
+            workTime.SetInterrupted();
+            workTime.PendingEvents.Count.Should().Be(0);
+        }
+
+        [Fact]
+        public void Combine_ads_new_events()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.StartManually();
+            var snap = workTime.TakeSnapshot();
+
+            var totalEvs = workTime.PendingEvents.Count;
+
+            var fromSnap = WorkTime.CreateFromSnapshot(snap);
+            fromSnap.AddRecognitionFailure(DateTime.UtcNow, false, false);
+
+            WorkTime joined = WorkTime.Combine(workTime, fromSnap);
+
+            joined.PendingEvents.Count.Should().Be( totalEvs + 1);
+            joined.PendingEvents.Last().Should().BeOfType<FaceRecognitionFailure>();
+        }
+
+        [Fact]
+        public void SetResored_when_interrupted_generates_event()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.StartManually();
+            workTime.MarkPendingEventsAsHandled();
+            
+            workTime.SetInterrupted();
+
+            workTime.PendingEvents.Last().Should().BeOfType<WorkTimeInterrupted>();
+
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMilliseconds(2000);
+
+            workTime.SetRestored();
+
+            workTime.PendingEvents.Last().Should().BeOfType<WorkTimeRestored>();
+
+            var restoredEv = workTime.PendingEvents.Last() as WorkTimeRestored;
+
+            restoredEv.TotalTimeMs.Should().BeInRange(2000, 2100);
+
+            //not throwing
+            workTime.AddRecognitionFailure(InternalTimeService.GetCurrentDateTime(), true, false);
+        }
+
+        [Fact]
+        public void SetResored_when_not_interrupted_generates_event()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.StartManually();
+            workTime.MarkPendingEventsAsHandled();
+            workTime.SetRestored();
+
+            workTime.PendingEvents.Last().Should().BeOfType<WorkTimeRestored>();
+
+            var restoredEv = workTime.PendingEvents.Last() as WorkTimeRestored;
+            restoredEv.TotalTimeMs.Should().Be(0);
+        }
 
         [Fact]
         public void AddMouseAction_when_not_started_throws()

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using FaceRecognitionDotNet;
 using Infrastructure;
+using Infrastructure.Services;
 using OpenCvSharp;
 using WorkTimeAlghorithm;
 using Image = FaceRecognitionDotNet.Image;
@@ -92,7 +93,7 @@ namespace HeadPoseNormalizationTest
 
 
         CaptureService cap = new CaptureService();
-        HcFaceDetection hc = new HcFaceDetection();
+        HcFaceDetection hc = new HcFaceDetection(new ConfigurationService(""));
 
         HeadPoseNormalization norm = new HeadPoseNormalization();
 

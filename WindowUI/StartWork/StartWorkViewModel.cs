@@ -10,7 +10,7 @@ namespace WindowUI.StartWork
     {
         private readonly StartWorkViewController _controller;
         private bool _autoStart;
-        private bool _started = true;
+        private bool _started;
         private DateTime? _startDate = DateTime.Now;
         private DateTime? _endDate = DateTime.Now;
         private readonly DispatcherTimer _timer = new DispatcherTimer();
@@ -19,7 +19,10 @@ namespace WindowUI.StartWork
         public StartWorkViewModel(StartWorkViewController controller)
         {
             _controller = controller;
-            StartWorkCommand = controller.StartWorkCommand;
+            StartWork = controller.StartWork;
+            StopWork = controller.StopWork;
+            PauseWork = controller.PauseWork;
+            ResumeWork = controller.ResumeWork;
             _timer.Tick += TimerOnTick;
             _timer.Interval = TimeSpan.FromSeconds(1);
         }
@@ -28,6 +31,11 @@ namespace WindowUI.StartWork
         {
             TimerDate = TimerDate.Subtract(TimeSpan.FromSeconds(1));
         }
+
+        public DelegateCommand StartWork { get; set; }
+        public DelegateCommand StopWork { get; }
+        public DelegateCommand PauseWork { get; }
+        public DelegateCommand ResumeWork { get; }
 
         public bool AutoStart
         {
@@ -81,10 +89,17 @@ namespace WindowUI.StartWork
         public TimeSpan TimerDate
         {
             get => _timerDate;
-            set => SetProperty(ref _timerDate, value);
+            set
+            {
+                SetProperty(ref _timerDate, value);
+                if (value.TotalMilliseconds <= 0)
+                {
+                    Started = false;
+                    _timer.Stop();
+                }
+            }
         }
 
-        public DelegateCommand StartWorkCommand { get; set; }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {

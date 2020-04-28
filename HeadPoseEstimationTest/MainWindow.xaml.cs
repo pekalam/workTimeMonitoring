@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using HeadPoseEstimationTest.Annotations;
 using Infrastructure;
+using Infrastructure.Services;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using WorkTimeAlghorithm;
@@ -37,7 +38,7 @@ namespace HeadPoseEstimationTest
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private CaptureService _cap = new CaptureService();
-        private HcFaceDetection _faceDetection = new HcFaceDetection();
+        private HcFaceDetection _faceDetection = new HcFaceDetection(new ConfigurationService(""));
         private HeadPositionService _headPosition = new HeadPositionService(new HeadPositionServiceSettings());
         private CancellationTokenSource _cts;
 

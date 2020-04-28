@@ -100,7 +100,11 @@ namespace Domain.Services
 
         public void StopRecognitionFailure() => _recognitionFailureStart = null;
 
-        public void StartUserWatchingScreen() => _lastMkEvent = InternalTimeService.GetCurrentDateTime();
+        public void ResetLastEvents()
+        {
+            _lastActiveWinExecutable = null;
+            _lastMkEvent = null;
+        }
 
         public void AddRecognitionFailure(bool faceDetected, bool faceRecognized)
         {

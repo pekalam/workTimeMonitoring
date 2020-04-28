@@ -46,6 +46,7 @@ namespace Domain.WorkTimeAggregate
         {
         }
 
+        private WorkTimeInterrupted? _lastInterruptedEvent;
 
         public long AggregateVersion { get; private set; }
         public long AggregateId { get; private set; } = -1;
@@ -55,20 +56,17 @@ namespace Domain.WorkTimeAggregate
         public User.User User { get; private set; }
         public bool AutoStart { get; private set; }
         public bool Started => StartDate.HasValue;
+        public bool Stopped => EndDate < InternalTimeService.GetCurrentDateTime() || StoppedByUser;
+        public bool StoppedByUser { get; private set; }
+        public bool Paused { get; private set; }
         public bool FromSnapshot { get; private set; }
+        public bool Interrupted => _lastInterruptedEvent != null;
 
         public IReadOnlyList<Event> PendingEvents => _pendingEvents;
         public IReadOnlyList<MouseAction> MouseActionEvents => _mouseActionEvents;
         public IReadOnlyList<KeyboardAction> KeyboardActionEvents => _keyboardActionEvents;
         public IReadOnlyList<FaceRecognitionFailure> FaceRecognitionFailures => _recognitionFailureEvents;
         public IReadOnlyList<UserWatchingScreen> UserWatchingScreen => _userWatchingScreenEvents;
-
-
-        private void AddEvent(Event ev)
-        {
-            ev.AggregateVersion = ++AggregateVersion;
-            _pendingEvents.Add(ev);
-        }
 
 
         private void Create(User.User user, DateTime? startDate, DateTime endDate)
@@ -84,9 +82,30 @@ namespace Domain.WorkTimeAggregate
 
         private void CheckIsStarted()
         {
-            if (!StartDate.HasValue)
+            if (!Started)
             {
                 throw new Exception("WorkTime not started");
+            }
+        }
+
+        private void CheckNotStopped()
+        {
+            if (Stopped)
+            {
+                throw new Exception("WorkTime stopped");
+            }
+
+            if (Paused)
+            {
+                throw new Exception("WorkTime paused");
+            }
+        }
+
+        private void CheckNotInterrupted()
+        {
+            if (_lastInterruptedEvent != null)
+            {
+                throw new Exception("WorkTime not restored");
             }
         }
 
@@ -117,9 +136,37 @@ namespace Domain.WorkTimeAggregate
             StartWorkTime();
         }
 
+        public void Stop()
+        {
+            CheckIsStarted();
+            CheckNotStopped();
+            CheckNotInterrupted();
+
+            StoppedByUser = true;
+        }
+
+        public void Pause()
+        {
+            CheckIsStarted();
+            CheckNotStopped();
+            CheckNotInterrupted();
+
+            Paused = true;
+        }
+
+        public void Resume()
+        {
+            CheckIsStarted();
+            CheckNotInterrupted();
+
+            Paused = false;
+        }
+
         internal void AddMouseAction(MouseKeyboardEvent mkEvent)
         {
             CheckIsStarted();
+            CheckNotStopped();
+            CheckNotInterrupted();
 
             var ev = new MouseAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
             _mouseActionEvents.Add(ev);
@@ -129,6 +176,8 @@ namespace Domain.WorkTimeAggregate
         internal void AddKeyboardAction(MouseKeyboardEvent mkEvent)
         {
             CheckIsStarted();
+            CheckNotStopped();
+            CheckNotInterrupted();
 
             var ev = new KeyboardAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
             _keyboardActionEvents.Add(ev);
@@ -145,6 +194,8 @@ namespace Domain.WorkTimeAggregate
         internal void AddRecognitionFailure(DateTime startDate, bool faceDetected, bool faceRecognized)
         {
             CheckIsStarted();
+            CheckNotStopped();
+            CheckNotInterrupted();
 
             var end = InternalTimeService.GetCurrentDateTime();
             if (end <= startDate)
@@ -160,6 +211,8 @@ namespace Domain.WorkTimeAggregate
         internal void AddUserWatchingScreen(DateTime startDate, string executable)
         {
             CheckIsStarted();
+            CheckNotStopped();
+            CheckNotInterrupted();
 
             var end = InternalTimeService.GetCurrentDateTime();
             if (end <= startDate)
@@ -171,8 +224,43 @@ namespace Domain.WorkTimeAggregate
             AddEvent(ev);
         }
 
+        internal void SetInterrupted()
+        {
+            CheckIsStarted();
+
+            if (Paused || Stopped)
+            {
+                return;
+            }
+
+            var ev = new WorkTimeInterrupted(AggregateId, InternalTimeService.GetCurrentDateTime());
+            _lastInterruptedEvent = ev;
+            AddEvent(ev);
+        }
+
+        internal void SetRestored()
+        {
+            CheckIsStarted();
+            CheckNotStopped();
+
+            WorkTimeRestored ev;
+            var now = InternalTimeService.GetCurrentDateTime();
+            if (_lastInterruptedEvent != null)
+            {
+                ev = new WorkTimeRestored(AggregateId, now, (long)(now - _lastInterruptedEvent.Date).TotalMilliseconds);
+            }
+            else
+            {
+                ev = new WorkTimeRestored(AggregateId, now, 0);
+            }
+            _lastInterruptedEvent = null;
+            AddEvent(ev);
+        }
+
         public WorkTimeSnapshotCreated TakeSnapshot()
         {
+            CheckNotInterrupted();
+
             ClearEvents();
             var snapshot = new WorkTimeSnapshot()
             {
@@ -190,7 +278,6 @@ namespace Domain.WorkTimeAggregate
 
         public void RollbackToSnapshot(WorkTimeSnapshotCreated workTimeSnapshotEvent)
         {
-            CheckIsStarted();
             if (workTimeSnapshotEvent.AggregateId != AggregateId)
             {
                 throw new Exception("Invalid snapshot aggregateId");

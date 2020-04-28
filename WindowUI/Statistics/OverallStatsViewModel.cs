@@ -15,8 +15,6 @@ namespace WindowUI.Statistics
 
     public class OverallStatsViewModel : BindableBase, INavigationAware
     {
-        private readonly OverallStatsController _controller;
-
         private SeriesCollection _applicationsSeries = new SeriesCollection();
         private SeriesCollection _singleApplicationSeries = new SeriesCollection();
         private SeriesCollection _summarySeries = new SeriesCollection();
@@ -33,11 +31,9 @@ namespace WindowUI.Statistics
         private DateTime _selectedMaxDate;
         private List<string> _executables;
         private string _selectedExecutable;
+        private bool _isShowingStats = true;
 
-        public OverallStatsViewModel(OverallStatsController controller)
-        {
-            _controller = controller;
-        }
+        public IOverallStatsController Controller { get; set; }
 
         public SeriesCollection ApplicationsSeries
         {
@@ -135,9 +131,15 @@ namespace WindowUI.Statistics
             set => SetProperty(ref _monitorings, value);
         }
 
+        public bool IsShowingStats
+        {
+            get => _isShowingStats;
+            set => SetProperty(ref _isShowingStats, value);
+        }
+
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _controller.Init(this);
+            Controller.Init(this);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

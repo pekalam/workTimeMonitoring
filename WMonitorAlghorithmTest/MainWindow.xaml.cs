@@ -49,7 +49,7 @@ namespace WMonitorAlghorithmTest
 
             workTime.StartManually();
 
-            _alghorithm = new WMonitorAlghorithm(new AlghorithmFaceRecognition(new HcFaceDetection(), new DnFaceRecognition(), new CaptureService(), new SqliteTestImageRepository(config,
+            _alghorithm = new WMonitorAlghorithm(new AlghorithmFaceRecognition(new HcFaceDetection(new ConfigurationService("")), new DnFaceRecognition(), new CaptureService(), new SqliteTestImageRepository(config,
                 new MapperConfiguration(opt => opt.AddProfile<DbTestImageProfile>()).CreateMapper())), new WorkTimeEventService(uow, repo, config), config, new MouseKeyboardMonitorService());
             
             _alghorithm.SetWorkTime(workTime);

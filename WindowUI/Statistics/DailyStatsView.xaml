@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="WindowUI.Statistics.DailyStatsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:WindowUI.Statistics"
+             xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
+             xmlns:wpf="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel HorizontalAlignment="Left">
+            <mah:DateTimePicker Margin="0,0,0,0"
+                                mah:TextBoxHelper.ClearTextButton="True"
+                                mah:TextBoxHelper.UseFloatingWatermark="False"
+                                HandVisibility="HourMinute"
+                                IsClockVisible="False"
+                                IsTodayHighlighted="True"
+                                SelectedDateTime="{Binding SelectedDate}" />
+        </StackPanel>
+
+        <wpf:PieChart Grid.Row="1" Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
+                      DataTooltip="{x:Null}" Series="{Binding ApplicationsSeries}" >
+            <wpf:PieChart.ChartLegend>
+                <local:ApplicationChartLegend />
+            </wpf:PieChart.ChartLegend>
+        </wpf:PieChart>
+        <Grid Grid.Row="1" Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999" Background="White">
+            <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Grid>
+    </Grid>
+</UserControl>

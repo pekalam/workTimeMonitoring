@@ -1,17 +1,48 @@
 ﻿using System;
 using Prism.Commands;
+using Prism.Events;
+using WindowUI.Messaging;
 
 namespace WindowUI.StartWork
 {
-    public class StartWorkViewController
+    public interface IStartWorkViewController
+    {
+        DelegateCommand StartWork { get; }
+        public DelegateCommand StopWork { get; }
+        public DelegateCommand PauseWork { get; }
+        public DelegateCommand ResumeWork { get; }
+    }
+
+    public class StartWorkViewController : IStartWorkViewController
     {
         private StartWorkViewModel _vm;
+        private readonly IEventAggregator _ea;
         private readonly WorkTimeModuleService _workTimeModuleService;
 
-        public StartWorkViewController(WorkTimeModuleService workTimeModuleService)
+        public StartWorkViewController(WorkTimeModuleService workTimeModuleService, IEventAggregator ea)
         {
             _workTimeModuleService = workTimeModuleService;
-            StartWorkCommand = new DelegateCommand(OnStartWorkExecute, CanExecuteMethod);
+            _ea = ea;
+            StartWork = new DelegateCommand(OnStartWorkExecute, CanExecuteMethod);
+            StopWork = new DelegateCommand(OnStopWorkExecute);
+            PauseWork = new DelegateCommand(OnPauseWorkExecute);
+            ResumeWork = new DelegateCommand(OnResumeWorkExecute);
+        }
+
+        private void OnResumeWorkExecute()
+        {
+            _workTimeModuleService.Resume();
+        }
+
+        private void OnPauseWorkExecute()
+        {
+            _workTimeModuleService.Pause();
+        }
+
+        private void OnStopWorkExecute()
+        {
+            _workTimeModuleService.Stop();
+            _vm.Started = false;
         }
 
         private bool CanExecuteMethod()
@@ -36,16 +67,21 @@ namespace WindowUI.StartWork
             _vm.Started = true;
         }
 
+        private void SetAlgorithmStarted()
+        {
+            _vm.EndDate = _workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime();
+            _vm.Started = true;
+        }
+
         public void Init(StartWorkViewModel vm)
         {
             _vm = vm;
-            _vm.Started = _workTimeModuleService.AlgorithmStarted;
-            if (_workTimeModuleService.AlgorithmStarted)
-            {
-                _vm.SetTimerDate(_workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime());
-            }
+            _ea.GetEvent<MonitoringRestored>().Subscribe(_ => SetAlgorithmStarted(), true);
         }
 
-        public DelegateCommand StartWorkCommand { get; private set; }
+        public DelegateCommand StartWork { get; private set; }
+        public DelegateCommand StopWork { get; private set; }
+        public DelegateCommand PauseWork { get; private set; }
+        public DelegateCommand ResumeWork { get; private set; }
     }
 }

@@ -11,7 +11,7 @@ namespace WindowUI.Statistics
         {
             Start = workTime.StartDate;
             End = workTime.EndDate;
-            InProgress = workTime.Started && workTime.EndDate > DateTime.UtcNow;
+            InProgress = workTime.Started && !workTime.Stopped && !workTime.Paused;
         }
 
         public DateTime? Start { get; set; }

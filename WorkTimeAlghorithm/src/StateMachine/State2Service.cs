@@ -14,66 +14,69 @@ namespace WorkTimeAlghorithm.StateMachine
         public int FaceDetectionDelayThreshold { get; set; } = 12_000;
     }
 
-    internal class State2Service
+    public partial class WMonitorAlghorithm
     {
-        private readonly AlghorithmFaceRecognition _faceRecognition;
-        private readonly WorkTimeEventService _workTimeEventService;
-        private readonly State2Configuration _config;
-
-        public State2Service(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService)
+        internal class State2Service
         {
-            _faceRecognition = faceRecognition;
-            _workTimeEventService = workTimeEventService;
-            _config = configurationService.Get<State2Configuration>("state2");
-        }
+            private readonly AlghorithmFaceRecognition _faceRecognition;
+            private readonly WorkTimeEventService _workTimeEventService;
+            private readonly State2Configuration _config;
 
-
-
-        public async Task Enter(WMonitorAlghorithm.State state, StateMachine<WMonitorAlghorithm.Triggers, WMonitorAlghorithm.States> sm, WorkTime workTime)
-        {
-            state.CanCapureMouseKeyboard = true;
-
-            _workTimeEventService.StartTempChanges();
-            _workTimeEventService.StartRecognitionFailure();
-
-            bool faceDetected = false, faceRecognized = false;
-
-            foreach (var timeMs in _config.RetryDelays)
+            public State2Service(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService,
+                IConfigurationService configurationService)
             {
-
-                (faceDetected, faceRecognized) = await _faceRecognition.RecognizeFace(workTime.User).ConfigureAwait(false);
-
-
-                if (!faceDetected && timeMs == _config.FaceDetectionDelayThreshold)
-                {
-                    state.CanCapureMouseKeyboard = false;
-                    _workTimeEventService.DiscardTempChanges();
-                    _workTimeEventService.AddRecognitionFailure(false, faceRecognized);
-                    sm.Next(WMonitorAlghorithm.Triggers.NoFace);
-                    return;
-                }
-
-                if (faceRecognized && faceDetected)
-                {
-                    _workTimeEventService.StopRecognitionFailure();
-                    _workTimeEventService.CommitTempChanges();
-                    sm.Next(WMonitorAlghorithm.Triggers.FaceRecog);
-                    return;
-                }
-
-
-                Log.Logger.Debug($"Starting {timeMs} state 2 delay");
-                await Task.Delay(timeMs).ConfigureAwait(false);
+                _faceRecognition = faceRecognition;
+                _workTimeEventService = workTimeEventService;
+                _config = configurationService.Get<State2Configuration>("state2");
             }
 
-            _workTimeEventService.DiscardTempChanges();
-            _workTimeEventService.AddRecognitionFailure(faceDetected, faceRecognized);
-            sm.Next(WMonitorAlghorithm.Triggers.FaceNotRecog);
-        }
 
-        public void Exit(WMonitorAlghorithm.Triggers trigger)
-        {
+            public async Task Enter(State state,
+                StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
+            {
+                state.CanCapureMouseKeyboard = true;
 
+                _workTimeEventService.StartTempChanges();
+                _workTimeEventService.StartRecognitionFailure();
+
+                bool faceDetected = false, faceRecognized = false;
+
+                foreach (var timeMs in _config.RetryDelays)
+                {
+                    (faceDetected, faceRecognized) =
+                        await _faceRecognition.RecognizeFace(workTime.User).ConfigureAwait(false);
+                    alghorithm.State2Result?.Invoke((faceDetected, faceRecognized));
+
+                    if (!faceDetected && timeMs == _config.FaceDetectionDelayThreshold)
+                    {
+                        state.CanCapureMouseKeyboard = false;
+                        _workTimeEventService.DiscardTempChanges();
+                        _workTimeEventService.AddRecognitionFailure(false, faceRecognized);
+                        sm.Next(Triggers.NoFace);
+                        return;
+                    }
+
+                    if (faceRecognized && faceDetected)
+                    {
+                        _workTimeEventService.StopRecognitionFailure();
+                        _workTimeEventService.CommitTempChanges();
+                        sm.Next(Triggers.FaceRecog);
+                        return;
+                    }
+
+
+                    Log.Logger.Debug($"Starting {timeMs} state 2 delay");
+                    await Task.Delay(timeMs).ConfigureAwait(false);
+                }
+
+                _workTimeEventService.DiscardTempChanges();
+                _workTimeEventService.AddRecognitionFailure(faceDetected, faceRecognized);
+                sm.Next(WMonitorAlghorithm.Triggers.FaceNotRecog);
+            }
+
+            public void Exit(WMonitorAlghorithm.Triggers trigger)
+            {
+            }
         }
     }
 }
