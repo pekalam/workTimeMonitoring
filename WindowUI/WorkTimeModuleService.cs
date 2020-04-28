@@ -6,6 +6,7 @@ using Domain.User;
 using Domain.WorkTimeAggregate;
 using Infrastructure.Messaging;
 using Prism.Events;
+using WindowUI.Messaging;
 using WorkTimeAlghorithm.StateMachine;
 
 namespace WindowUI
@@ -17,18 +18,24 @@ namespace WindowUI
         private readonly WMonitorAlghorithm _alghorithm;
         private readonly WorkTimeRestoreService _restoreService;
         private readonly IWorkTimeEsRepository _repository;
+        private readonly MonitorAlghorithmNotifications _monitorAlghorithmNotifications;
+        private readonly IEventAggregator _ea;
 
         public WorkTimeModuleService(IAuthenticationService authenticationService, WorkTimeBuildService buildService,
             WMonitorAlghorithm alghorithm, IWorkTimeEsRepository repository, WorkTimeRestoreService restoreService
-            ,IEventAggregator ea)
+            , IEventAggregator ea)
         {
             _authenticationService = authenticationService;
             _buildService = buildService;
             _alghorithm = alghorithm;
             _repository = repository;
             _restoreService = restoreService;
+            _ea = ea;
             ea.GetEvent<AppShuttingDownEvent>().Subscribe(() => _restoreService.SetInterrupted(CurrentWorkTime), true);
+
+            _monitorAlghorithmNotifications = new MonitorAlghorithmNotifications(alghorithm, ea);
         }
+
 
         public bool AlgorithmStarted { get; private set; }
         public WorkTime CurrentWorkTime { get; private set; }
@@ -63,6 +70,7 @@ namespace WindowUI
         {
             CurrentWorkTime.Stop();
             _alghorithm.Stop();
+            _monitorAlghorithmNotifications.Reset();
         }
 
         public bool TryRestore()
@@ -71,6 +79,8 @@ namespace WindowUI
             if (_restoreService.Restore(user, out var restored))
             {
                 StartAlgorithm(restored);
+                _ea.GetEvent<MonitoringRestored>().Publish(this);
+                _monitorAlghorithmNotifications.OnRestored();
                 return true;
             }
 

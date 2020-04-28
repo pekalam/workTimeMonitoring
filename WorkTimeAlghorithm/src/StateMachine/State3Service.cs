@@ -47,7 +47,7 @@ namespace WorkTimeAlghorithm.StateMachine
                     await Task.Delay(_config.Delay);
 
                     (faceDetected, faceRecognized) = await _faceRecognition.RecognizeFace(workTime.User);
-                    alghorithm.State3DetectionResult((faceDetected, faceRecognized));
+                    alghorithm.State3Result((faceDetected, faceRecognized));
 
                     Log.Logger.Debug(
                         $"State 3 face recognized: {faceRecognized} face detected face recognized: {faceDetected}");

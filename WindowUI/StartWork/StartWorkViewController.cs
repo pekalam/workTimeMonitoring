@@ -1,5 +1,7 @@
 ﻿using System;
 using Prism.Commands;
+using Prism.Events;
+using WindowUI.Messaging;
 
 namespace WindowUI.StartWork
 {
@@ -14,11 +16,13 @@ namespace WindowUI.StartWork
     public class StartWorkViewController : IStartWorkViewController
     {
         private StartWorkViewModel _vm;
+        private readonly IEventAggregator _ea;
         private readonly WorkTimeModuleService _workTimeModuleService;
 
-        public StartWorkViewController(WorkTimeModuleService workTimeModuleService)
+        public StartWorkViewController(WorkTimeModuleService workTimeModuleService, IEventAggregator ea)
         {
             _workTimeModuleService = workTimeModuleService;
+            _ea = ea;
             StartWork = new DelegateCommand(OnStartWorkExecute, CanExecuteMethod);
             StopWork = new DelegateCommand(OnStopWorkExecute);
             PauseWork = new DelegateCommand(OnPauseWorkExecute);
@@ -63,14 +67,16 @@ namespace WindowUI.StartWork
             _vm.Started = true;
         }
 
+        private void SetAlgorithmStarted()
+        {
+            _vm.Started = true;
+            _vm.SetTimerDate(_workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime());
+        }
+
         public void Init(StartWorkViewModel vm)
         {
             _vm = vm;
-            _vm.Started = _workTimeModuleService.AlgorithmStarted;
-            if (_workTimeModuleService.AlgorithmStarted)
-            {
-                _vm.SetTimerDate(_workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime());
-            }
+            _ea.GetEvent<MonitoringRestored>().Subscribe(_ => SetAlgorithmStarted(), true);
         }
 
         public DelegateCommand StartWork { get; private set; }

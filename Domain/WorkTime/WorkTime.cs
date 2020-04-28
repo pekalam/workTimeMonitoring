@@ -227,7 +227,11 @@ namespace Domain.WorkTimeAggregate
         internal void SetInterrupted()
         {
             CheckIsStarted();
-            CheckNotStopped();
+
+            if (Paused || Stopped)
+            {
+                return;
+            }
 
             var ev = new WorkTimeInterrupted(AggregateId, InternalTimeService.GetCurrentDateTime());
             _lastInterruptedEvent = ev;

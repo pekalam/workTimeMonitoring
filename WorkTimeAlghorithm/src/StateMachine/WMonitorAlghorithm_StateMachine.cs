@@ -36,7 +36,7 @@ namespace WorkTimeAlghorithm.StateMachine
                 .End()
 
                 .CreateState(States.s2)
-                .EnterAsync((t) => _state2.Enter(_state, _sm, _workTime))
+                .EnterAsync((t) => _state2.Enter(_state, _sm, _workTime, this))
                 .Exit(t => _state2.Exit(t))
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.FaceNotRecog, States.s3)

@@ -3,8 +3,21 @@ using Notifications.Wpf;
 
 namespace NotificationsWpf
 {
-    internal class NotificationService
+    internal static class NotificationService
     {
+        private static NotificationType GetNotificationType(NotificationConfig config)
+        {
+            switch (config.Scenario)
+            {
+                case NotificationScenario.Information:
+                    return NotificationType.Information;
+                case NotificationScenario.Warning:
+                    return NotificationType.Warning;
+                default:
+                    return NotificationType.Information;
+            }
+        }
+
         public static void Show(NotificationConfig config)
         {
             var notificationManager = new NotificationManager();
@@ -13,7 +26,7 @@ namespace NotificationsWpf
             {
                 Title = config.Title,
                 Message = config.Msg,
-                Type = NotificationType.Information
+                Type = GetNotificationType(config)
             });
         }
     }

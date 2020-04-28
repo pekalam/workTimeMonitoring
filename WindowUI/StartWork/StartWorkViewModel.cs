@@ -10,7 +10,7 @@ namespace WindowUI.StartWork
     {
         private readonly StartWorkViewController _controller;
         private bool _autoStart;
-        private bool _started = true;
+        private bool _started;
         private DateTime? _startDate = DateTime.Now;
         private DateTime? _endDate = DateTime.Now;
         private readonly DispatcherTimer _timer = new DispatcherTimer();
@@ -65,7 +65,7 @@ namespace WindowUI.StartWork
             }
             else
             {
-                TimerDate = endDate.Subtract(DateTime.Now);
+                TimerDate = endDate.Subtract(DateTime.UtcNow);
             }
         }
 

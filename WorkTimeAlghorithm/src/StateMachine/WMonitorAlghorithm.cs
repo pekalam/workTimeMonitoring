@@ -17,7 +17,8 @@ namespace WorkTimeAlghorithm.StateMachine
         private readonly State5Service _state5 = new State5Service();
         private WorkTime _workTime;
 
-        public event Action<(bool faceDetected, bool faceRecognized)> State3DetectionResult; 
+        public event Action<(bool faceDetected, bool faceRecognized)> State3Result;
+        public event Action<(bool faceDetected, bool faceRecognized)> State2Result;
 
         public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService, IMouseKeyboardMonitorService mouseKeyboardMonitor)
         {
@@ -48,6 +49,10 @@ namespace WorkTimeAlghorithm.StateMachine
             }
             else
             {
+                if (_workTime.Stopped)
+                {
+                    Stop();
+                }
                 Debug.WriteLine("Ignoring mouse action");
             }
         }
@@ -62,6 +67,10 @@ namespace WorkTimeAlghorithm.StateMachine
             }
             else
             {
+                if (_workTime.Stopped)
+                {
+                    Stop();
+                }
                 Debug.WriteLine("Ignoring keyboard action");
             }
         }

@@ -82,6 +82,23 @@ namespace Domain.UnitTests
         }
 
         [Fact]
+        public void set_interrupted_stopped_or_paused__does_not_gen_event()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.StartManually();
+            workTime.MarkPendingEventsAsHandled();
+
+            workTime.Pause();
+            workTime.SetInterrupted();
+            workTime.Resume();
+
+            InternalTimeService.GetCurrentDateTime = () => DateTime.UtcNow.AddMinutes(11);
+
+            workTime.SetInterrupted();
+            workTime.PendingEvents.Count.Should().Be(0);
+        }
+
+        [Fact]
         public void SetResored_when_interrupted_generates_event()
         {
             var workTime = WorkTimeTestUtils.CreateManual(_user);
