@@ -13,7 +13,7 @@
     mc:Ignorable="d" x:Class="WindowUI.Statistics.StatisticsView"
     prism:ViewModelLocator.AutoWireViewModel="True" d:DesignWidth="1200" d:DesignHeight="800">
     <Grid Background="White" >
-        <mah:MetroAnimatedSingleRowTabControl>
+        <mah:MetroAnimatedSingleRowTabControl x:Name="tab" SelectionChanged="MetroAnimatedSingleRowTabControl_SelectionChanged">
             <TabItem Header="Overall">
                 <ScrollViewer Margin="2"
                               HorizontalScrollBarVisibility="Auto"

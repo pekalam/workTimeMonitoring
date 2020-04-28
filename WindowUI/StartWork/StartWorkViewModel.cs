@@ -65,7 +65,7 @@ namespace WindowUI.StartWork
             }
             else
             {
-                TimerDate = endDate.Subtract(DateTime.UtcNow);
+                TimerDate = endDate.Subtract(DateTime.Now);
             }
         }
 

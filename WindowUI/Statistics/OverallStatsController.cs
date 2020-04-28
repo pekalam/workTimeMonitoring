@@ -9,6 +9,8 @@ using Domain.User;
 using Domain.WorkTimeAggregate;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Unity;
+using WindowUI.RepoProxy;
 
 namespace WindowUI.Statistics
 {
@@ -39,7 +41,12 @@ namespace WindowUI.Statistics
         }
     }
 
-    public class OverallStatsController
+    public interface IOverallStatsController
+    {
+        void Init(OverallStatsViewModel vm);
+    }
+
+    public class OverallStatsController : IOverallStatsController
     {
         private OverallStatsViewModel _vm;
         private List<WorkTime> _workTimes;
@@ -48,7 +55,7 @@ namespace WindowUI.Statistics
         private DateTime _startDate;
         private DateTime _endDate;
 
-        public OverallStatsController(IWorkTimeEsRepository repository,
+        public OverallStatsController([Dependency(nameof(WorkTimeEsRepositorDecorator))] IWorkTimeEsRepository repository,
             IAuthenticationService authenticationService)
         {
             _repository = repository;
@@ -128,7 +135,7 @@ namespace WindowUI.Statistics
             _vm.Monitorings = selected.Select(s => new WorkTimeViewModel(s)).ToList();
         }
 
-        private void UpdateChart()
+        public void UpdateChart()
         {
             var selected = _workTimes.Where(w => _vm.SelectedMinDate <= w.DateCreated && _vm.SelectedMaxDate >= w.EndDate).ToList();
 

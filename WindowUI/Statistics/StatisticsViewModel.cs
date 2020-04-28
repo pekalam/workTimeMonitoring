@@ -1,4 +1,5 @@
-﻿using Prism.Mvvm;
+﻿using System;
+using Prism.Mvvm;
 using Prism.Regions;
 
 namespace WindowUI.Statistics
@@ -6,6 +7,8 @@ namespace WindowUI.Statistics
     public class StatisticsViewModel : BindableBase, INavigationAware
     {
         private readonly StatisticsViewController _controller;
+
+        public event Action<int> TabChanged; 
 
         public StatisticsViewModel(StatisticsViewController controller, OverallStatsViewModel overallStatsViewModel, DailyStatsViewModel dailyStatsViewModel)
         {
@@ -32,6 +35,11 @@ namespace WindowUI.Statistics
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+        }
+
+        public void RaiseTabChanged(int index)
+        {
+            TabChanged?.Invoke(index);
         }
     }
 }

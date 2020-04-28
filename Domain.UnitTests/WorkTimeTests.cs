@@ -99,6 +99,24 @@ namespace Domain.UnitTests
         }
 
         [Fact]
+        public void Combine_ads_new_events()
+        {
+            var workTime = WorkTimeTestUtils.CreateManual(_user);
+            workTime.StartManually();
+            var snap = workTime.TakeSnapshot();
+
+            var totalEvs = workTime.PendingEvents.Count;
+
+            var fromSnap = WorkTime.CreateFromSnapshot(snap);
+            fromSnap.AddRecognitionFailure(DateTime.UtcNow, false, false);
+
+            WorkTime joined = WorkTime.Combine(workTime, fromSnap);
+
+            joined.PendingEvents.Count.Should().Be( totalEvs + 1);
+            joined.PendingEvents.Last().Should().BeOfType<FaceRecognitionFailure>();
+        }
+
+        [Fact]
         public void SetResored_when_interrupted_generates_event()
         {
             var workTime = WorkTimeTestUtils.CreateManual(_user);

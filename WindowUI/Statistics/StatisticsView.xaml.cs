@@ -12,6 +12,9 @@ namespace WindowUI.Statistics
             InitializeComponent();
         }
 
-        
+        private void MetroAnimatedSingleRowTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            (DataContext as StatisticsViewModel).RaiseTabChanged(tab.SelectedIndex);
+        }
     }
 }

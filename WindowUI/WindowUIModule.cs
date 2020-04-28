@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using CommonServiceLocator;
+using Domain.Repositories;
 using Prism.Commands;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -12,6 +13,7 @@ using WindowUI.FaceInitialization;
 using WindowUI.LoginWindow;
 using WindowUI.MainWindow;
 using WindowUI.Profile;
+using WindowUI.RepoProxy;
 using WindowUI.StartWork;
 using WindowUI.Statistics;
 
@@ -58,9 +60,14 @@ namespace WindowUI
             containerRegistry.GetContainer()
                 .RegisterType<IProfileViewController, ProfileViewController>();
 
+            containerRegistry.GetContainer().RegisterType<IOverallStatsController, OverallStatsController>();
+
             containerRegistry.GetContainer().RegisterSingleton<WorkTimeModuleService>();
 
             containerRegistry.GetContainer().RegisterInstance(ServiceLocator.Current.GetInstance<WindowModuleStartupService>());
+
+            containerRegistry.GetContainer()
+                .RegisterType<IWorkTimeEsRepository, WorkTimeEsRepositorDecorator>(nameof(WorkTimeEsRepositorDecorator));
         }
     }
 }

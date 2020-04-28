@@ -130,5 +130,32 @@ namespace Domain.WorkTimeAggregate
 
             return workTime;
         }
+
+        public static WorkTime Combine(WorkTime w1, WorkTime w2)
+        {
+            if (w1.AggregateId != w2.AggregateId)
+            {
+                throw new Exception("Invalid aggregate id");
+            }
+
+            if (w1.AggregateVersion == w2.AggregateVersion)
+            {
+                return w1;
+            }
+
+            WorkTime v1 = w1.AggregateVersion > w2.AggregateVersion ? w2 : w1;
+            WorkTime v2 = w1.AggregateVersion > w2.AggregateVersion ? w1 : w2;
+
+            foreach (var ev in v2.PendingEvents)
+            {
+                if (ev.AggregateVersion > v1.AggregateVersion)
+                {
+                    v1.AsDynamic().Apply(ev);
+                    v1.AddEvent(ev);
+                }
+            }
+
+            return v1;
+        }
     }
 }

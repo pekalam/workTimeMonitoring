@@ -69,8 +69,8 @@ namespace WindowUI.StartWork
 
         private void SetAlgorithmStarted()
         {
+            _vm.EndDate = _workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime();
             _vm.Started = true;
-            _vm.SetTimerDate(_workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime());
         }
 
         public void Init(StartWorkViewModel vm)

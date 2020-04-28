@@ -7,7 +7,7 @@ namespace WindowUI.__Designer
 {
     public class OverallViewModelDesign : OverallStatsViewModel
     {
-        public OverallViewModelDesign() : base(null)
+        public OverallViewModelDesign() : base()
         {
         }
 
