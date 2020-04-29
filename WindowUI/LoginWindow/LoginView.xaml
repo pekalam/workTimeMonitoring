@@ -39,7 +39,7 @@
                             Login
                         </Button>
                         <CheckBox Grid.Column="1"
-                                  Content="Remember me" />
+                                  Content="Remember me" Visibility="Hidden"/>
                     </Grid>
 
                 </StackPanel>

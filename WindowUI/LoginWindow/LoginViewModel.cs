@@ -7,13 +7,14 @@ using Domain.User;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using Serilog;
 
 namespace WindowUI.LoginWindow
 {
     public class LoginViewModel : BindableBase, INavigationAware, INotifyDataErrorInfo
     {
-        private string _password;
-        private string _login;
+        private string _password = "pass";
+        private string _login = "test";
         private readonly ILoginViewController _controller;
         private bool _invalidPassword;
         private bool _passwordDirty = false;
@@ -24,6 +25,10 @@ namespace WindowUI.LoginWindow
         {
             _controller = controller;
             LoginCommand = controller.LoginCommand;
+
+            //demo
+            _passwordDirty = true;
+            _loginDirty = true;
         }
 
         public DelegateCommand LoginCommand { get; }
@@ -49,7 +54,7 @@ namespace WindowUI.LoginWindow
             set => SetProperty(ref _invalidPassword, value);
         }
 
-        internal string PasswordValue { get; set; } = "";
+        internal string PasswordValue { get; set; } = "pass";
 
         public string Password
         {
@@ -115,6 +120,9 @@ namespace WindowUI.LoginWindow
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             _controller.Init(this);
+
+            //demo
+            LoginCommand.RaiseCanExecuteChanged();
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
