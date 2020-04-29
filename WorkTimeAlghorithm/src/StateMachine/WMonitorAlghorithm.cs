@@ -99,7 +99,7 @@ namespace WorkTimeAlghorithm.StateMachine
             _mouseKeyboardMonitor.Stop();
             _sm.Next(Triggers.Stop);
             _state.CanCapureMouseKeyboard = false;
-#if DEBUG
+#if DEV_MODE
             _vis.Dispose();
 #endif
         }

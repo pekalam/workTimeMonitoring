@@ -4,7 +4,6 @@ using System.Windows;
 using CommonServiceLocator;
 using Infrastructure;
 using Infrastructure.Messaging;
-using NotificationsW8;
 using NotificationsWpf;
 using Prism.Events;
 using Prism.Ioc;
