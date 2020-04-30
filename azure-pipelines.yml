@@ -45,6 +45,16 @@ stages:
           archiveFilePatterns: '$(faceRecogTestFixtures.secureFilePath)'
           destinationFolder: '$(testImgDir)'
           cleanDestinationFolder: false
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: 'Domain.UnitTests/Domain.UnitTests.csproj'
+          arguments: '-c Debug'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: 'WorkTimeAlghorithm.UnitTests/WorkTimeAlghorithm.UnitTests.csproj'
+          arguments: '-c Debug'
       - task: VSTest@2
         displayName: 'Run unit tests'
         inputs:
@@ -56,6 +66,11 @@ stages:
             !**\*TestAdapter.dll
             !**\obj\**
           searchFolder: '$(System.DefaultWorkingDirectory)'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: 'Infrastructure.Tests/Infrastructure.Tests.csproj'
+          arguments: '-c Debug'
       - task: VSTest@2
         displayName: 'Run integration tests'
         inputs:
