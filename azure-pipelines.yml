@@ -30,14 +30,12 @@ stages:
           command: 'restore'
           projects: '**\*.csproj'
           feedsToUse: 'select'
-      - task: VSBuild@1
-        displayName: 'Build solution'
+      - task: DotNetCoreCLI@2
+        displayName: 'Build app'
         inputs:
-          solution: 'FaceRecog.sln'
-          vsVersion: '16.0'
-          platform: 'x64'
-          configuration: 'Debug'
-          msbuildArchitecture: x64
+          command: 'build'
+          projects: 'Application\Application.csproj'
+          arguments: '-c Release -r win-x64'
       - task: DownloadSecureFile@1
         name: faceRecogTestFixtures
         inputs:
