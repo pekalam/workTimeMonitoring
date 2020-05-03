@@ -28,4 +28,10 @@
     <ApplicationDefinition Remove="App.xaml"></ApplicationDefinition>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
