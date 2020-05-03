@@ -93,3 +93,8 @@ stages:
           sourceDir: '$(System.DefaultWorkingDirectory)\AppRelease'
           zipPath: 'Application.zip'
           dropboxtoken: '$(DropboxToken)'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(System.DefaultWorkingDirectory)\AppRelease'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
