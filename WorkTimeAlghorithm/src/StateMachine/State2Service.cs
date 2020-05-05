@@ -33,10 +33,6 @@ namespace WorkTimeAlghorithm.StateMachine
                 _config = configurationService.Get<State2Configuration>("state2");
             }
 
-
-            public void Cancel() => _cts?.Cancel();
-
-
             public async Task Enter(State state,
                 StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
             {
@@ -90,6 +86,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
             public void Exit(WMonitorAlghorithm.Triggers trigger)
             {
+                _cts?.Cancel();
             }
         }
     }

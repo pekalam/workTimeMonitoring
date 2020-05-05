@@ -44,7 +44,6 @@ namespace WindowUI.TriggerRecognition
             var sw = (image.ActualWidth / orgWidth);
             var sh = (image.ActualHeight / orgHeight);
 
-
             var faceX = obj.Location.X * sw;
             var faceY = obj.Location.Y * sh;
 

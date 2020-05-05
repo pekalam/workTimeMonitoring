@@ -50,6 +50,7 @@ namespace WorkTimeAlghorithm.StateMachine
                 .EnterAsync(t => _state3.Enter(_state, _sm, _workTime, this))
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.ManualTrigger, States.MANUAL)
+                .Exit(_ => _state3.Exit())
                 .End()
 
                 .CreateState(States.s5)

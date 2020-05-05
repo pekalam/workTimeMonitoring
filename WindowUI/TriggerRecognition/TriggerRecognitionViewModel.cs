@@ -4,17 +4,20 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
 using Prism.Mvvm;
 using Prism.Regions;
+using Rect = OpenCvSharp.Rect;
 
 namespace WindowUI.TriggerRecognition
 {
     public class TriggerRecognitionViewModel : BindableBase, INavigationAware
     {
         private readonly ITriggerRecognitionController _controller;
+        private Visibility _recognizedOverlayVisibility = Visibility.Hidden;
+        private bool? _faceRecognized;
 
         public event Action<BitmapSource> OnFrameChanged;
         public event Action<Rect> OnFaceDetected;
@@ -28,7 +31,35 @@ namespace WindowUI.TriggerRecognition
 
         public ICommand Retry { get; }
 
-        public Brush FaceRectBrush { get; set; } = Brushes.Blue;
+        public bool? FaceRecognized
+        {
+            get => _faceRecognized;
+            set =>  SetProperty(ref _faceRecognized, value);
+        }
+
+        public Visibility RecognizedOverlayVisibility
+        {
+            get => _recognizedOverlayVisibility;
+            set => SetProperty(ref _recognizedOverlayVisibility, value);
+        }
+
+        public void ShowRecognitionFailure()
+        {
+            RecognizedOverlayVisibility = Visibility.Visible;
+            FaceRecognized = false;
+        }
+
+        public void ShowRecognitionSuccess()
+        {
+            RecognizedOverlayVisibility = Visibility.Visible;
+            FaceRecognized = true;
+        }
+
+        public void ResetRecognition()
+        {
+            RecognizedOverlayVisibility = Visibility.Hidden;
+            FaceRecognized = null;
+        }
 
         public void CallOnFrameChanged(BitmapSource bmp)
         {
@@ -47,7 +78,7 @@ namespace WindowUI.TriggerRecognition
 
         public async void OnNavigatedTo(NavigationContext navigationContext)
         {
-            await _controller.Init(this);
+            await _controller.Init(this, (bool) navigationContext.Parameters["WindowOpened"]);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -63,6 +94,6 @@ namespace WindowUI.TriggerRecognition
     public interface ITriggerRecognitionController
     {
         ICommand Retry { get; }
-        Task Init(TriggerRecognitionViewModel vm);
+        Task Init(TriggerRecognitionViewModel vm, bool windowOpened);
     }
 }

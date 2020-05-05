@@ -3,11 +3,58 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"
              xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
-             prism:ViewModelLocator.AutoWireViewModel="True">
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             Width="1200" Height="700">
+    <UserControl.Resources>
+    </UserControl.Resources>
     <Grid>
-        <Image x:Name="image" VerticalAlignment="Stretch" />
+        <Image x:Name="image" VerticalAlignment="Stretch" HorizontalAlignment="Center" />
         <Canvas x:Name="canvas">
-            <Rectangle x:Name="faceRect" Stroke="{Binding FaceRectBrush}"/>
+            <Rectangle x:Name="faceRect" Width="200" Height="200" StrokeThickness="2">
+                <Rectangle.Stroke>
+                    <SolidColorBrush Color="Gray"/>
+                </Rectangle.Stroke>
+                <Rectangle.Style>
+                    <Style>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding FaceRecognized}" Value="False">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard >
+                                            <ColorAnimationUsingKeyFrames Duration="5" Storyboard.TargetProperty="Stroke.(SolidColorBrush.Color)">
+                                                <DiscreteColorKeyFrame Value="Red" KeyTime="0:0:0"/>
+                                                <DiscreteColorKeyFrame Value="Gray" KeyTime="0:0:5"/>
+                                            </ColorAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Rectangle.Style>
+            </Rectangle>
         </Canvas>
+        <Grid Background="#A514202B" Visibility="{Binding RecognizedOverlayVisibility}">
+            <TextBlock Text="Recognized" Foreground="Green" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{c:Binding FaceRecognized}"/>
+            <TextBlock Text="Not recognized" Foreground="Red" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{c:Binding !FaceRecognized}"/>
+            <Grid.Style>
+                <Style>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding FaceRecognized}" Value="False">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation FillBehavior="Stop"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1" To="0" Duration="0:0:1.5" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+
+                </Style>
+            </Grid.Style>
+        </Grid>
     </Grid>
 </UserControl>

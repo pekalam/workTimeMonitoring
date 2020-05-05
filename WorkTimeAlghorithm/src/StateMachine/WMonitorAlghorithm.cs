@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
+using OpenCvSharp;
 
 namespace WorkTimeAlghorithm.StateMachine
 {
@@ -32,7 +33,8 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public bool Paused => _sm.CurrentState.Name == States.PAUSE_STATE;
         public bool Stopped => _sm.CurrentState.Name == States.STOP_STATE;
-        
+        public bool ManualRecog => _sm.CurrentState.Name == States.MANUAL;
+
         public void SetWorkTime(WorkTime workTime)
         {
             _workTime = workTime;
@@ -96,8 +98,6 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public void Stop()
         {
-            _state2.Cancel();
-            _state3.Cancel();
             _mouseKeyboardMonitor.Stop();
             _sm.Next(Triggers.Stop);
             _state.CanCapureMouseKeyboard = false;

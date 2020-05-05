@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using CommonServiceLocator;
 using Domain.Repositories;
+using Infrastructure;
 using Infrastructure.Messaging;
 using Prism.Commands;
 using Prism.Events;
@@ -22,6 +23,40 @@ using WindowUI.TriggerRecognition;
 
 namespace WindowUI
 {
+    internal class FaceRecogTriggerService
+    {
+        private IEventAggregator _ea;
+        private IRegionManager _rm;
+        private WorkTimeModuleService _moduleService;
+
+        public FaceRecogTriggerService(IRegionManager rm, WorkTimeModuleService moduleService, IEventAggregator ea)
+        {
+            _rm = rm;
+            _moduleService = moduleService;
+            _ea = ea;
+        }
+
+        public void TryTriggerRecog()
+        {
+            if (_moduleService.Alghorithm.ManualRecog)
+            {
+                return;
+            }
+
+            var windowOpened = WindowModuleStartupService.ShellWindow.WindowState != WindowState.Minimized;
+            if (!windowOpened)
+            {
+                _ea.GetEvent<ShowWindowEvent>().Publish();
+            }
+
+            var rm = ServiceLocator.Current.GetInstance<IRegionManager>();
+            rm.RequestNavigate(ShellRegions.MainRegion, nameof(TriggerRecognitionView), new NavigationParameters()
+            {
+                {"WindowOpened", windowOpened}
+            });
+        }
+    }
+
     public static class WindowUiModuleCommands
     {
         public static CompositeCommand NavigateProfile { get; }
@@ -40,9 +75,8 @@ namespace WindowUI
             ea.GetEvent<FaceRecogTriggeredEvent>().Subscribe(
                 () =>
                 {
-                    ea.GetEvent<ShowWindowEvent>().Publish();
-                    var rm = ServiceLocator.Current.GetInstance<IRegionManager>();
-                    rm.RequestNavigate(MainWindowRegions.MainContentRegion, nameof(TriggerRecognitionView));
+                    var service = containerProvider.Resolve<FaceRecogTriggerService>();
+                    service.TryTriggerRecog();
                 }, true);
         }
 
