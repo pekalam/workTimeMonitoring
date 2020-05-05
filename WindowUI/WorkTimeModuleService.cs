@@ -40,6 +40,8 @@ namespace WindowUI
         public bool AlgorithmStarted { get; private set; }
         public WorkTime? CurrentWorkTime { get; private set; }
 
+        public WMonitorAlghorithm Alghorithm => _alghorithm;
+
         public void StartNew(DateTime? start, DateTime end)
         {
             var created = _buildService.CreateStartedManually(_authenticationService.User, end, true);

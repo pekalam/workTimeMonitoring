@@ -45,4 +45,9 @@ namespace Infrastructure.Messaging
     {
 
     }
+
+    public class ShowWindowEvent : PubSubEvent
+    {
+
+    }
 }

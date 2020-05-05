@@ -96,12 +96,30 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public void Stop()
         {
+            _state2.Cancel();
+            _state3.Cancel();
             _mouseKeyboardMonitor.Stop();
             _sm.Next(Triggers.Stop);
             _state.CanCapureMouseKeyboard = false;
 #if DEV_MODE
             _vis.Dispose();
 #endif
+        }
+
+
+        public void StartManualFaceRecog()
+        {
+            _sm.Next(Triggers.ManualTrigger);
+        }
+
+        public void CancelManualFaceRecog()
+        {
+            _sm.Next(Triggers.ManualCancel);
+        }
+
+        public void SetFaceRecog()
+        {
+            _sm.Next(Triggers.FaceRecog);
         }
     }
 }

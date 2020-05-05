@@ -1,0 +1,13 @@
+﻿<UserControl x:Class="WindowUI.TriggerRecognition.TriggerRecognitionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+    <Grid>
+        <Image x:Name="image" VerticalAlignment="Stretch" />
+        <Canvas x:Name="canvas">
+            <Rectangle x:Name="faceRect" Stroke="{Binding FaceRectBrush}"/>
+        </Canvas>
+    </Grid>
+</UserControl>

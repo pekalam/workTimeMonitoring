@@ -18,7 +18,7 @@ namespace WindowUI.MainWindow
 
     public class MainViewController : IMainViewController
     {
-        private MainWindowViewModel _vm;
+        private MainWindowViewModel? _vm;
         private readonly ITestImageRepository _testImageRepository;
         private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _regionManager;
@@ -37,11 +37,7 @@ namespace WindowUI.MainWindow
         {
             _vm = vm;
 
-            if (_workTimeModuleService.TryRestore())
-            {
-                //_notifier.ShowInformation("Continuing stoppped monitoring");
-            }
-            else
+            if (!_workTimeModuleService.TryRestore())
             {
                 Dispatcher.CurrentDispatcher.InvokeAsync(() =>
                 {

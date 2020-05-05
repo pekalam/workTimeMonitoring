@@ -31,14 +31,26 @@ namespace Application
             ni.DoubleClick +=
                 delegate
                 {
-                    this.Show();
-                    this.WindowState = WindowState.Normal;
+                    ShowWindow();
                 };
 
 
             System.Windows.Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+
+            ServiceLocator.Current.GetInstance<IEventAggregator>().GetEvent<ShowWindowEvent>()
+                .Subscribe(() =>
+                {
+                    ShowWindow();
+                },true);
         }
 
+        private void ShowWindow()
+        {
+            this.Show();
+            this.WindowState = WindowState.Normal;
+        }
+        
         protected override void OnClosing(CancelEventArgs e)
         {
             e.Cancel = true;

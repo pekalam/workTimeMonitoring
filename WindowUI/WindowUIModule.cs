@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using CommonServiceLocator;
 using Domain.Repositories;
+using Infrastructure.Messaging;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
@@ -16,6 +18,7 @@ using WindowUI.Profile;
 using WindowUI.RepoProxy;
 using WindowUI.StartWork;
 using WindowUI.Statistics;
+using WindowUI.TriggerRecognition;
 
 namespace WindowUI
 {
@@ -33,7 +36,14 @@ namespace WindowUI
     {
         public void OnInitialized(IContainerProvider containerProvider)
         {
-
+            var ea = containerProvider.GetContainer().Resolve<IEventAggregator>();
+            ea.GetEvent<FaceRecogTriggeredEvent>().Subscribe(
+                () =>
+                {
+                    ea.GetEvent<ShowWindowEvent>().Publish();
+                    var rm = ServiceLocator.Current.GetInstance<IRegionManager>();
+                    rm.RequestNavigate(MainWindowRegions.MainContentRegion, nameof(TriggerRecognitionView));
+                }, true);
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
@@ -44,6 +54,10 @@ namespace WindowUI
             containerRegistry.RegisterForNavigation<StartWorkView>();
             containerRegistry.RegisterForNavigation<StatisticsView>();
             containerRegistry.RegisterForNavigation<ProfileView>();
+            containerRegistry.RegisterForNavigation<TriggerRecognitionView>();
+
+            containerRegistry.GetContainer()
+                .RegisterType<ITriggerRecognitionController, TriggerRecognitionController>();
 
             containerRegistry.GetContainer()
                 .RegisterType<IDailyStatsViewController, DailyStatsViewController>();
@@ -64,10 +78,12 @@ namespace WindowUI
 
             containerRegistry.GetContainer().RegisterSingleton<WorkTimeModuleService>();
 
-            containerRegistry.GetContainer().RegisterInstance(ServiceLocator.Current.GetInstance<WindowModuleStartupService>());
+            containerRegistry.GetContainer()
+                .RegisterInstance(ServiceLocator.Current.GetInstance<WindowModuleStartupService>());
 
             containerRegistry.GetContainer()
-                .RegisterType<IWorkTimeEsRepository, WorkTimeEsRepositorDecorator>(nameof(WorkTimeEsRepositorDecorator));
+                .RegisterType<IWorkTimeEsRepository, WorkTimeEsRepositorDecorator
+                >(nameof(WorkTimeEsRepositorDecorator));
         }
     }
 }
