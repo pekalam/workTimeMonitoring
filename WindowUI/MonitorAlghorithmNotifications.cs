@@ -79,7 +79,7 @@ namespace WindowUI
                 {
                     Title = !args.faceRecognized ? "Cannot recognize face" : "Cannot detect face",
                     Msg = "Look at front of screen",
-                    Scenario = NotificationScenario.Warning,
+                    Scenario = _state3Error > 3 ? NotificationScenario.WarningTrigger : NotificationScenario.Warning,
                 });
             }
         }

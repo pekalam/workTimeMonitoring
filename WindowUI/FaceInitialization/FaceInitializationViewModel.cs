@@ -241,9 +241,9 @@ namespace WindowUI.FaceInitialization
 
         public void HideInstructions() => InstructionsVisible = false;
 
-        public void OnNavigatedTo(NavigationContext navigationContext)
+        public async void OnNavigatedTo(NavigationContext navigationContext)
         {
-            _controller.Init(this);
+            await _controller.Init(this);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)

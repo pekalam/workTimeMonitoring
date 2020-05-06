@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
+using OpenCvSharp;
 
 namespace WorkTimeAlghorithm.StateMachine
 {
@@ -20,11 +21,13 @@ namespace WorkTimeAlghorithm.StateMachine
         public event Action<(bool faceDetected, bool faceRecognized)> State3Result;
         public event Action<(bool faceDetected, bool faceRecognized)> State2Result;
 
+        private IDisposable _keyboardSub;
+        private IDisposable _mouseSub;
+
         public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService, IMouseKeyboardMonitorService mouseKeyboardMonitor)
         {
             _mouseKeyboardMonitor = mouseKeyboardMonitor;
-            _mouseKeyboardMonitor.KeyboardAction.Subscribe(OnKeyboardAction);
-            _mouseKeyboardMonitor.MouseMoveAction.Subscribe(OnMouseAction);
+            InitSubscriptions();
             _workTimeEventService = workTimeEventService;
             _state2 = new State2Service(faceRecognition, workTimeEventService, configurationService);
             _state3 = new State3Service(faceRecognition, workTimeEventService, configurationService);
@@ -32,7 +35,14 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public bool Paused => _sm.CurrentState.Name == States.PAUSE_STATE;
         public bool Stopped => _sm.CurrentState.Name == States.STOP_STATE;
-        
+        public bool ManualRecog => _sm.CurrentState.Name == States.MANUAL;
+
+        private void InitSubscriptions()
+        {
+            _keyboardSub = _mouseKeyboardMonitor.KeyboardAction.Subscribe(OnKeyboardAction);
+            _mouseSub = _mouseKeyboardMonitor.MouseMoveAction.Subscribe(OnMouseAction);
+        }
+
         public void SetWorkTime(WorkTime workTime)
         {
             _workTime = workTime;
@@ -77,6 +87,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public async void Start()
         {
+            InitSubscriptions();
             InitStateMachine();
             _mouseKeyboardMonitor.Start();
             await _sm.NextAsync(Triggers.Start);
@@ -96,12 +107,30 @@ namespace WorkTimeAlghorithm.StateMachine
 
         public void Stop()
         {
+            _keyboardSub.Dispose();
+            _mouseSub.Dispose();
             _mouseKeyboardMonitor.Stop();
             _sm.Next(Triggers.Stop);
             _state.CanCapureMouseKeyboard = false;
 #if DEV_MODE
             _vis.Dispose();
 #endif
+        }
+
+
+        public void StartManualFaceRecog()
+        {
+            _sm.Next(Triggers.ManualTrigger);
+        }
+
+        public void CancelManualFaceRecog()
+        {
+            _sm.Next(Triggers.ManualCancel);
+        }
+
+        public void SetFaceRecog()
+        {
+            _sm.Next(Triggers.FaceRecog);
         }
     }
 }

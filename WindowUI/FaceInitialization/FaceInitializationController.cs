@@ -42,7 +42,8 @@ namespace WindowUI.FaceInitialization
         private CancellationTokenSource _camCts;
 
         public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection,
-            InitFaceService initFaceService, ITestImageRepository testImageRepository, IAuthenticationService authenticationService, IRegionManager regionManager)
+            InitFaceService initFaceService, ITestImageRepository testImageRepository,
+            IAuthenticationService authenticationService, IRegionManager regionManager)
         {
             _captureService = captureService;
             _faceDetection = faceDetection;
@@ -113,7 +114,7 @@ namespace WindowUI.FaceInitialization
             var camEnumerator = _captureService.CaptureFrames(_camCts.Token).GetAsyncEnumerator(_camCts.Token);
             Task stepEndTask = null;
 
-            while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
+            while (await camEnumerator.MoveNextAsync())
             {
                 using var frame = camEnumerator.Current;
                 _vm.CallOnFrameChanged(frame.ToBitmapImage());
@@ -126,8 +127,8 @@ namespace WindowUI.FaceInitialization
                     {
                         _vm.HideOverlay();
                         _vm.StepStarted = true;
-                        stepEndTask = await _initFaceService.InitFace(_authenticationService.User, camEnumerator, stepCts.Token)
-                            .ConfigureAwait(true);
+                        stepEndTask = await _initFaceService.InitFace(_authenticationService.User, camEnumerator,
+                            stepCts.Token);
 
                         _startStep = false;
                     }
@@ -186,7 +187,8 @@ namespace WindowUI.FaceInitialization
                     if (obj.ProgressPercentage == 100)
                     {
                         _vm.ShowSuccessStepInfo("Profile initialized");
-                        _vm.ShowPhotoPreview(_testImageRepository.GetAll(_authenticationService.User).Select(p => p.Img.ToBitmapImage())
+                        _vm.ShowPhotoPreview(_testImageRepository.GetAll(_authenticationService.User)
+                            .Select(p => p.Img.ToBitmapImage())
                             .ToArray());
                         _stepCompleted = true;
                     }

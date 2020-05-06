@@ -17,6 +17,7 @@ namespace WorkTimeAlghorithm
         private static Task<FaceRecognition> _loadTask;
 
 
+
         public static void Init(IConfigurationService config)
         {
             var settings = config.Get<FaceRecognitionModelSettings>("faceRecognition");
@@ -35,6 +36,7 @@ namespace WorkTimeAlghorithm
             }
         }
 
+        public static Task<FaceRecognition> LoadTask => _loadTask;
         public static FaceRecognition Model => _loadTask.Result;
     }
 }

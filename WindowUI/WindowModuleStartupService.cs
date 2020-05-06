@@ -5,6 +5,7 @@ using Prism.Events;
 using Prism.Regions;
 using WindowUI.LoginWindow;
 using WindowUI.MainWindow;
+using WindowUI.SplashScreen;
 
 namespace WindowUI
 {
@@ -13,11 +14,19 @@ namespace WindowUI
         private readonly IEventAggregator _ea;
         private readonly IRegionManager _regionManager;
 
+        private SubscriptionToken _appStart;
+        private SubscriptionToken _hideSplash;
+
         public WindowModuleStartupService(IEventAggregator ea, IRegionManager regionManager)
         {
             _ea = ea;
             _regionManager = regionManager;
-            _ea.GetEvent<AppStartedEvent>().Subscribe(OnAppStarted);
+            _appStart = _ea.GetEvent<AppStartedEvent>().Subscribe(OnAppStarted);
+            _hideSplash = _ea.GetEvent<HideSplashScreenEvent>().Subscribe(() =>
+            {
+                _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(LoginView));
+                _ea.GetEvent<HideSplashScreenEvent>().Unsubscribe(_hideSplash);
+            }, true);
         }
 
         public static MetroWindow ShellWindow { get; private set; }
@@ -25,7 +34,9 @@ namespace WindowUI
         private void OnAppStarted(MetroWindow shellWindow)
         {
             ShellWindow = shellWindow;
-            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(LoginView));
+            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(SplashScreenView));
+
+            _ea.GetEvent<AppStartedEvent>().Unsubscribe(_appStart);
         }
     }
 }

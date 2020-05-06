@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Drawing.Printing;
 using System.Net.Mail;
+using System.Threading;
 using System.Threading.Tasks;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
@@ -21,6 +23,7 @@ namespace WorkTimeAlghorithm.StateMachine
             private readonly AlghorithmFaceRecognition _faceRecognition;
             private readonly WorkTimeEventService _workTimeEventService;
             private readonly State2Configuration _config;
+            private CancellationTokenSource? _cts;
 
             public State2Service(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService,
                 IConfigurationService configurationService)
@@ -30,12 +33,12 @@ namespace WorkTimeAlghorithm.StateMachine
                 _config = configurationService.Get<State2Configuration>("state2");
             }
 
-
             public async Task Enter(State state,
                 StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
             {
                 state.CanCapureMouseKeyboard = true;
 
+                _cts = new CancellationTokenSource();
                 _workTimeEventService.StartTempChanges();
                 _workTimeEventService.StartRecognitionFailure();
 
@@ -66,7 +69,14 @@ namespace WorkTimeAlghorithm.StateMachine
 
 
                     Log.Logger.Debug($"Starting {timeMs} state 2 delay");
-                    await Task.Delay(timeMs).ConfigureAwait(false);
+                    try
+                    {
+                        await Task.Delay(timeMs, _cts.Token).ConfigureAwait(false);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        return;
+                    }
                 }
 
                 _workTimeEventService.DiscardTempChanges();
@@ -76,6 +86,7 @@ namespace WorkTimeAlghorithm.StateMachine
 
             public void Exit(WMonitorAlghorithm.Triggers trigger)
             {
+                _cts?.Cancel();
             }
         }
     }

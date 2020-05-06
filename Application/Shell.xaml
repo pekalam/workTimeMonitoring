@@ -13,7 +13,7 @@
              Background="{x:Null}"
              IgnoreTaskbarOnMaximize="False"
              mc:Ignorable="d"
-             Title="Shell" Height="800" Width="1200" >
+             Title="WTM" Height="800" Width="1200" >
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands ShowLastSeparator="False">
             <Button Content="User"

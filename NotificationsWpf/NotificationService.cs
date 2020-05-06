@@ -1,5 +1,8 @@
-﻿using Infrastructure.Messaging;
+﻿using System;
+using CommonServiceLocator;
+using Infrastructure.Messaging;
 using Notifications.Wpf;
+using Prism.Events;
 
 namespace NotificationsWpf
 {
@@ -13,6 +16,8 @@ namespace NotificationsWpf
                     return NotificationType.Information;
                 case NotificationScenario.Warning:
                     return NotificationType.Warning;
+                case NotificationScenario.WarningTrigger:
+                    return NotificationType.Warning;
                 default:
                     return NotificationType.Information;
             }
@@ -22,12 +27,28 @@ namespace NotificationsWpf
         {
             var notificationManager = new NotificationManager();
 
-            notificationManager.Show(new NotificationContent
+            if (config.Scenario == NotificationScenario.WarningTrigger)
             {
-                Title = config.Title,
-                Message = config.Msg,
-                Type = GetNotificationType(config)
-            });
+                notificationManager.Show(
+                    new RecogTriggerViewModel(ServiceLocator.Current.GetInstance<IEventAggregator>())
+                    {
+                        Content = new NotificationContent
+                        {
+                            Title = config.Title,
+                            Message = config.Msg,
+                            Type = GetNotificationType(config)
+                        }
+                    }, expirationTime: TimeSpan.FromHours(1));
+            }
+            else
+            {
+                notificationManager.Show(new NotificationContent
+                {
+                    Title = config.Title,
+                    Message = config.Msg,
+                    Type = GetNotificationType(config)
+                });
+            }
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     public enum NotificationScenario
     {
-        Information, Warning
+        Information, Warning, WarningTrigger
     }
 
     public class NotificationConfig

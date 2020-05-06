@@ -8,12 +8,12 @@ namespace WorkTimeAlghorithm.StateMachine
     {
         internal enum Triggers
         {
-            Start, NoFace, FaceNotRecog, FaceRecog, MouseMv, KeyboardMv, Pause, Resume,Stop
+            Start, NoFace, FaceNotRecog, FaceRecog, MouseMv, KeyboardMv, Pause, Resume,Stop, ManualTrigger, ManualCancel
         }
 
         internal enum States
         {
-            s1,s2,s3,s5,PAUSE_STATE,STOP_STATE
+            s1,s2,s3,s5,MANUAL, PAUSE_STATE,STOP_STATE
         }
 
         internal class State
@@ -41,6 +41,7 @@ namespace WorkTimeAlghorithm.StateMachine
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.FaceNotRecog, States.s3)
                 .Transition(Triggers.NoFace, States.s3)
+                .Transition(Triggers.ManualTrigger, States.MANUAL)
                 .Ignoring()
                 .End()
 
@@ -48,6 +49,8 @@ namespace WorkTimeAlghorithm.StateMachine
                 .Ignoring()
                 .EnterAsync(t => _state3.Enter(_state, _sm, _workTime, this))
                 .Transition(Triggers.FaceRecog, States.s5)
+                .Transition(Triggers.ManualTrigger, States.MANUAL)
+                .Exit(_ => _state3.Exit())
                 .End()
 
                 .CreateState(States.s5)
@@ -55,6 +58,13 @@ namespace WorkTimeAlghorithm.StateMachine
                 .Transition(Triggers.FaceNotRecog, States.s2)
                 .EnterAsync(t => _state5.Enter(_state, _sm))
                 .Exit(t => _state5.Exit())
+                .End()
+
+                .CreateState(States.MANUAL)
+                .Ignoring()
+                .Enter(_ => { })
+                .Transition(Triggers.FaceRecog, States.s5)
+                .Transition(Triggers.ManualCancel, States.s3)
                 .End()
 
                 .HoldingGlobState(Triggers.Pause, _ => Log.Logger.Debug("PAUSE"), 

@@ -54,27 +54,15 @@ namespace WorkTimeAlghorithm.StateMachine
             }
         }
 
-        public Task<(bool faceDetected, bool faceRecognized)> RecognizeFace(User user) =>
-            Task.Factory.StartNew<(bool faceDetected, bool faceRecognized)>(() =>
-            {
-                bool faceDetected = false, faceRecognized = false;
+        private (bool faceDetected, bool faceRecognized) CompareFaces(Mat frame, User user, Rect[] rects)
+        {
+            bool faceDetected = false, faceRecognized = false;
 
-                using var frame = _captureService.CaptureSingleFrame();
+            if (rects.Length > 0)
+            {
+                var ph = _testImageRepository.GetReferenceImages(user);
 
                 #region DEV_MODE
-
-#if DEV_MODE
-                Application.Current.Dispatcher.Invoke(() => Cv2.ImShow("frame", frame));
-#endif
-
-                #endregion
-
-                var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);
-                if(rects.Length > 0)
-                {
-                    var ph = _testImageRepository.GetReferenceImages(user);
-
-                    #region DEV_MODE
 
 #if DEV_MODE
                     Application.Current.Dispatcher.Invoke(() =>
@@ -84,34 +72,62 @@ namespace WorkTimeAlghorithm.StateMachine
                     });
 #endif
 
-                    #endregion
+                #endregion
 
-                    var excluded = ExcludeFaces(frame, rects);
+                var excluded = ExcludeFaces(frame, rects);
 
-                    foreach (var mat in excluded)
+                foreach (var mat in excluded)
+                {
+                    faceRecognized = _faceRecognition.CompareFaces(
+                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Front).Img, null, frame, null);
+
+                    if (faceRecognized)
                     {
-                        faceRecognized = _faceRecognition.CompareFaces(ph.First(i => i.HorizontalHeadRotation == HeadRotation.Front).Img, null, frame, null);
-
-                        if (faceRecognized)
-                        {
-                            break;
-                        }
-                        faceRecognized = _faceRecognition.CompareFaces(ph.First(i => i.HorizontalHeadRotation == HeadRotation.Right).Img, null, frame, null);
-
-                        if (faceRecognized)
-                        {
-                            break;
-                        }
-                        faceRecognized = _faceRecognition.CompareFaces(ph.First(i => i.HorizontalHeadRotation == HeadRotation.Left).Img, null, frame, null);
-
+                        break;
                     }
 
-                    faceDetected = true;
+                    faceRecognized = _faceRecognition.CompareFaces(
+                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Right).Img, null, frame, null);
+
+                    if (faceRecognized)
+                    {
+                        break;
+                    }
+
+                    faceRecognized = _faceRecognition.CompareFaces(
+                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Left).Img, null, frame, null);
                 }
 
-                Log.Logger.Debug($"Face detected: {faceDetected} Face recognized: {faceRecognized}");
+                faceDetected = true;
+            }
 
+            Log.Logger.Debug($"Face detected: {faceDetected} Face recognized: {faceRecognized}");
+
+            return (faceDetected, faceRecognized);
+        }
+
+        public Task<(bool faceDetected, bool faceRecognized)> RecognizeFace(User user, Mat frame) =>
+            Task.Factory.StartNew(() =>
+            {
+                #region DEV_MODE
+
+#if DEV_MODE
+                Application.Current.Dispatcher.Invoke(() => Cv2.ImShow("frame", frame));
+#endif
+
+                #endregion
+
+                var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);
+                var (faceDetected, faceRecognized) = CompareFaces(frame, user, rects);
                 return (faceDetected, faceRecognized);
+            });
+
+        public Task<(bool faceDetected, bool faceRecognized)> RecognizeFace(User user) =>
+            Task.Factory.StartNew(() =>
+            {
+                using var frame = _captureService.CaptureSingleFrame();
+                var rects = _faceDetection.DetectFrontalThenProfileFaces(frame);
+                return CompareFaces(frame, user, rects);
             });
     }
 }
