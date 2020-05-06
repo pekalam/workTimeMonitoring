@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
     <StartupObject></StartupObject>
+    <ApplicationIcon>wtmico.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -26,6 +27,14 @@
 
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml"></ApplicationDefinition>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="wtmico.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wtmico.ico" />
   </ItemGroup>
 
   <ItemGroup>

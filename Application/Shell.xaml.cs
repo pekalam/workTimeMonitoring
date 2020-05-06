@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using CommonServiceLocator;
@@ -26,13 +28,18 @@ namespace Application
             InitializeComponent();
 
             System.Windows.Forms.NotifyIcon ni = new System.Windows.Forms.NotifyIcon();
-            ni.Icon = new System.Drawing.Icon(@"C:\Users\Marek Pękala\Desktop\fu.ico");
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                "Application." + "wtmico.ico"))
+            {
+                ni.Icon = new Icon(stream);
+            }
             ni.Visible = true;
-            ni.DoubleClick +=
+            ni.Click +=
                 delegate
                 {
                     ShowWindow();
                 };
+            ni.Text = "WTM";
 
 
             System.Windows.Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;

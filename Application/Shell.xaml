@@ -22,7 +22,9 @@
                     <infrastructure:AuthVisibleBehaviour/>
                 </b:Interaction.Behaviors>
             </Button>
+            <Button Content="Shutdown" ToolTip="Shutdown application" Command="{x:Static application:AppCommands.ShutdownCommand}"/>
         </mah:WindowCommands>
+
     </mah:MetroWindow.RightWindowCommands>
     <Grid>
         <ContentControl
