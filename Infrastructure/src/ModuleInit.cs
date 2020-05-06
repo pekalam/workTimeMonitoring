@@ -7,7 +7,9 @@ using System.Text;
 using CommonServiceLocator;
 using Domain.Services;
 using Infrastructure.Db;
+using Infrastructure.Messaging;
 using Infrastructure.Services;
+using Prism.Events;
 using Prism.Ioc;
 using Prism.Unity;
 using WorkTimeAlghorithm;
@@ -82,6 +84,20 @@ namespace Infrastructure.src
         public static void Init(IContainerRegistry containerRegistry)
         {
             MsixReleaseInit(containerRegistry);
+
+            
+        }
+
+        public static void OnInitialized(IContainerProvider containerProvider)
+        {
+            var ea = containerProvider.Resolve<IEventAggregator>();
+            ea.GetEvent<AppStartedEvent>().Subscribe(async window =>
+            {
+                ea.GetEvent<SplashScreenMsgEvent>().Publish("Loading model...");
+                SharedFaceRecognitionModel.Init(containerProvider.Resolve<IConfigurationService>());
+                await SharedFaceRecognitionModel.LoadTask;
+                ea.GetEvent<HideSplashScreenEvent>().Publish();
+            }, true);
         }
     }
 }

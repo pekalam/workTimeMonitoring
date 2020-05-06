@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Domain.User;
 using Infrastructure;
 using MahApps.Metro.Controls.Dialogs;
@@ -15,6 +19,30 @@ using WorkTimeAlghorithm.StateMachine;
 
 namespace WindowUI.TriggerRecognition
 {
+    public class NullableToVisibleConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var rev = false;
+            if (parameter != null)
+            {
+                rev = System.Convert.ToBoolean(parameter);
+            }
+
+            if (!(value is bool b))
+            {
+                return Visibility.Hidden;
+            }
+
+            return rev ? !b == true ? Visibility.Visible : Visibility.Hidden : b == true ? Visibility.Visible : Visibility.Hidden;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class TriggerRecognitionController : ITriggerRecognitionController
     {
         private readonly ICaptureService _captureService;
@@ -56,10 +84,10 @@ namespace WindowUI.TriggerRecognition
 
         private async Task<bool> BeginFaceRecognition(IAsyncEnumerator<Mat> camEnumerator)
         {
+            //todo progress dispatch
             DateTime? start = null;
             TimeSpan timeElapsed;
-
-            while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
+            while (await camEnumerator.MoveNextAsync())
             {
                 using var frame = camEnumerator.Current;
                 _vm.CallOnFrameChanged(frame.ToBitmapImage());
@@ -82,11 +110,12 @@ namespace WindowUI.TriggerRecognition
 
                     if (timeElapsed.TotalSeconds >= 3.0)
                     {
-                        var (detected, recognized) =
-                            await _faceRecognition.RecognizeFace(_authenticationService.User, frame);
+                        var recogTask = _faceRecognition.RecognizeFace(_authenticationService.User, frame);
+                        _vm.ShowLoading();
+                        var (detected, recognized) = await recogTask;
+                        _vm.Loading = false;
                         if (detected && recognized)
                         {
-                            _vm.ShowRecognitionSuccess();
                             _moduleService.Alghorithm.SetFaceRecog();
                             _camCts.Cancel();
                         }
@@ -103,7 +132,7 @@ namespace WindowUI.TriggerRecognition
                 }
                 else
                 {
-                    _vm.CallOnNoFaceDetected();
+                    Dispatcher.CurrentDispatcher.Invoke(() => _vm.CallOnNoFaceDetected());
                     start = null;
                 }
             }
@@ -111,11 +140,12 @@ namespace WindowUI.TriggerRecognition
             return true;
         }
 
-        public async Task Init(TriggerRecognitionViewModel vm, bool windowOpened)
+        public async Task Init(TriggerRecognitionViewModel vm, bool windowOpened, object previousView)
         {
             _vm = vm;
 
             _camCts = new CancellationTokenSource();
+            _moduleService.Alghorithm.StartManualFaceRecog();
             var camEnumerator = _captureService.CaptureFrames(_camCts.Token).GetAsyncEnumerator(_camCts.Token);
 
             bool recognized;
@@ -129,19 +159,15 @@ namespace WindowUI.TriggerRecognition
             if (recognized)
             {
                 _vm.ShowRecognitionSuccess();
-                _moduleService.Alghorithm.CancelManualFaceRecog();
-                _camCts.Cancel();
             }
 
             await Task.Delay(1000);
 
+            _rm.Regions[ShellRegions.MainRegion].Activate(previousView);
+
             if (!windowOpened)
             {
                 WindowModuleStartupService.ShellWindow.Hide();
-            }
-            else
-            {
-                //todo restore
             }
         }
     }

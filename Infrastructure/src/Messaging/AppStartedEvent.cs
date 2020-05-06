@@ -50,4 +50,14 @@ namespace Infrastructure.Messaging
     {
 
     }
+
+    public class SplashScreenMsgEvent : UiEvent<string>
+    {
+
+    }
+
+    public class HideSplashScreenEvent : PubSubEvent
+    {
+
+    }
 }

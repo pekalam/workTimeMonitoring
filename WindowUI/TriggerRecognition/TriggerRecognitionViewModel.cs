@@ -18,6 +18,7 @@ namespace WindowUI.TriggerRecognition
         private readonly ITriggerRecognitionController _controller;
         private Visibility _recognizedOverlayVisibility = Visibility.Hidden;
         private bool? _faceRecognized;
+        private bool _loading;
 
         public event Action<BitmapSource> OnFrameChanged;
         public event Action<Rect> OnFaceDetected;
@@ -43,6 +44,12 @@ namespace WindowUI.TriggerRecognition
             set => SetProperty(ref _recognizedOverlayVisibility, value);
         }
 
+        public bool Loading
+        {
+            get => _loading;
+            set => SetProperty(ref _loading, value);
+        }
+
         public void ShowRecognitionFailure()
         {
             RecognizedOverlayVisibility = Visibility.Visible;
@@ -59,6 +66,12 @@ namespace WindowUI.TriggerRecognition
         {
             RecognizedOverlayVisibility = Visibility.Hidden;
             FaceRecognized = null;
+        }
+
+        public void ShowLoading()
+        {
+            RecognizedOverlayVisibility = Visibility.Visible;
+            Loading = true;
         }
 
         public void CallOnFrameChanged(BitmapSource bmp)
@@ -78,7 +91,7 @@ namespace WindowUI.TriggerRecognition
 
         public async void OnNavigatedTo(NavigationContext navigationContext)
         {
-            await _controller.Init(this, (bool) navigationContext.Parameters["WindowOpened"]);
+            await _controller.Init(this, (bool) navigationContext.Parameters["WindowOpened"], navigationContext.Parameters["PreviousView"]);
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -94,6 +107,6 @@ namespace WindowUI.TriggerRecognition
     public interface ITriggerRecognitionController
     {
         ICommand Retry { get; }
-        Task Init(TriggerRecognitionViewModel vm, bool windowOpened);
+        Task Init(TriggerRecognitionViewModel vm, bool windowOpened, object previousView);
     }
 }

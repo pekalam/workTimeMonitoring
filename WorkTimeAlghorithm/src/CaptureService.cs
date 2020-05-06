@@ -45,7 +45,7 @@ namespace WorkTimeAlghorithm
                 //todo
                 try
                 {
-                    await Task.Delay(34, ct).ConfigureAwait(true);
+                    await Task.Delay(34, ct);
                 }
                 catch (TaskCanceledException)
                 {

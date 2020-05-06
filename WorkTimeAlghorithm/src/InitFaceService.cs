@@ -120,7 +120,7 @@ namespace WorkTimeAlghorithm
             Reset();
 
 
-            while (await camEnumerator.MoveNextAsync().ConfigureAwait(true))
+            while (await camEnumerator.MoveNextAsync())
             {
                 var frame = camEnumerator.Current;
 
