@@ -34,6 +34,59 @@ stages:
           command: 'restore'
           projects: 'Application\*.csproj'
           feedsToUse: 'select'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build app'
+        inputs:
+          command: 'build'
+          projects: 'Application\Application.csproj'
+          arguments: '-c Release -r win-x64'
+      - task: DownloadSecureFile@1
+        name: faceRecogTestFixtures
+        inputs:
+          secureFile: 'FaceRecogTestFixtures.zip'
+      - task: ExtractFiles@1
+        inputs:
+          archiveFilePatterns: '$(faceRecogTestFixtures.secureFilePath)'
+          destinationFolder: '$(testImgDir)'
+          cleanDestinationFolder: false
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: 'Domain.UnitTests/Domain.UnitTests.csproj'
+          arguments: '-c Debug'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: 'WorkTimeAlghorithm.UnitTests/WorkTimeAlghorithm.UnitTests.csproj'
+          arguments: '-c Debug'
+      - task: VSTest@2
+        displayName: 'Run unit tests'
+        inputs:
+          testImgDir: '$(testImgDir)'
+          testSelector: 'testAssemblies'
+          testAssemblyVer2: |
+            Domain.UnitTests\**\*Tests.dll
+            WorkTimeAlghorithm.UnitTests\**\*Tests.dll
+            !**\*TestAdapter.dll
+            !**\obj\**
+          searchFolder: '$(System.DefaultWorkingDirectory)'
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'build'
+          projects: 'Infrastructure.Tests/Infrastructure.Tests.csproj'
+          arguments: '-c Debug'
+      - task: VSTest@2
+        displayName: 'Run integration tests'
+        inputs:
+          testSelector: 'testAssemblies'
+          testAssemblyVer2: |
+            Infrastructure.Tests\**\*Tests.dll
+            !**\*TestAdapter.dll
+            !**\obj\**
+          searchFolder: '$(System.DefaultWorkingDirectory)'
+
+
       - powershell: |
           # Update appxmanifest. This must be done before the build.
           [xml]$manifest= get-content ".\Application.Package\Package.appxmanifest"
