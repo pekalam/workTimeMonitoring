@@ -59,6 +59,12 @@ stages:
           sign /fd SHA256 /f $(Agent.TempDirectory)/certificate.pfx /p $(certPass) $(System.DefaultWorkingDirectory)/AppRelease/WTM.msix'
         displayName: 'Sign MSIX Package'
 
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: 'Application.Package'
+          Contents: 'WTM.der'
+          TargetFolder: '$(System.DefaultWorkingDirectory)\AppRelease'
+
       - task: ZipAndDropBox@0
         displayName: 'Send to dropbox'
         inputs:
