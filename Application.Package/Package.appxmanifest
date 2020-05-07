@@ -9,7 +9,7 @@
   <Identity
     Name="609079a4-b4c3-47c3-a8c7-6f2ddd0be649"
     Publisher="CN=Marek Pękala"
-    Version="1.0.2.0" />
+    Version="1.0.3.0" />
 
   <Properties>
     <DisplayName>WTM</DisplayName>
