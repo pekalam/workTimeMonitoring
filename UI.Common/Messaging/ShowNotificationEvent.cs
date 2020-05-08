@@ -1,6 +1,7 @@
 ﻿using Prism.Events;
+using UI.Common.Notifications;
 
-namespace Infrastructure.Messaging
+namespace UI.Common
 {
     public class ShowNotificationEvent : PubSubEvent<NotificationConfig> { }
 

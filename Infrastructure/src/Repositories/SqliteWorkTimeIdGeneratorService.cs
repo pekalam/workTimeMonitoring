@@ -6,7 +6,7 @@ using Infrastructure.Db;
 
 namespace Infrastructure.Repositories
 {
-    public class SqliteWorkTimeIdGeneratorService : IWorkTimeIdGeneratorService
+    internal class SqliteWorkTimeIdGeneratorService : IWorkTimeIdGeneratorService
     {
         public const string IdSequence = "WorkTimeIdSequence";
 

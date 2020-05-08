@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
-using Infrastructure.Messaging;
 using Prism.Events;
+using UI.Common;
+using UI.Common.Messaging;
 using WindowUI.Messaging;
 using WorkTimeAlghorithm.StateMachine;
 

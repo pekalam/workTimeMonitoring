@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using Infrastructure;
 using Rect = OpenCvSharp.Rect;
 
 namespace WindowUI.TriggerRecognition
@@ -16,16 +15,8 @@ namespace WindowUI.TriggerRecognition
         private int orgHeight = 0;
 
         public TriggerRecognitionView()
-        {
-            try
-            {
-                InitializeComponent();
-            }
-            catch (Exception e)
-            {
-                GlobalExceptionHandler.Handle(e);
-            }
-
+        { 
+            InitializeComponent();
 
             var vm = (DataContext as TriggerRecognitionViewModel);
             vm.OnFrameChanged += OnFrameChanged;

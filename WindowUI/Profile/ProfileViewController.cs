@@ -1,9 +1,10 @@
 ﻿using System.Linq;
 using System.Windows.Input;
 using Domain.User;
-using Infrastructure;
 using Prism.Commands;
 using Prism.Regions;
+using UI.Common;
+using UI.Common.Extensions;
 using WindowUI.FaceInitialization;
 using WorkTimeAlghorithm;
 

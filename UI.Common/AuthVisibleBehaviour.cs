@@ -2,11 +2,11 @@
 using System.Windows;
 using CommonServiceLocator;
 using Domain.User;
-using Infrastructure.Messaging;
 using Microsoft.Xaml.Behaviors;
 using Prism.Events;
+using UI.Common.Messaging;
 
-namespace Infrastructure
+namespace UI.Common
 {
     public class AuthVisibleBehaviour : Behavior<UIElement>
     {

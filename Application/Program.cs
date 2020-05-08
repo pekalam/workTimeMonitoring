@@ -4,7 +4,6 @@ using System.Text;
 using System.Windows.Forms;
 using CommonServiceLocator;
 using Infrastructure;
-using Infrastructure.Messaging;
 using Prism.Events;
 
 namespace Application

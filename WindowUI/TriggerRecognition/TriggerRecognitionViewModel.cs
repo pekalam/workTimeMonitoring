@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using Infrastructure;
 using OpenCvSharp;
 using Prism.Mvvm;
 using Prism.Regions;
+using UI.Common;
+using UI.Common.Extensions;
 using Rect = OpenCvSharp.Rect;
 
 namespace WindowUI.TriggerRecognition

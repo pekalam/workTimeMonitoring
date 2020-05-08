@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Windows;
-using Infrastructure;
-using Infrastructure.Messaging;
 using Prism.Events;
 using Prism.Regions;
+using UI.Common;
+using UI.Common.Messaging;
 
 namespace WindowUI.TriggerRecognition
 {

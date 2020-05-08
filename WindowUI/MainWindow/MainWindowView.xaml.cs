@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using CommonServiceLocator;
-using Infrastructure;
-using Infrastructure.Repositories;
 using MahApps.Metro.Controls;
 using Prism.Commands;
 using Prism.Regions;
@@ -24,14 +22,8 @@ namespace WindowUI.MainWindow
     {
         public MainWindowView()
         {
-            try
-            {
-                InitializeComponent();
-            }
-            catch (Exception e)
-            {
-                GlobalExceptionHandler.Handle(e);
-            }
+            InitializeComponent();
+
             WindowUiModuleCommands.NavigateProfile.RegisterCommand(new DelegateCommand(() =>
                 {
                     HamburgerMenuControl.SelectedOptionsIndex = 0;

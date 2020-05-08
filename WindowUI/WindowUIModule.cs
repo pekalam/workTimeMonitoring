@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using CommonServiceLocator;
 using Domain.Repositories;
-using Infrastructure.Messaging;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
+using UI.Common;
 using Unity;
 using WindowUI.FaceInitialization;
 using WindowUI.LoginWindow;

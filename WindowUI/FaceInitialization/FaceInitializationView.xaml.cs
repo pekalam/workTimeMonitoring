@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Infrastructure;
 using Rect = OpenCvSharp.Rect;
 
 namespace WindowUI.FaceInitialization
@@ -19,16 +18,9 @@ namespace WindowUI.FaceInitialization
 
         public FaceInitializationView()
         {
-            try
-            {
-                InitializeComponent();
-            }
-            catch (Exception e)
-            {
-                GlobalExceptionHandler.Handle(e);
-            }
+            InitializeComponent();
 
-            
+
             var vm = (DataContext as FaceInitializationViewModel);
             vm.OnFrameChanged += OnFrameChanged;
             vm.OnFaceDetected += OnFaceDetected;

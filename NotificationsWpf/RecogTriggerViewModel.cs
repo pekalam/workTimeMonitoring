@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
-using Infrastructure.Messaging;
 using Notifications.Wpf;
 using Prism.Commands;
 using Prism.Events;
+using UI.Common;
 
 namespace NotificationsWpf
 {

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Infrastructure.Messaging;
+using UI.Common;
+using UI.Common.Messaging;
 
 namespace WindowUI.Messaging
 {

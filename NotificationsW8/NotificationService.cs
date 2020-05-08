@@ -4,7 +4,8 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using Windows.UI.Notifications;
-using Infrastructure.Messaging;
+using UI.Common;
+using UI.Common.Notifications;
 using XmlDocument = Windows.Data.Xml.Dom.XmlDocument;
 
 namespace NotificationsW8

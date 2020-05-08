@@ -10,9 +10,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Infrastructure.Messaging;
 using Prism.Events;
 using Prism.Mvvm;
+using UI.Common;
+using UI.Common.Messaging;
 
 namespace WindowUI.SplashScreen
 {

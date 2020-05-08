@@ -1,7 +1,7 @@
 ﻿using Domain.User;
-using Infrastructure;
 using Prism.Commands;
 using Prism.Regions;
+using UI.Common;
 using WindowUI.MainWindow;
 
 namespace WindowUI.LoginWindow
