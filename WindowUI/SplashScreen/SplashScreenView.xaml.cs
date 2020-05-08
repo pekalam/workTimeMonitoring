@@ -1,18 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Prism.Events;
+﻿using Prism.Events;
 using Prism.Mvvm;
-using UI.Common;
+using System.Windows.Controls;
 using UI.Common.Messaging;
 
 namespace WindowUI.SplashScreen

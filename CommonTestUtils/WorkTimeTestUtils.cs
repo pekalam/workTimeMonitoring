@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Domain.User;
+using Domain.WorkTimeAggregate;
+using System;
 using System.Diagnostics;
 using System.Threading;
-using Domain;
-using Domain.User;
-using Domain.WorkTimeAggregate;
-using Serilog;
 
 namespace DomainTestUtils
 {

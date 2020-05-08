@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Domain.User;
+using System;
 using System.Diagnostics;
 using System.Threading;
-using Domain.User;
 
 namespace DomainTestUtils
 {

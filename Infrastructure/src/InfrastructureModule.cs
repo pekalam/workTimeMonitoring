@@ -1,10 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
-using AutoMapper;
-using CommonServiceLocator;
+﻿using AutoMapper;
 using Domain.Repositories;
 using Domain.Services;
 using Domain.User;
@@ -19,11 +13,11 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
-using Serilog.Events;
-using UI.Common;
+using System;
+using System.Threading.Tasks;
 using UI.Common.Messaging;
 using Unity;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 
 namespace Infrastructure
 {

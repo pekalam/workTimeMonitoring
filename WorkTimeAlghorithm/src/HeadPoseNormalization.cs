@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using FaceRecognitionDotNet;
+﻿using FaceRecognitionDotNet;
 using OpenCvSharp;
-using WorkTimeAlghorithm.src;
+using System.Collections.Generic;
+using System.Linq;
 using Point = FaceRecognitionDotNet.Point;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public class HeadPoseNormalization
     {

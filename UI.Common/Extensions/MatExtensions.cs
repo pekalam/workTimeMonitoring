@@ -1,8 +1,8 @@
-﻿using System.Drawing;
+﻿using OpenCvSharp;
+using OpenCvSharp.Extensions;
+using System.Drawing;
 using System.IO;
 using System.Windows.Media.Imaging;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
 
 namespace UI.Common.Extensions
 {

@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Regions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Windows.Threading;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
 
 namespace WindowUI.StartWork
 {

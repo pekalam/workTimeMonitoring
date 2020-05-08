@@ -1,5 +1,5 @@
-﻿using System.Windows.Controls;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
+using System.Windows.Controls;
 
 namespace WindowUI.Settings
 {

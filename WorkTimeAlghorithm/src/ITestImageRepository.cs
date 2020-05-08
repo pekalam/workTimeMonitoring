@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Domain.User;
+using System;
 using System.Collections.Generic;
-using Domain.User;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public interface ITestImageRepository
     {

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Domain.Services;
+﻿using Domain.Services;
 using OpenCvSharp;
+using System;
+using System.Collections.Generic;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public interface IHcFaceDetection
     {

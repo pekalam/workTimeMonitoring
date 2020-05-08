@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Data.SQLite;
 using System.IO;
-using Serilog;
 
 namespace DbMigrations
 {

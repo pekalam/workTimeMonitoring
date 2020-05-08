@@ -21,8 +21,8 @@ using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.src.Services;
 using Serilog;
-using WorkTimeAlghorithm;
-using WorkTimeAlghorithm.StateMachine;
+using WMAlghorithm;
+using WMAlghorithm.StateMachine;
 
 namespace WMonitorAlghorithmTest
 {

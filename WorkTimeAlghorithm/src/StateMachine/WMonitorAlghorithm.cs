@@ -1,13 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Threading.Tasks;
-using Domain.Services;
+﻿using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
-using OpenCvSharp;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
-namespace WorkTimeAlghorithm.StateMachine
+namespace WMAlghorithm.StateMachine
 {
     public partial class WMonitorAlghorithm
     {

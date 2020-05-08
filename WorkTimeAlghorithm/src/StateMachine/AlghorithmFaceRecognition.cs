@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Domain.User;
+using OpenCvSharp;
+using Serilog;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using Accessibility;
-using Domain.User;
-using OpenCvSharp;
-using Serilog;
 using Rect = OpenCvSharp.Rect;
 
-namespace WorkTimeAlghorithm.StateMachine
+namespace WMAlghorithm.StateMachine
 {
     public class AlghorithmFaceRecognition
     {

@@ -1,6 +1,6 @@
-﻿using System;
-using Prism.Commands;
+﻿using Prism.Commands;
 using Prism.Events;
+using System;
 using WindowUI.Messaging;
 
 namespace WindowUI.StartWork

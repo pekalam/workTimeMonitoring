@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Linq;
-using AutoMapper;
+﻿using AutoMapper;
 using Dapper;
-using Domain;
 using Domain.Repositories;
 using Domain.Services;
 using Domain.User;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
 using Infrastructure.Db;
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Data.SQLite;
+using System.Linq;
 
 namespace Infrastructure.Repositories
 {
-    
+
     internal class SqliteWorkTimeEsRepository : IWorkTimeEsRepository
     {
         public const string TableName = "WorkTimeEvent";

@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using Prism.Regions;
+﻿using Prism.Regions;
+using System.Linq;
 
 namespace UI.Common.Extensions
 {

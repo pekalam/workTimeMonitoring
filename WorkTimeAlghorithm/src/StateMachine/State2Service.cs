@@ -1,14 +1,11 @@
-﻿using System;
-using System.Drawing.Printing;
-using System.Net.Mail;
-using System.Threading;
-using System.Threading.Tasks;
-using Domain.Services;
+﻿using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Serilog;
 using StateMachineLib;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace WorkTimeAlghorithm.StateMachine
+namespace WMAlghorithm.StateMachine
 {
     internal class State2Configuration
     {

@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MouseKeyboardMonitorService
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{47BECD81-825E-41A5-AAE8-AA4013FC759B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkTimeAlghorithm", "WorkTimeAlghorithm\WorkTimeAlghorithm.csproj", "{891D8B91-F579-4070-8C86-539F042143E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WMAlghorithm", "WorkTimeAlghorithm\WMAlghorithm.csproj", "{891D8B91-F579-4070-8C86-539F042143E0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.UnitTests", "Domain.UnitTests\Domain.UnitTests.csproj", "{39330452-FFED-4FC8-BD7C-09FD617D0572}"
 EndProject

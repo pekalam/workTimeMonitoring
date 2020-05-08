@@ -6,7 +6,7 @@ using DomainTestUtils;
 using Infrastructure.Db;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 using Xunit;
 
 namespace Infrastructure.Tests

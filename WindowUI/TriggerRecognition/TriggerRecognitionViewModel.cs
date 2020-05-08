@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using OpenCvSharp;
+﻿using OpenCvSharp;
 using Prism.Mvvm;
 using Prism.Regions;
-using UI.Common;
+using System;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media.Imaging;
 using UI.Common.Extensions;
 using Rect = OpenCvSharp.Rect;
 

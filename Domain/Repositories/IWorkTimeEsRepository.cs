@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Domain.WorkTimeAggregate;
+﻿using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
+using System;
+using System.Collections.Generic;
 
 namespace Domain.Repositories
 {

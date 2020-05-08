@@ -1,5 +1,6 @@
 using Moq;
 using OpenCvSharp;
+using WMAlghorithm;
 
 namespace WorkTimeAlghorithm.UnitTests.Helpers
 {

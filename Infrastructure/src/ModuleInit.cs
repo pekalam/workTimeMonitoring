@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Text;
-using CommonServiceLocator;
-using Domain.Services;
+﻿using Domain.Services;
 using Infrastructure.Db;
 using Infrastructure.Services;
 using Prism.Events;
 using Prism.Ioc;
-using Prism.Unity;
-using UI.Common;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using UI.Common.Messaging;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 
 namespace Infrastructure.src
 {

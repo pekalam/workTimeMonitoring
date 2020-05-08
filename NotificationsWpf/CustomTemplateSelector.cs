@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Notifications.Wpf;
 using System.Windows;
-using Notifications.Wpf;
 
 namespace NotificationsWpf
 {

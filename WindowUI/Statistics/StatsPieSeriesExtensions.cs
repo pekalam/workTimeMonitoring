@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using Domain.WorkTimeAggregate.Events;
+﻿using Domain.WorkTimeAggregate.Events;
 using LiveCharts;
 using LiveCharts.Wpf;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Brushes = System.Windows.Media.Brushes;
 
 namespace WindowUI.Statistics

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using Domain;
-using Domain.Services;
+﻿using Domain.Services;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using Serilog;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Infrastructure.Services
 {

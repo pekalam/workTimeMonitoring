@@ -1,13 +1,11 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using Domain.User;
+﻿using Domain.User;
 using FaceRecognitionDotNet;
 using OpenCvSharp;
-using Unity;
-using WorkTimeAlghorithm.StateMachine;
+using System;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     internal static class TestImageBuilderFactory
     {

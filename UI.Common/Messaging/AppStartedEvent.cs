@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
-using MahApps.Metro.Controls;
+﻿using MahApps.Metro.Controls;
 using Prism.Events;
 using Prism.Modularity;
+using System;
+using System.Linq;
 
 namespace UI.Common.Messaging
 {

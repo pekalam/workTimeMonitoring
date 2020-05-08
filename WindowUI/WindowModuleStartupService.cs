@@ -4,7 +4,6 @@ using Prism.Regions;
 using UI.Common;
 using UI.Common.Messaging;
 using WindowUI.LoginWindow;
-using WindowUI.MainWindow;
 using WindowUI.SplashScreen;
 
 namespace WindowUI

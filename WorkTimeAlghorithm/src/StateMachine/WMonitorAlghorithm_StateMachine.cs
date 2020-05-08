@@ -1,8 +1,7 @@
-﻿using System;
-using Serilog;
+﻿using Serilog;
 using StateMachineLib;
 
-namespace WorkTimeAlghorithm.StateMachine
+namespace WMAlghorithm.StateMachine
 {
     public partial class WMonitorAlghorithm
     {

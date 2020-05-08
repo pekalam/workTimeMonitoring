@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using System.Text;
-using System.Windows;
-using LiveCharts;
+﻿using LiveCharts;
 using Prism.Mvvm;
 using Prism.Regions;
+using System;
+using System.Diagnostics;
+using System.Windows;
 
 namespace WindowUI.Statistics
 {

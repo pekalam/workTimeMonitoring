@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Domain.Repositories;
+﻿using Domain.Repositories;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;

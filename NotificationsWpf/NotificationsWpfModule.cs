@@ -1,8 +1,6 @@
-﻿using System;
-using Prism.Events;
+﻿using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
-using Prism.Regions;
 using UI.Common;
 
 namespace NotificationsWpf

@@ -7,7 +7,7 @@ using FluentAssertions;
 using Infrastructure.Db;
 using Infrastructure.Services;
 using OpenCvSharp;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 using Xunit;
 
 namespace Infrastructure.Tests

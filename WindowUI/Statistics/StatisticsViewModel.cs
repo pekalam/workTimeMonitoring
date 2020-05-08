@@ -1,6 +1,6 @@
-﻿using System;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
 using Prism.Regions;
+using System;
 
 namespace WindowUI.Statistics
 {

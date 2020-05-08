@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using Prism.Commands;
+﻿using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Regions;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace WindowUI.Profile
 {

@@ -1,9 +1,9 @@
 ﻿using Domain.Services;
 using Prism.Ioc;
 using Prism.Modularity;
-using Prism.Regions;
 using Prism.Unity;
 using Unity;
+using WMAlghorithm;
 
 namespace UI.Common
 {
@@ -16,7 +16,7 @@ namespace UI.Common
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            WorkTimeAlghorithm.UnityBootstraper.Init(containerRegistry.GetContainer());
+            UnityBootstraper.Init(containerRegistry.GetContainer());
             containerRegistry.GetContainer().RegisterSingleton<WorkTimeEventService>();
         }
     }

@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using Dapper;
+﻿using Dapper;
 using Domain.Repositories;
 using Domain.Services;
 using Domain.User;
 using Infrastructure.Db;
+using System;
+using System.Data.SQLite;
+using System.Linq;
 
 namespace Infrastructure.src.Repositories
 {

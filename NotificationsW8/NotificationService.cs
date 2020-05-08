@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml;
+﻿using UI.Common.Notifications;
 using Windows.UI.Notifications;
-using UI.Common;
-using UI.Common.Notifications;
 using XmlDocument = Windows.Data.Xml.Dom.XmlDocument;
 
 namespace NotificationsW8

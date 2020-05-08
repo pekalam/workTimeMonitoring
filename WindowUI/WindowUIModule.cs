@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using CommonServiceLocator;
+﻿using CommonServiceLocator;
 using Domain.Repositories;
 using Prism.Commands;
 using Prism.Events;

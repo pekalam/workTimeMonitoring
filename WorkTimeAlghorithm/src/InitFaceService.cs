@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Domain.User;
+using OpenCvSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Domain.User;
-using OpenCvSharp;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public class InitFaceProgressArgs
     {
@@ -55,7 +55,7 @@ namespace WorkTimeAlghorithm
         public IProgress<InitFaceProgressArgs>? InitFaceProgress { get; set; }
 
         private void ReportInitFaceProgress(Mat? img, Rect? face = null,
-            InitFaceProgress state = WorkTimeAlghorithm.InitFaceProgress.Progress,
+            InitFaceProgress state = WMAlghorithm.InitFaceProgress.Progress,
             bool stopped = false)
         {
             InitFaceProgress?.Report(new InitFaceProgressArgs()
@@ -132,7 +132,7 @@ namespace WorkTimeAlghorithm
                     faceRects = _faceDetection.DetectFrontalFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, state: WorkTimeAlghorithm.InitFaceProgress.FaceNotDetected);
+                        ReportInitFaceProgress(frame, state: WMAlghorithm.InitFaceProgress.FaceNotDetected);
                         continue;
                     }
 
@@ -141,7 +141,7 @@ namespace WorkTimeAlghorithm
                     if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            state: WorkTimeAlghorithm.InitFaceProgress.FaceNotStraight);
+                            state: WMAlghorithm.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -150,7 +150,7 @@ namespace WorkTimeAlghorithm
                     faceRects = _faceDetection.DetectFrontalThenProfileFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, state: WorkTimeAlghorithm.InitFaceProgress.ProfileFaceNotDetected);
+                        ReportInitFaceProgress(frame, state: WMAlghorithm.InitFaceProgress.ProfileFaceNotDetected);
 
                         continue;
                     }
@@ -162,7 +162,7 @@ namespace WorkTimeAlghorithm
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            state: hTarget == HeadRotation.Left ? WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedLeft : WorkTimeAlghorithm.InitFaceProgress.FaceNotTurnedRight);
+                            state: hTarget == HeadRotation.Left ? WMAlghorithm.InitFaceProgress.FaceNotTurnedLeft : WMAlghorithm.InitFaceProgress.FaceNotTurnedRight);
                         continue;
                     }
                 }
@@ -193,7 +193,7 @@ namespace WorkTimeAlghorithm
                 if (testImages.Count == MinImages)
                 {
                     interrupted = false;
-                    ReportInitFaceProgress(null, state: WorkTimeAlghorithm.InitFaceProgress.PhotosTaken);
+                    ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.PhotosTaken);
                     break;
                 }
             }
@@ -201,7 +201,7 @@ namespace WorkTimeAlghorithm
             if (interrupted)
             {
                 Reset();
-                ReportInitFaceProgress(null, state: WorkTimeAlghorithm.InitFaceProgress.CancelledByUser, stopped: true);
+                ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.CancelledByUser, stopped: true);
                 return Task.CompletedTask;
             }
 
@@ -214,7 +214,7 @@ namespace WorkTimeAlghorithm
                 if (t.Exception != null)
                 {
                     _progress = 0;
-                    ReportInitFaceProgress(null, state: WorkTimeAlghorithm.InitFaceProgress.FaceRecognitionError,
+                    ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.FaceRecognitionError,
                         stopped: true);
                     Reset();
                 }

@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Domain.Services;
+using FaceRecognitionDotNet;
+using OpenCvSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Domain.Services;
-using FaceRecognitionDotNet;
-using OpenCvSharp;
 using Point = FaceRecognitionDotNet.Point;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public enum HeadRotation
     {

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Windows;
-using CommonServiceLocator;
+﻿using CommonServiceLocator;
 using Domain.User;
 using Microsoft.Xaml.Behaviors;
 using Prism.Events;
+using System;
+using System.Windows;
 using UI.Common.Messaging;
 
 namespace UI.Common

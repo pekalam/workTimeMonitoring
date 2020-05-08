@@ -1,3 +1,5 @@
+using WMAlghorithm;
+
 namespace WorkTimeAlghorithm.UnitTests
 {
     public class TTestImageBuilder : TestImageBuilder
