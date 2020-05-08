@@ -4,7 +4,7 @@ using MahApps.Metro.Controls;
 using Prism.Events;
 using Prism.Modularity;
 
-namespace Infrastructure.Messaging
+namespace UI.Common.Messaging
 {
     public class UiEvent<T> : PubSubEvent<T>
     {

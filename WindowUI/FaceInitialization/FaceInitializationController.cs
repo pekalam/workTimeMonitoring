@@ -8,11 +8,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Domain.User;
-using Infrastructure;
-using Infrastructure.Repositories;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Commands;
 using Prism.Regions;
+using UI.Common;
+using UI.Common.Extensions;
 using WindowUI.MainWindow;
 using WorkTimeAlghorithm;
 

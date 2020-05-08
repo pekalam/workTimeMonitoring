@@ -1,8 +1,8 @@
-﻿using Infrastructure;
-using Infrastructure.Messaging;
-using MahApps.Metro.Controls;
+﻿using MahApps.Metro.Controls;
 using Prism.Events;
 using Prism.Regions;
+using UI.Common;
+using UI.Common.Messaging;
 using WindowUI.LoginWindow;
 using WindowUI.MainWindow;
 using WindowUI.SplashScreen;

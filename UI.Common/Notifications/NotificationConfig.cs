@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Messaging
+﻿namespace UI.Common.Notifications
 {
     public enum NotificationScenario
     {

@@ -1,5 +1,6 @@
-﻿using Infrastructure.Messaging;
-using Prism.Events;
+﻿using Prism.Events;
+using UI.Common;
+using UI.Common.Notifications;
 using WorkTimeAlghorithm.StateMachine;
 
 namespace WindowUI

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Domain.Services;
 using FaceRecognitionDotNet;
 using OpenCvSharp;
 using Point = FaceRecognitionDotNet.Point;
@@ -29,13 +30,11 @@ namespace WorkTimeAlghorithm
 
     public class HeadPositionService : IHeadPositionService
     {
-        
-
         private readonly HeadPositionServiceSettings _settings;
 
-        public HeadPositionService(HeadPositionServiceSettings settings)
+        public HeadPositionService(IConfigurationService configuration)
         {
-            _settings = settings;
+            _settings = configuration.Get<HeadPositionServiceSettings>("headPos");
         }
 
         private HeadRotation EstimateHorizontalPose(IDictionary<FacePart, IEnumerable<Point>> landmarks, Rect face, Mat frame)

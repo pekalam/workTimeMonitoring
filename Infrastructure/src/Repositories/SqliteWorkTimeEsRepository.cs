@@ -16,7 +16,7 @@ using Newtonsoft.Json;
 namespace Infrastructure.Repositories
 {
     
-    public class SqliteWorkTimeEsRepository : IWorkTimeEsRepository
+    internal class SqliteWorkTimeEsRepository : IWorkTimeEsRepository
     {
         public const string TableName = "WorkTimeEvent";
         private const string TableCols = "Id, EventName, AggregateId, AggregateVersion, Date, Data";

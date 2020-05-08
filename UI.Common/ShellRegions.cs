@@ -1,4 +1,4 @@
-﻿namespace Infrastructure
+﻿namespace UI.Common
 {
     public class ShellRegions
     {

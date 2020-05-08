@@ -21,8 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\NotificationsW8\NotificationsW8.csproj" />
     <ProjectReference Include="..\NotificationsWpf\NotificationsWpf.csproj" />
+    <ProjectReference Include="..\UI.Common\UI.Common.csproj" />
     <ProjectReference Include="..\WindowUI\WindowUI.csproj" />
   </ItemGroup>
 

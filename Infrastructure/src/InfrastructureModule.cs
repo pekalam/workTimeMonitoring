@@ -9,7 +9,6 @@ using Domain.Repositories;
 using Domain.Services;
 using Domain.User;
 using Infrastructure.Db;
-using Infrastructure.Messaging;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.src;
@@ -21,6 +20,8 @@ using Prism.Modularity;
 using Prism.Unity;
 using Serilog;
 using Serilog.Events;
+using UI.Common;
+using UI.Common.Messaging;
 using Unity;
 using WorkTimeAlghorithm;
 
@@ -54,29 +55,15 @@ namespace Infrastructure
 
             containerRegistry.RegisterInstance(typeof(IConfigurationService),
                 new ConfigurationService("settings.json"));
-            containerRegistry.GetContainer()
-                .RegisterFactory<HeadPositionServiceSettings>(SettingsFactory<HeadPositionServiceSettings>);
 
 
-            containerRegistry.GetContainer().RegisterType<ICaptureService, CaptureService>();
-            containerRegistry.GetContainer().RegisterType<IHeadPositionService, HeadPositionService>();
-            containerRegistry.GetContainer().RegisterType<IHcFaceDetection, HcFaceDetection>();
-            containerRegistry.GetContainer().RegisterType<IDnFaceRecognition, DnFaceRecognition>();
-            containerRegistry.GetContainer().RegisterSingleton<ITestImageRepository, SqliteTestImageRepository>();
-            containerRegistry.GetContainer()
-                .RegisterSingleton<IMouseKeyboardMonitorService, MouseKeyboardMonitorService>();
-            containerRegistry.GetContainer().RegisterType<IWorkTimeUow, WorkTimeUow>();
-            containerRegistry.GetContainer().RegisterType<IWorkTimeEsRepository, SqliteWorkTimeEsRepository>();
-            containerRegistry.GetContainer()
-                .RegisterType<IWorkTimeIdGeneratorService, SqliteWorkTimeIdGeneratorService>();
             containerRegistry.GetContainer().RegisterType<IAuthDataRepository, SqliteAuthDataRepository>();
             containerRegistry.GetContainer().RegisterType<IUserRepository, SqliteUserRepository>();
-            containerRegistry.GetContainer().RegisterType<IMouseKeyboardMonitorService, MouseKeyboardMonitorService>();
-
-            containerRegistry.GetContainer().RegisterSingleton<WorkTimeEventService>();
-
-
             containerRegistry.GetContainer().RegisterSingleton<IAuthenticationService, AuthenticationService>();
+            containerRegistry.GetContainer().RegisterSingleton<ITestImageRepository, SqliteTestImageRepository>();
+            containerRegistry.GetContainer().RegisterType<IWorkTimeEsRepository, SqliteWorkTimeEsRepository>();
+            containerRegistry.GetContainer().RegisterType<IWorkTimeUow, WorkTimeUow>();
+            containerRegistry.GetContainer().RegisterType<IWorkTimeIdGeneratorService, SqliteWorkTimeIdGeneratorService>();
 
 
             GlobalExceptionHandler.Init();

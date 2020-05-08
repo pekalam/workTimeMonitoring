@@ -5,10 +5,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:regions="http://prismlibrary.com/"
-             xmlns:infrastructure="clr-namespace:Infrastructure;assembly=Infrastructure"
              xmlns:application="clr-namespace:Application"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:windowUi="clr-namespace:WindowUI;assembly=WindowUI"
+             xmlns:common="clr-namespace:UI.Common;assembly=UI.Common"
              ResizeMode="CanResize"
              Background="{x:Null}"
              IgnoreTaskbarOnMaximize="False"
@@ -19,7 +19,7 @@
             <Button Content="User"
                     ToolTip="User panel" Command="{x:Static windowUi:WindowUiModuleCommands.NavigateProfile}">
                 <b:Interaction.Behaviors>
-                    <infrastructure:AuthVisibleBehaviour/>
+                    <common:AuthVisibleBehaviour/>
                 </b:Interaction.Behaviors>
             </Button>
             <Button Content="Shutdown" ToolTip="Shutdown application" Command="{x:Static application:AppCommands.ShutdownCommand}"/>
@@ -28,6 +28,6 @@
     </mah:MetroWindow.RightWindowCommands>
     <Grid>
         <ContentControl
-            regions:RegionManager.RegionName="{x:Static infrastructure:ShellRegions.MainRegion}" />
+            regions:RegionManager.RegionName="{x:Static common:ShellRegions.MainRegion}" />
     </Grid>
 </mah:MetroWindow>

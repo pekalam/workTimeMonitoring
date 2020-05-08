@@ -2,10 +2,9 @@
 using System.Windows;
 using System.Windows.Threading;
 using Domain.User;
-using Infrastructure;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Regions;
-
+using UI.Common;
 using WindowUI.FaceInitialization;
 using WorkTimeAlghorithm;
 

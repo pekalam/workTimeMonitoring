@@ -7,11 +7,12 @@ using System.Text;
 using CommonServiceLocator;
 using Domain.Services;
 using Infrastructure.Db;
-using Infrastructure.Messaging;
 using Infrastructure.Services;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Unity;
+using UI.Common;
+using UI.Common.Messaging;
 using WorkTimeAlghorithm;
 
 namespace Infrastructure.src
