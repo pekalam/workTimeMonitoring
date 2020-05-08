@@ -3,6 +3,7 @@ using MahApps.Metro.Controls.Dialogs;
 using Prism.Regions;
 using System.Windows;
 using System.Windows.Threading;
+using Prism.Events;
 using UI.Common;
 using WindowUI.FaceInitialization;
 using WMAlghorithm;
@@ -21,13 +22,15 @@ namespace WindowUI.MainWindow
         private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _regionManager;
         private readonly WorkTimeModuleService _workTimeModuleService;
+        private readonly IEventAggregator _ea;
 
 
-        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager, IAuthenticationService authenticationService,  WorkTimeModuleService workTimeModuleService)
+        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager, IAuthenticationService authenticationService,  WorkTimeModuleService workTimeModuleService, IEventAggregator ea)
         {
             _regionManager = regionManager;
             _authenticationService = authenticationService;
             _workTimeModuleService = workTimeModuleService;
+            _ea = ea;
             _testImageRepository = testImageRepository;
         }
 
@@ -35,6 +38,8 @@ namespace WindowUI.MainWindow
         {
             _vm = vm;
 
+            _ea.GetEvent<LoadNotificationsModuleEvent>().Publish();
+            //todo
             if (!_workTimeModuleService.TryRestore())
             {
                 Dispatcher.CurrentDispatcher.InvokeAsync(() =>
@@ -52,6 +57,7 @@ namespace WindowUI.MainWindow
                     }
                 });
             }
+
         }
 
         private bool ShouldStartInitFaceStep()

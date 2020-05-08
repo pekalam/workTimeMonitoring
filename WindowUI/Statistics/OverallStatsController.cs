@@ -119,6 +119,8 @@ namespace WindowUI.Statistics
         {
             var series = selected.ToApplicationsPieSeries(_vm.SeriesPickerViewModel).RemoveShort(!_vm.ShowAll);
 
+            _vm.IsShowingStats = series.Count > 0;
+
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
                 _vm.ApplicationsSeries.Clear();
@@ -132,6 +134,8 @@ namespace WindowUI.Statistics
                 .Concat(selected.SelectMany(w => w.KeyboardActionEvents).ToPieSeries())
                 .Concat(selected.SelectMany(w => w.UserWatchingScreen).ToPieSeries())
                 .Concat(selected.SelectMany(w => w.FaceRecognitionFailures).ToPieSeries()).ToList();
+
+            _vm.IsShowingStats = series.Count > 0;
 
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
@@ -154,6 +158,9 @@ namespace WindowUI.Statistics
                 .Concat(selected.SelectMany(w => w.UserWatchingScreen)
                     .Where(a => a.Executable == _vm.SelectedExecutable).ToPieSeries()).ToList();
 
+
+            _vm.IsShowingStats = series.Count > 0;
+
             Dispatcher.CurrentDispatcher.InvokeAsync(() =>
             {
                 _vm.SingleApplicationSeries.Clear();
@@ -164,6 +171,7 @@ namespace WindowUI.Statistics
         private void UpdateMonitorignsList(List<WorkTime> selected)
         {
             _vm.Monitorings = selected.Select(s => new WorkTimeViewModel(s)).ToList();
+            _vm.IsShowingStats = selected.Count > 0;
         }
 
         public void UpdateChart()
@@ -178,7 +186,6 @@ namespace WindowUI.Statistics
                 _vm.IsShowingStats = false;
                 return;
             }
-            _vm.IsShowingStats = true;
 
             switch (_vm.SelectedChartType)
             {

@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
 using System.Windows;
+using Prism.Modularity;
+using UI.Common;
 using UI.Common.Messaging;
 
 namespace Application
@@ -37,11 +39,21 @@ namespace Application
             System.Windows.Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
 
-            ServiceLocator.Current.GetInstance<IEventAggregator>().GetEvent<ShowWindowEvent>()
+            var ea = ServiceLocator.Current.GetInstance<IEventAggregator>();
+
+            ea.GetEvent<ShowWindowEvent>()
                 .Subscribe(() =>
                 {
                     ShowWindow();
                 },true);
+
+
+            ea.GetEvent<LoadNotificationsModuleEvent>()
+                .Subscribe(() =>
+                {
+                    var m = ServiceLocator.Current.GetInstance<IModuleManager>();
+                    NotificationsModuleLoader.Load(m);
+                });
         }
 
         private void ShowWindow()
