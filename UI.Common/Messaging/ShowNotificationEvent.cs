@@ -9,4 +9,6 @@ namespace UI.Common
     {
 
     }
+
+    public class LoadNotificationsModuleEvent : PubSubEvent { }
 }

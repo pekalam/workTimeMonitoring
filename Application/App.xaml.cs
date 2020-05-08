@@ -9,9 +9,33 @@ using System.Windows;
 using UI.Common;
 using UI.Common.Messaging;
 using WindowUI;
+using NotificationsW8;
 
 namespace Application
 {
+    internal class NotificationsModuleLoader
+    {
+        public static bool Loaded { get; private set; }
+        private static string? _moduleName;
+
+
+        public static void SetModule(string moduleName)
+        {
+            _moduleName = moduleName;
+        }
+
+        public static void Load(IModuleManager m)
+        {
+            if (Loaded)
+            {
+                return;
+            }
+            m.LoadModule(_moduleName);
+            Loaded = true;
+        }
+    }
+
+
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -28,9 +52,11 @@ namespace Application
             moduleCatalog.AddModule<UiCommonModule>();
             moduleCatalog.AddModule<WindowUiModule>();
 #if MSIX_RELEASE
-            moduleCatalog.AddModule<NotificationsW8Module>();
+            moduleCatalog.AddModule<NotificationsW8Module>(InitializationMode.OnDemand);
+            NotificationsModuleLoader.SetModule(nameof(NotificationsW8Module));
 #else
-            moduleCatalog.AddModule<NotificationsWpfModule>();
+            moduleCatalog.AddModule<NotificationsWpfModule>(InitializationMode.OnDemand);
+            NotificationsModuleLoader.SetModule(nameof(NotificationsWpfModule));
 #endif
         }
 
