@@ -1,6 +1,6 @@
-﻿using System;
-using Domain.Repositories;
+﻿using Domain.Repositories;
 using Domain.Services;
+using System;
 
 namespace Domain.WorkTimeAggregate
 {

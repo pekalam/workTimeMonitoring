@@ -22,7 +22,8 @@ using Infrastructure;
 using Infrastructure.Services;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using WorkTimeAlghorithm;
+using UI.Common.Extensions;
+using WMAlghorithm;
 using Brush = System.Drawing.Brush;
 using Brushes = System.Drawing.Brushes;
 using Color = System.Drawing.Color;
@@ -39,7 +40,7 @@ namespace HeadPoseEstimationTest
     {
         private CaptureService _cap = new CaptureService();
         private HcFaceDetection _faceDetection = new HcFaceDetection(new ConfigurationService(""));
-        private HeadPositionService _headPosition = new HeadPositionService(new HeadPositionServiceSettings());
+        private HeadPositionService _headPosition = new HeadPositionService(new ConfigurationService("settings.json"));
         private CancellationTokenSource _cts;
 
         public MainWindow()

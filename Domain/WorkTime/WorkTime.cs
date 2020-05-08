@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Domain.WorkTimeAggregate.Events;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Domain.WorkTimeAggregate.Events;
 
 [assembly: InternalsVisibleTo("Domain.UnitTests")]
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]

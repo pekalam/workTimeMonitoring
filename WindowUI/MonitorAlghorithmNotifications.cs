@@ -1,7 +1,7 @@
 ﻿using Prism.Events;
 using UI.Common;
 using UI.Common.Notifications;
-using WorkTimeAlghorithm.StateMachine;
+using WMAlghorithm.StateMachine;
 
 namespace WindowUI
 {

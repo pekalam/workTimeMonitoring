@@ -1,7 +1,7 @@
-﻿using System;
-using Domain.WorkTimeAggregate;
+﻿using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
 using FluentAssertions;
+using System;
 using Xunit;
 
 namespace Domain.UnitTests

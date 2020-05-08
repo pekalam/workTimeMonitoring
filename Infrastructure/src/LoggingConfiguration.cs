@@ -1,6 +1,5 @@
-﻿using System;
+﻿using Serilog;
 using System.Diagnostics;
-using Serilog;
 
 namespace Infrastructure
 {

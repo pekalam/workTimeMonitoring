@@ -1,24 +1,19 @@
+using Domain.User;
+using MahApps.Metro.Controls.Dialogs;
+using OpenCvSharp;
+using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Input;
-using System.Windows.Threading;
-using Domain.User;
-using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
-using OpenCvSharp;
-using Prism.Commands;
-using Prism.Regions;
 using UI.Common;
 using UI.Common.Extensions;
 using WindowUI.MainWindow;
-using WorkTimeAlghorithm;
-using WorkTimeAlghorithm.StateMachine;
+using WMAlghorithm;
+using WMAlghorithm.StateMachine;
 
 namespace WindowUI.TriggerRecognition
 {

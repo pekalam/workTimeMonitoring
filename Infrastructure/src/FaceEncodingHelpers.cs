@@ -1,14 +1,6 @@
-﻿using System.Drawing;
+﻿using FaceRecognitionDotNet;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Windows.Documents.Serialization;
-using System.Windows.Media.Imaging;
-using FaceRecognitionDotNet;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
-using Image = FaceRecognitionDotNet.Image;
 
 namespace Infrastructure
 {

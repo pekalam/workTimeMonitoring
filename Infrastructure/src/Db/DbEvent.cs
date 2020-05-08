@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Media;
-using AutoMapper;
-using Domain;
+﻿using AutoMapper;
 using Domain.WorkTimeAggregate.Events;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Infrastructure.Db
 {

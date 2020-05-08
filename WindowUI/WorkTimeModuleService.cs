@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Domain.Repositories;
+﻿using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
 using Prism.Events;
-using UI.Common;
+using System;
+using System.Threading.Tasks;
 using UI.Common.Messaging;
 using WindowUI.Messaging;
-using WorkTimeAlghorithm.StateMachine;
+using WMAlghorithm.StateMachine;
 
 namespace WindowUI
 {

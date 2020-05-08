@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Domain.WorkTimeAggregate.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Domain.WorkTimeAggregate.Events;
 
 namespace Domain.WorkTimeAggregate
 {

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using OpenCvSharp;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenCvSharp;
 
 [assembly: InternalsVisibleTo("WorkTimeAlghorithm.UnitTests")]
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public interface ICaptureService
     {

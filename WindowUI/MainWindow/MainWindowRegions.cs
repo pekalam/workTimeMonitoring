@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WindowUI.MainWindow
+﻿namespace WindowUI.MainWindow
 {
     public static class MainWindowRegions
     {

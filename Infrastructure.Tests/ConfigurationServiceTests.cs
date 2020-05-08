@@ -1,7 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using Infrastructure.Services;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 using Xunit;
 
 namespace Infrastructure.Tests

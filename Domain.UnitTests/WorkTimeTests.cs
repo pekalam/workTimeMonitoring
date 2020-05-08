@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Domain.User;
+﻿using Domain.User;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
 using DomainTestUtils;
 using FluentAssertions;
-using Moq;
-using OpenCvSharp;
-using WorkTimeAlghorithm;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace Domain.UnitTests

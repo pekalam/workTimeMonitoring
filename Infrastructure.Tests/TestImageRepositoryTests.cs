@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Domain.User;
 using FluentAssertions;
 using OpenCvSharp;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 using Xunit;
 
 namespace Infrastructure.Tests

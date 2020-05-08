@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommonTestUtils\DomainTestUtils.csproj" />
-    <ProjectReference Include="..\WorkTimeAlghorithm\WorkTimeAlghorithm.csproj" />
+    <ProjectReference Include="..\WorkTimeAlghorithm\WMAlghorithm.csproj" />
   </ItemGroup>
 
 </Project>

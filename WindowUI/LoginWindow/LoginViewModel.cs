@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Domain.User;
+using Prism.Commands;
+using Prism.Mvvm;
+using Prism.Regions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Domain.User;
-using Prism.Commands;
-using Prism.Mvvm;
-using Prism.Regions;
-using Serilog;
 
 namespace WindowUI.LoginWindow
 {

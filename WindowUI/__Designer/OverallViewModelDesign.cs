@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using WindowUI.Statistics;
+﻿using WindowUI.Statistics;
 
 namespace WindowUI.__Designer
 {

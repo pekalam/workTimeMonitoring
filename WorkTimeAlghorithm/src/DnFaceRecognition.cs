@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
+﻿using FaceRecognitionDotNet;
+using OpenCvSharp;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using FaceRecognitionDotNet;
-using OpenCvSharp;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public interface IDnFaceRecognition
     {

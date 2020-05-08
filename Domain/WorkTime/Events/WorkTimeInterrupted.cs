@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Domain.WorkTimeAggregate.Events;
 
 namespace Domain.WorkTimeAggregate.Events
 {

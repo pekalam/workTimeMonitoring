@@ -1,11 +1,10 @@
-﻿using System;
-using System.Diagnostics;
+﻿using Serilog;
+using StateMachineLib;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
-using StateMachineLib;
 
-namespace WorkTimeAlghorithm.StateMachine
+namespace WMAlghorithm.StateMachine
 {
     internal class State5Service
     {

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using OpenCvSharp;
-using Serilog.Formatting.Display;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 
 namespace Infrastructure.Db
 {

@@ -1,6 +1,5 @@
-﻿using System.Windows;
-using System.Windows.Media.Imaging;
-using OpenCvSharp;
+﻿using OpenCvSharp;
+using System.Windows;
 using Rect = OpenCvSharp.Rect;
 
 namespace WindowUI.TriggerRecognition

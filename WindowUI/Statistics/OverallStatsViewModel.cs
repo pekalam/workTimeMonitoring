@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
-using Domain.WorkTimeAggregate;
-using LiveCharts;
-using LiveCharts.Wpf;
+﻿using LiveCharts;
 using Prism.Mvvm;
 using Prism.Regions;
+using System;
+using System.Collections.Generic;
+using System.Windows;
 
 namespace WindowUI.Statistics
 {

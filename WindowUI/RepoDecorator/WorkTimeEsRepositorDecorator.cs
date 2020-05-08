@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Shapes;
-using CommandLine;
-using Domain.Repositories;
+﻿using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
+using System;
+using System.Collections.Generic;
 
 namespace WindowUI.RepoProxy
 {

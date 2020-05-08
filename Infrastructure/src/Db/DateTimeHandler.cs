@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Dapper;
+using System;
 using System.Data;
-using Dapper;
 
 namespace Infrastructure.Db
 {

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using FaceRecognitionDotNet;
+﻿using FaceRecognitionDotNet;
 using OpenCvSharp;
+using System.Runtime.InteropServices;
 
-namespace WorkTimeAlghorithm.src
+namespace WMAlghorithm
 {
     public static class MatAlgExtensions
     {

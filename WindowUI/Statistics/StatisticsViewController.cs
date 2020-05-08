@@ -1,6 +1,5 @@
 ﻿using Domain.Repositories;
 using Domain.User;
-using Prism.Events;
 using Unity;
 using WindowUI.RepoProxy;
 

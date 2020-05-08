@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Domain.WorkTimeAggregate;
+﻿using Domain.WorkTimeAggregate;
+using System;
 
 namespace WindowUI.Statistics
 {

@@ -1,8 +1,7 @@
-﻿using System;
-using CommonServiceLocator;
+﻿using CommonServiceLocator;
 using Notifications.Wpf;
 using Prism.Events;
-using UI.Common;
+using System;
 using UI.Common.Notifications;
 
 namespace NotificationsWpf

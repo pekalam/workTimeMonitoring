@@ -1,14 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Windows;
-using CommonServiceLocator;
+﻿using CommonServiceLocator;
 using Infrastructure;
-using NotificationsW8;
 using NotificationsWpf;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
+using System.Windows;
 using UI.Common;
 using UI.Common.Messaging;
 using WindowUI;

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using CommonServiceLocator;
+﻿using CommonServiceLocator;
 using MahApps.Metro.Controls;
 using Prism.Commands;
 using Prism.Regions;
-using WindowUI.FaceInitialization;
+using System;
+using System.Diagnostics;
+using System.Windows.Controls;
 using WindowUI.Profile;
 using WindowUI.Settings;
 using WindowUI.StartWork;

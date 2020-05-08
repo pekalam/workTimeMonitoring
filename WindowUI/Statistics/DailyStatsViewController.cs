@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Domain.Repositories;
+using Domain.User;
+using Domain.WorkTimeAggregate;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using Domain.Repositories;
-using Domain.User;
-using Domain.WorkTimeAggregate;
 using Unity;
 using WindowUI.RepoProxy;
 

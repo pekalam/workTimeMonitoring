@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Domain.Services;
-using Unity;
+﻿using Unity;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public class UnityBootstraper
     {

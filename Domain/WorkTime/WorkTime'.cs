@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Domain.WorkTimeAggregate.Events;
+using ReflectionMagic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Domain.WorkTimeAggregate.Events;
-using ReflectionMagic;
 
 namespace Domain.WorkTimeAggregate
 {

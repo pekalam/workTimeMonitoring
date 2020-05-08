@@ -1,16 +1,14 @@
-﻿using System;
+﻿using AutoMapper;
+using Dapper;
+using Domain.Services;
+using Domain.User;
+using Infrastructure.Db;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using AutoMapper;
-using Dapper;
-using Domain;
-using Domain.Services;
-using Domain.User;
-using Infrastructure.Db;
-using Infrastructure.Services;
-using WorkTimeAlghorithm;
+using WMAlghorithm;
 
 [assembly: InternalsVisibleTo("Infrastructure.Tests")]
 [assembly: InternalsVisibleTo("WMonitorAlghorithmTest")]

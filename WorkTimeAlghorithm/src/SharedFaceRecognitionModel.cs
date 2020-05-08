@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Domain.Services;
+using FaceRecognitionDotNet;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Domain.Services;
-using FaceRecognitionDotNet;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public class FaceRecognitionModelSettings
     {

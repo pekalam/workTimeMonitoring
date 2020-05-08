@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
-    <ProjectReference Include="..\WorkTimeAlghorithm\WorkTimeAlghorithm.csproj" />
+    <ProjectReference Include="..\WorkTimeAlghorithm\WMAlghorithm.csproj" />
   </ItemGroup>
 
 </Project>

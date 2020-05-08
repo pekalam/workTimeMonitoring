@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using System.Windows;
-using Prism.Events;
+﻿using Prism.Events;
 using Prism.Regions;
+using System.Linq;
+using System.Windows;
 using UI.Common;
 using UI.Common.Messaging;
 

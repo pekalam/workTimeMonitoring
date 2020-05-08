@@ -1,18 +1,16 @@
-﻿using System;
+﻿using Domain.WorkTimeAggregate.Events;
+using Gma.System.MouseKeyHook;
+using Serilog;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
-using Domain;
-using Domain.WorkTimeAggregate.Events;
-using Gma.System.MouseKeyHook;
-using Serilog;
 
-namespace WorkTimeAlghorithm
+namespace WMAlghorithm
 {
     public interface IMouseKeyboardMonitorService
     {
