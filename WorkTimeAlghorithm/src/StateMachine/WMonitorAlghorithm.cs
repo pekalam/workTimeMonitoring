@@ -15,6 +15,7 @@ namespace WMAlghorithm.StateMachine
         private readonly State3Service _state3;
         private readonly State5Service _state5 = new State5Service();
         private WorkTime _workTime;
+        private readonly ICaptureService _captureService;
 
         public event Action<(bool faceDetected, bool faceRecognized)> State3Result;
         public event Action<(bool faceDetected, bool faceRecognized)> State2Result;
@@ -24,9 +25,10 @@ namespace WMAlghorithm.StateMachine
         private IDisposable _keyboardSub;
         private IDisposable _mouseSub;
 
-        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService, IMouseKeyboardMonitorService mouseKeyboardMonitor)
+        public WMonitorAlghorithm(AlghorithmFaceRecognition faceRecognition, WorkTimeEventService workTimeEventService, IConfigurationService configurationService, IMouseKeyboardMonitorService mouseKeyboardMonitor, ICaptureService captureService)
         {
             _mouseKeyboardMonitor = mouseKeyboardMonitor;
+            _captureService = captureService;
             InitSubscriptions();
             _workTimeEventService = workTimeEventService;
             _state2 = new State2Service(faceRecognition, workTimeEventService, configurationService);
@@ -139,9 +141,23 @@ namespace WMAlghorithm.StateMachine
         }
 
 
-        public void StartManualFaceRecog()
+        public async Task<bool> StartManualFaceRecog()
         {
+            int wait = 0;
+            while (_captureService.IsCapturing)
+            {
+                Debug.WriteLine("waiting for cap release");
+                await Task.Delay(500).ConfigureAwait(true);
+                wait++;
+                if (wait == 10)
+                {
+                    Debug.WriteLine("reached max wait count");
+                    return false;
+                }
+            }
+
             _sm.Next(Triggers.ManualTrigger);
+            return true;
         }
 
         public void CancelManualFaceRecog()

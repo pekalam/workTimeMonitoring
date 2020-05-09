@@ -1,12 +1,12 @@
-﻿using Domain.User;
-using OpenCvSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.User;
+using OpenCvSharp;
 
-namespace WMAlghorithm
+namespace WMAlghorithm.Services
 {
     public class InitFaceProgressArgs
     {
@@ -55,7 +55,7 @@ namespace WMAlghorithm
         public IProgress<InitFaceProgressArgs>? InitFaceProgress { get; set; }
 
         private void ReportInitFaceProgress(Mat? img, Rect? face = null,
-            InitFaceProgress state = WMAlghorithm.InitFaceProgress.Progress,
+            InitFaceProgress state = Services.InitFaceProgress.Progress,
             bool stopped = false)
         {
             InitFaceProgress?.Report(new InitFaceProgressArgs()
@@ -132,7 +132,7 @@ namespace WMAlghorithm
                     faceRects = _faceDetection.DetectFrontalFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, state: WMAlghorithm.InitFaceProgress.FaceNotDetected);
+                        ReportInitFaceProgress(frame, state: Services.InitFaceProgress.FaceNotDetected);
                         continue;
                     }
 
@@ -141,7 +141,7 @@ namespace WMAlghorithm
                     if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            state: WMAlghorithm.InitFaceProgress.FaceNotStraight);
+                            state: Services.InitFaceProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -150,7 +150,7 @@ namespace WMAlghorithm
                     faceRects = _faceDetection.DetectFrontalThenProfileFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, state: WMAlghorithm.InitFaceProgress.ProfileFaceNotDetected);
+                        ReportInitFaceProgress(frame, state: Services.InitFaceProgress.ProfileFaceNotDetected);
 
                         continue;
                     }
@@ -162,7 +162,7 @@ namespace WMAlghorithm
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            state: hTarget == HeadRotation.Left ? WMAlghorithm.InitFaceProgress.FaceNotTurnedLeft : WMAlghorithm.InitFaceProgress.FaceNotTurnedRight);
+                            state: hTarget == HeadRotation.Left ? Services.InitFaceProgress.FaceNotTurnedLeft : Services.InitFaceProgress.FaceNotTurnedRight);
                         continue;
                     }
                 }
@@ -193,7 +193,7 @@ namespace WMAlghorithm
                 if (testImages.Count == MinImages)
                 {
                     interrupted = false;
-                    ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.PhotosTaken);
+                    ReportInitFaceProgress(null, state: Services.InitFaceProgress.PhotosTaken);
                     break;
                 }
             }
@@ -201,7 +201,7 @@ namespace WMAlghorithm
             if (interrupted)
             {
                 Reset();
-                ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.CancelledByUser, stopped: true);
+                ReportInitFaceProgress(null, state: Services.InitFaceProgress.CancelledByUser, stopped: true);
                 return Task.CompletedTask;
             }
 
@@ -214,7 +214,7 @@ namespace WMAlghorithm
                 if (t.Exception != null)
                 {
                     _progress = 0;
-                    ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.FaceRecognitionError,
+                    ReportInitFaceProgress(null, state: Services.InitFaceProgress.FaceRecognitionError,
                         stopped: true);
                     Reset();
                 }

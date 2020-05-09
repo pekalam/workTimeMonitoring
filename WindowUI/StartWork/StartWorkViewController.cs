@@ -2,6 +2,7 @@
 using Prism.Events;
 using System;
 using WindowUI.Messaging;
+using WMAlghorithm.Services;
 
 namespace WindowUI.StartWork
 {
@@ -16,13 +17,13 @@ namespace WindowUI.StartWork
     {
         private StartWorkViewModel _vm;
         private readonly IEventAggregator _ea;
-        private readonly WorkTimeModuleService _workTimeModuleService;
+        private readonly AlgorithmService _algorithmService;
         private bool _stopRequested = false;
         private bool _pauseRequested = false;
 
-        public StartWorkViewController(WorkTimeModuleService workTimeModuleService, IEventAggregator ea)
+        public StartWorkViewController(AlgorithmService algorithmService, IEventAggregator ea)
         {
-            _workTimeModuleService = workTimeModuleService;
+            _algorithmService = algorithmService;
             _ea = ea;
             StartWork = new DelegateCommand(OnStartWorkExecute);
             StopWork = new DelegateCommand(OnStopWorkExecute, () => !_pauseRequested && !_stopRequested && (!_vm?.IsPaused ?? true));
@@ -41,11 +42,11 @@ namespace WindowUI.StartWork
             RaiseCanExecChanged();
             if (!_vm.IsPaused)
             {
-                _workTimeModuleService.Resume();
+                _algorithmService.Resume();
             }
             else
             {
-                await _workTimeModuleService.Pause();
+                await _algorithmService.Pause();
             }
             _pauseRequested = false;
             RaiseCanExecChanged();
@@ -55,11 +56,11 @@ namespace WindowUI.StartWork
         {
             if (_vm.IsPaused)
             {
-                _workTimeModuleService.Resume();
+                _algorithmService.Resume();
             }
             _stopRequested = true;
             RaiseCanExecChanged();
-            await _workTimeModuleService.Stop();
+            await _algorithmService.Stop();
             _vm.Started = _stopRequested = false;
             RaiseCanExecChanged();
         }
@@ -87,13 +88,13 @@ namespace WindowUI.StartWork
             }
             DateTime? end = _vm.EndDate?.ToUniversalTime();
 
-            _workTimeModuleService.StartNew(start, end.Value);
+            _algorithmService.StartNew(start, end.Value);
             _vm.Started = true;
         }
 
         private void SetAlgorithmStarted()
         {
-            _vm.EndDate = _workTimeModuleService.CurrentWorkTime.EndDate.ToLocalTime();
+            _vm.EndDate = _algorithmService.CurrentWorkTime.EndDate.ToLocalTime();
             _vm.Started = true;
         }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using UI.Common;
 using UI.Common.Messaging;
+using WMAlghorithm.Services;
 
 namespace WindowUI.TriggerRecognition
 {
@@ -11,9 +12,9 @@ namespace WindowUI.TriggerRecognition
     {
         private readonly IEventAggregator _ea;
         private readonly IRegionManager _rm;
-        private readonly WorkTimeModuleService _moduleService;
+        private readonly AlgorithmService _moduleService;
 
-        public TriggerRecognitionNavigation(IRegionManager rm, WorkTimeModuleService moduleService, IEventAggregator ea)
+        public TriggerRecognitionNavigation(IRegionManager rm, AlgorithmService moduleService, IEventAggregator ea)
         {
             _rm = rm;
             _moduleService = moduleService;

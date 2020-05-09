@@ -12,6 +12,7 @@ using UI.Common;
 using UI.Common.Extensions;
 using WindowUI.MainWindow;
 using WMAlghorithm;
+using WMAlghorithm.Services;
 
 namespace WindowUI.FaceInitialization
 {

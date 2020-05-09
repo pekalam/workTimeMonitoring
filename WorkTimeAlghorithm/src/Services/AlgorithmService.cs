@@ -1,42 +1,46 @@
-﻿using Domain.Repositories;
+﻿using System;
+using System.Threading.Tasks;
+using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
-using Prism.Events;
-using System;
-using System.Threading.Tasks;
-using UI.Common.Messaging;
-using WindowUI.Messaging;
 using WMAlghorithm.StateMachine;
 
-namespace WindowUI
+namespace WMAlghorithm.Services
 {
-    public class WorkTimeModuleService
+    public interface IAlghorithmNotificationsPort
+    {
+        void OnAlgorithmStopped();
+        void AlghorithmOnState2Result((bool faceDetected, bool faceRecognized) args);
+        void AlghorithmOnState3Result((bool faceDetected, bool faceRecognized) args);
+        void Reset();
+        void OnRestored(WorkTime workTime);
+    }
+
+
+    public class AlgorithmService
     {
         private readonly IAuthenticationService _authenticationService;
         private readonly WorkTimeBuildService _buildService;
         private readonly WMonitorAlghorithm _alghorithm;
         private readonly WorkTimeRestoreService _restoreService;
         private readonly IWorkTimeEsRepository _repository;
-        private readonly MonitorAlghorithmNotifications _monitorAlghorithmNotifications;
-        private readonly IEventAggregator _ea;
+        private readonly IAlghorithmNotificationsPort _alghorithmNotifications;
 
-        public WorkTimeModuleService(IAuthenticationService authenticationService, WorkTimeBuildService buildService,
-            WMonitorAlghorithm alghorithm, IWorkTimeEsRepository repository, WorkTimeRestoreService restoreService
-            , IEventAggregator ea)
+        public AlgorithmService(IAuthenticationService authenticationService, WorkTimeBuildService buildService,
+            WMonitorAlghorithm alghorithm, IWorkTimeEsRepository repository, WorkTimeRestoreService restoreService, IAlghorithmNotificationsPort alghorithmNotifications)
         {
             _authenticationService = authenticationService;
             _buildService = buildService;
             _alghorithm = alghorithm;
             _repository = repository;
             _restoreService = restoreService;
-            _ea = ea;
-            ea.GetEvent<AppShuttingDownEvent>().Subscribe(() => _restoreService.SetInterrupted(CurrentWorkTime), true);
+            _alghorithmNotifications = alghorithmNotifications;
 
-            _monitorAlghorithmNotifications = new MonitorAlghorithmNotifications(alghorithm, ea);
+            _alghorithm.State3Result += _alghorithmNotifications.AlghorithmOnState3Result;
+            _alghorithm.State2Result += _alghorithmNotifications.AlghorithmOnState2Result;
+            _alghorithm.AlgorithmStopped += _alghorithmNotifications.OnAlgorithmStopped;
         }
 
-
-        public bool AlgorithmStarted { get; private set; }
         public WorkTime? CurrentWorkTime { get; private set; }
 
         public WMonitorAlghorithm Alghorithm => _alghorithm;
@@ -52,7 +56,6 @@ namespace WindowUI
             CurrentWorkTime = workTime;
             _alghorithm.SetWorkTime(workTime);
             _alghorithm.Start();
-            AlgorithmStarted = true;
         }
 
         public async Task Pause()
@@ -71,7 +74,7 @@ namespace WindowUI
         {
             await _alghorithm.Stop();
             CurrentWorkTime.Stop();
-            _monitorAlghorithmNotifications.Reset();
+            _alghorithmNotifications.Reset();
             _repository.Save(CurrentWorkTime);
             CurrentWorkTime.MarkPendingEventsAsHandled();
         }
@@ -82,12 +85,17 @@ namespace WindowUI
             if (_restoreService.Restore(user, out var restored))
             {
                 StartAlgorithm(restored);
-                _ea.GetEvent<MonitoringRestored>().Publish(this);
-                _monitorAlghorithmNotifications.OnRestored();
+                //_ea.GetEvent<MonitoringRestored>().Publish(this);
+                _alghorithmNotifications.OnRestored(restored);
                 return true;
             }
 
             return false;
+        }
+
+        public void Shutdown()
+        {
+            _restoreService.SetInterrupted(CurrentWorkTime);
         }
     }
 }

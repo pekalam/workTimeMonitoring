@@ -7,6 +7,7 @@ using Prism.Events;
 using UI.Common;
 using WindowUI.FaceInitialization;
 using WMAlghorithm;
+using WMAlghorithm.Services;
 
 namespace WindowUI.MainWindow
 {
@@ -21,15 +22,15 @@ namespace WindowUI.MainWindow
         private readonly ITestImageRepository _testImageRepository;
         private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _regionManager;
-        private readonly WorkTimeModuleService _workTimeModuleService;
+        private readonly AlgorithmService _algorithmService;
         private readonly IEventAggregator _ea;
 
 
-        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager, IAuthenticationService authenticationService,  WorkTimeModuleService workTimeModuleService, IEventAggregator ea)
+        public MainViewController(ITestImageRepository testImageRepository, IRegionManager regionManager, IAuthenticationService authenticationService,  AlgorithmService algorithmService, IEventAggregator ea)
         {
             _regionManager = regionManager;
             _authenticationService = authenticationService;
-            _workTimeModuleService = workTimeModuleService;
+            _algorithmService = algorithmService;
             _ea = ea;
             _testImageRepository = testImageRepository;
         }
@@ -40,7 +41,7 @@ namespace WindowUI.MainWindow
 
             _ea.GetEvent<LoadNotificationsModuleEvent>().Publish();
             //todo
-            if (!_workTimeModuleService.TryRestore())
+            if (!_algorithmService.TryRestore())
             {
                 Dispatcher.CurrentDispatcher.InvokeAsync(() =>
                 {

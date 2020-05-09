@@ -6,6 +6,7 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Unity;
 using UI.Common;
+using UI.Common.Messaging;
 using Unity;
 using WindowUI.FaceInitialization;
 using WindowUI.LoginWindow;
@@ -17,6 +18,7 @@ using WindowUI.SplashScreen;
 using WindowUI.StartWork;
 using WindowUI.Statistics;
 using WindowUI.TriggerRecognition;
+using WMAlghorithm.Services;
 
 namespace WindowUI
 {
@@ -41,6 +43,12 @@ namespace WindowUI
                     var service = containerProvider.Resolve<TriggerRecognitionNavigation>();
                     service.NaviateToTriggerRecogView();
                 }, true);
+
+
+            ea.GetEvent<AppShuttingDownEvent>().Subscribe(() =>
+            {
+                ServiceLocator.Current.GetInstance<AlgorithmService>().Shutdown();
+            }, true);
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
@@ -75,7 +83,8 @@ namespace WindowUI
 
             containerRegistry.GetContainer().RegisterType<IOverallStatsController, OverallStatsController>();
 
-            containerRegistry.GetContainer().RegisterSingleton<WorkTimeModuleService>();
+            containerRegistry.GetContainer()
+                .RegisterType<IAlghorithmNotificationsPort, AlghorithmNotificationsAdapter>();
 
             containerRegistry.GetContainer()
                 .RegisterInstance(ServiceLocator.Current.GetInstance<WindowModuleStartupService>());

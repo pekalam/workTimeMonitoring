@@ -6,6 +6,7 @@ using UI.Common;
 using UI.Common.Extensions;
 using WindowUI.FaceInitialization;
 using WMAlghorithm;
+using WMAlghorithm.Services;
 
 namespace WindowUI.Profile
 {
@@ -14,10 +15,10 @@ namespace WindowUI.Profile
         private readonly ITestImageRepository _testImageRepository;
         private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _rm;
-        private readonly WorkTimeModuleService _moduleService;
+        private readonly AlgorithmService _moduleService;
         private ProfileViewModel _vm;
 
-        public ProfileViewController(ITestImageRepository testImageRepository, IAuthenticationService authenticationService, IRegionManager rm, WorkTimeModuleService moduleService)
+        public ProfileViewController(ITestImageRepository testImageRepository, IAuthenticationService authenticationService, IRegionManager rm, AlgorithmService moduleService)
         {
             _testImageRepository = testImageRepository;
             _authenticationService = authenticationService;

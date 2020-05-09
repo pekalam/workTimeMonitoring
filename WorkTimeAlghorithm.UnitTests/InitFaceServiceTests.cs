@@ -9,6 +9,7 @@ using Moq;
 using Moq.AutoMock;
 using OpenCvSharp;
 using WMAlghorithm;
+using WMAlghorithm.Services;
 using WorkTimeAlghorithm.UnitTests.Helpers;
 using Xunit;
 
@@ -64,14 +65,14 @@ namespace WorkTimeAlghorithm.UnitTests
         private Expression<Func<InitFaceProgressArgs, bool>> FaceNotDetected()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.FaceNotDetected &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotDetected &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> ProfileFaceNotDetected()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.ProfileFaceNotDetected &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.ProfileFaceNotDetected &&
                              !args.Stoped;
         }
 
@@ -79,7 +80,7 @@ namespace WorkTimeAlghorithm.UnitTests
         {
             return (args) => args.Frame == null &&
                              args.ProgressPercentage > 0 &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.PhotosTaken &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.PhotosTaken &&
                              !args.Stoped;
         }
 
@@ -87,7 +88,7 @@ namespace WorkTimeAlghorithm.UnitTests
         {
             return (args) => args.Frame == _nonEmptyFrame &&
                              args.ProgressPercentage > 0 &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.Progress &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.Progress &&
                              !args.Stoped;
         }
 
@@ -95,42 +96,42 @@ namespace WorkTimeAlghorithm.UnitTests
         {
             return (args) => args.Frame == frame &&
                              args.ProgressPercentage == progress &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.Progress &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.Progress &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> FaceNotStraight()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.FaceNotStraight &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotStraight &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> FaceNotLeft()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.FaceNotTurnedLeft &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotTurnedLeft &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> FaceNotRight()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.InitFaceProgress.FaceNotTurnedRight &&
+                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotTurnedRight &&
                              !args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> CancelledByUser()
         {
             return (args) =>
-                args.Frame == null && args.ProgressState == WMAlghorithm.InitFaceProgress.CancelledByUser
+                args.Frame == null && args.ProgressState == WMAlghorithm.Services.InitFaceProgress.CancelledByUser
                                    && args.Stoped;
         }
 
         private Expression<Func<InitFaceProgressArgs, bool>> FaceRecognitionError()
         {
             return (args) =>
-                args.Frame == null && args.ProgressState == WMAlghorithm.InitFaceProgress.FaceRecognitionError
+                args.Frame == null && args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceRecognitionError
                                    && args.Stoped;
         }
 

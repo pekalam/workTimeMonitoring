@@ -9,10 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using Prism.Events;
+using Serilog;
 using UI.Common;
 using UI.Common.Extensions;
 using WindowUI.MainWindow;
 using WMAlghorithm;
+using WMAlghorithm.Services;
 using WMAlghorithm.StateMachine;
 
 namespace WindowUI.TriggerRecognition
@@ -43,25 +46,18 @@ namespace WindowUI.TriggerRecognition
 
     public class TriggerRecognitionController : ITriggerRecognitionController
     {
-        private readonly ICaptureService _captureService;
-        private readonly IAuthenticationService _authenticationService;
-        private readonly IHcFaceDetection _faceDetection;
-        private readonly AlghorithmFaceRecognition _faceRecognition;
-        private TriggerRecognitionViewModel? _vm;
-        private CancellationTokenSource? _camCts;
-        private readonly WorkTimeModuleService _moduleService;
+        private TriggerRecognitionViewModel _vm;
         private readonly IRegionManager _rm;
+        private readonly ManualRecogTriggerService _recogTriggerService;
+        private readonly Progress<ManualRecogProgress> _progress;
+        private readonly IEventAggregator _ea;
 
-        public TriggerRecognitionController(ICaptureService captureService, AlghorithmFaceRecognition faceRecognition,
-            IAuthenticationService authenticationService, WorkTimeModuleService moduleService,
-            IHcFaceDetection faceDetection, IRegionManager rm)
+        public TriggerRecognitionController(IRegionManager rm, ManualRecogTriggerService recogTriggerService, IEventAggregator ea)
         {
-            _captureService = captureService;
-            _faceRecognition = faceRecognition;
-            _authenticationService = authenticationService;
-            _moduleService = moduleService;
-            _faceDetection = faceDetection;
             _rm = rm;
+            _recogTriggerService = recogTriggerService;
+            _ea = ea;
+            _progress = new Progress<ManualRecogProgress>(RecogProgressHandler);
         }
 
         private MessageDialogResult ShowRetryDialog()
@@ -76,82 +72,78 @@ namespace WindowUI.TriggerRecognition
                 MessageDialogStyle.AffirmativeAndNegative, mySettings);
         }
 
-        private async Task<bool> BeginFaceRecognition(IAsyncEnumerator<Mat> camEnumerator, ITriggerRecognitionViewModel vm)
+
+        private void RecogProgressHandler(ManualRecogProgress arg)
         {
-            //todo progress dispatch
-            DateTime? start = null;
-            TimeSpan timeElapsed;
-
-            while (await camEnumerator.MoveNextAsync())
+            switch (arg.State)
             {
-                using var frame = camEnumerator.Current;
-                vm.CallOnFrameChanged(frame);
-                vm.HideLoading();
-
-                var faces = _faceDetection.DetectFrontalThenProfileFaces(frame);
-
-                if (faces.Length > 0)
-                {
-                    vm.CallOnFaceDetected(faces[0]);
-
-                    if (start == null)
-                    {
-                        start = DateTime.Now;
-                        continue;
-                    }
-
-                    timeElapsed = DateTime.Now - start.Value;
-
-
-                    if (timeElapsed.TotalSeconds >= 3.0)
-                    {
-                        var recogTask = _faceRecognition.RecognizeFace(_authenticationService.User, frame);
-                        vm.ShowLoading();
-                        var (detected, recognized) = await recogTask;
-                        vm.Loading = false;
-                        if (detected && recognized)
-                        {
-                            _moduleService.Alghorithm.SetFaceRecog();
-                            _camCts.Cancel();
-                        }
-                        else if (!recognized)
-                        {
-                            vm.ShowRecognitionFailure();
-                            await Task.Delay(1500);
-                            vm.ResetRecognition();
-                            return false;
-                        }
-
-                        start = null;
-                    }
-                }
-                else
-                {
-                    vm.CallOnNoFaceDetected();
-                    start = null;
-                }
+                case ManualRecogState.FrameCap:
+                    _vm.CallOnFrameChanged(arg.Frame);
+                    _vm.HideLoading();
+                    break;
+                case ManualRecogState.FaceDetected:
+                    _vm.CallOnFaceDetected(arg.Face.Value);
+                    break;
+                case ManualRecogState.NoFaceDetected:
+                    _vm.CallOnNoFaceDetected();
+                    break;
+                case ManualRecogState.RecogStarted:
+                    _vm.ShowLoading();
+                    break;
+                case ManualRecogState.RecogFinished:
+                    _vm.Loading = false;
+                    break;
             }
-
-            return true;
         }
 
         public async Task Init(TriggerRecognitionViewModel vm, bool windowOpened, object previousView)
         {
+            void RestoreWindowState()
+            {
+                _rm.Regions[ShellRegions.MainRegion].RemoveActiveView();
+                if (previousView != null && _rm.Regions[ShellRegions.MainRegion].Views.Contains(previousView))
+                {
+                    _rm.Regions[ShellRegions.MainRegion].Activate(previousView);
+                }
+                else
+                {
+                    _rm.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(MainWindowView));
+                }
+
+                if (!windowOpened)
+                {
+                    Application.Current.Dispatcher.InvokeAsync(() => WindowModuleStartupService.ShellWindow.Hide());
+                }
+            }
+
+            _ea.GetEvent<HideNotificationsEvent>().Publish();
             _vm = vm;
             _vm.ShowLoading();
 
-            _camCts = new CancellationTokenSource();
-            _moduleService.Alghorithm.StartManualFaceRecog();
 
             await Task.Run(async () =>
             {
                 var vmDispatch = new TriggerRecognitionVmDispatcherDecorator(_vm);
-                var camEnumerator = _captureService.CaptureFrames(_camCts.Token).GetAsyncEnumerator(_camCts.Token);
 
-                bool recognized;
+                bool recognized = false;
                 do
                 {
-                    recognized = await BeginFaceRecognition(camEnumerator, vmDispatch);
+                    try
+                    {
+                        recognized = await _recogTriggerService.StartRecognition(_progress);
+                    }
+                    catch (CamLockedException e)
+                    {
+                        Log.Logger.Debug(e, "TriggerRecog exception");
+                        RestoreWindowState();
+                        return;
+                    }
+                    if (!recognized)
+                    {
+                        vmDispatch.ShowRecognitionFailure();
+                        await Task.Delay(1500);
+                        vmDispatch.ResetRecognition();
+                    }
 
                 } while (!recognized && ShowRetryDialog() == MessageDialogResult.Affirmative);
 
@@ -165,20 +157,7 @@ namespace WindowUI.TriggerRecognition
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    _rm.Regions[ShellRegions.MainRegion].RemoveActiveView();
-                    if (previousView != null && _rm.Regions[ShellRegions.MainRegion].Views.Contains(previousView))
-                    {
-                        _rm.Regions[ShellRegions.MainRegion].Activate(previousView);
-                    }
-                    else
-                    {
-                        _rm.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(MainWindowView));
-                    }
-
-                    if (!windowOpened)
-                    {
-                        WindowModuleStartupService.ShellWindow.Hide();
-                    }
+                    RestoreWindowState();
                 });
 
             });
