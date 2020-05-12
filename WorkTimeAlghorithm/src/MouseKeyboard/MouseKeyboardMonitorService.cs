@@ -16,6 +16,8 @@ namespace WMAlghorithm
     {
         IObservable<MonitorEvent> MouseMoveAction { get; }
         IObservable<MonitorEvent> KeyboardAction { get; }
+        event Action<DateTime> MouseMoveStart;
+        event Action<DateTime> KeyboardMoveStart;
         void Start();
         void Stop();
     }
@@ -53,7 +55,7 @@ namespace WMAlghorithm
                 .Timestamp()
                 .Subscribe(v =>
                 {
-                    if (_mouseStart == null)
+                    if (!_mouseStart.HasValue)
                     {
                         return;
                     }
@@ -78,7 +80,7 @@ namespace WMAlghorithm
                 .Timestamp()
                 .Subscribe(v =>
                 {
-                    if (_keyboardStart == null)
+                    if (!_keyboardStart.HasValue)
                     {
                         return;
                     }
@@ -99,6 +101,12 @@ namespace WMAlghorithm
                 });
 
         }
+
+        public event Action<DateTime> MouseMoveStart;
+        public event Action<DateTime> KeyboardMoveStart;
+
+        public IObservable<MonitorEvent> MouseMoveAction => _mouseMoveActionSubject;
+        public IObservable<MonitorEvent> KeyboardAction => _keyboardActionSubject;
 
         private string? GetActiveWindowExecutable([CallerMemberName] string method = "")
         {
@@ -146,19 +154,22 @@ namespace WMAlghorithm
             if (!_keyboardStart.HasValue)
             {
                 _keyboardStart = DateTime.UtcNow;
+                KeyboardMoveStart?.Invoke(_keyboardStart.Value);
             }
+
             _keyboardSubject.OnNext(0);
         }
 
-        public IObservable<MonitorEvent> MouseMoveAction => _mouseMoveActionSubject;
-        public IObservable<MonitorEvent> KeyboardAction => _keyboardActionSubject;
+
 
         private void HookOnMouseMoveExt(object? sender, MouseEventExtArgs e)
         {
             if (!_mouseStart.HasValue)
             {
                 _mouseStart = DateTime.UtcNow;
+                MouseMoveStart?.Invoke(_mouseStart.Value);
             }
+
             _mouseMoveSubject.OnNext(0);
         }
     }

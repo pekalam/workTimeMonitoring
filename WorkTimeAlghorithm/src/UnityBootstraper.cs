@@ -1,4 +1,5 @@
 ﻿using Unity;
+using WMAlghorithm.Services;
 
 namespace WMAlghorithm
 {
@@ -12,6 +13,8 @@ namespace WMAlghorithm
             container.RegisterType<IDnFaceRecognition, DnFaceRecognition>();
             container.RegisterSingleton<IMouseKeyboardMonitorService, MouseKeyboardMonitorService>();
             container.RegisterType<IMouseKeyboardMonitorService, MouseKeyboardMonitorService>();
+
+            container.RegisterSingleton<AlgorithmService>();
         }
     }
 }

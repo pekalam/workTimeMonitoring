@@ -4,8 +4,9 @@ using Prism.Regions;
 using System.Linq;
 using UI.Common;
 using UI.Common.Extensions;
-using WindowUI.FaceInitialization;
+using WindowUI.ProfileInit;
 using WMAlghorithm;
+using WMAlghorithm.Services;
 
 namespace WindowUI.Profile
 {
@@ -14,10 +15,10 @@ namespace WindowUI.Profile
         private readonly ITestImageRepository _testImageRepository;
         private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _rm;
-        private readonly WorkTimeModuleService _moduleService;
+        private readonly AlgorithmService _moduleService;
         private ProfileViewModel _vm;
 
-        public ProfileViewController(ITestImageRepository testImageRepository, IAuthenticationService authenticationService, IRegionManager rm, WorkTimeModuleService moduleService)
+        public ProfileViewController(ITestImageRepository testImageRepository, IAuthenticationService authenticationService, IRegionManager rm, AlgorithmService moduleService)
         {
             _testImageRepository = testImageRepository;
             _authenticationService = authenticationService;
@@ -25,7 +26,7 @@ namespace WindowUI.Profile
             _moduleService = moduleService;
             RestartInit = new DelegateCommand(() =>
             {
-                _rm.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+                _rm.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(ProfileInitView));
             }, () => !_moduleService.Alghorithm.Started);
 
 

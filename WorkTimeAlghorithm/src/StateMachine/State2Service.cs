@@ -1,4 +1,5 @@
-﻿using Domain.Services;
+﻿using System;
+using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Serilog;
 using StateMachineLib;
@@ -9,8 +10,8 @@ namespace WMAlghorithm.StateMachine
 {
     internal class State2Configuration
     {
-        public int[] RetryDelays { get; set; } = new[] {4000, 6000, 8000, 12_000, 30_000};
-        public int FaceDetectionDelayThreshold { get; set; } = 12_000;
+        public int[] RetryDelays { get; set; } = new[] {4000, 15_000, 16_000, 17_000, 20_000};
+        public int FaceDetectionDelayThreshold { get; set; } = 17_000;
     }
 
     public partial class WMonitorAlghorithm
@@ -33,11 +34,30 @@ namespace WMAlghorithm.StateMachine
             public bool InProgress { get; private set; }
             public void Cancel() => _cts?.Cancel();
 
-            public async Task Enter(State state,
-                StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
+
+            private bool TryAddRecognitionFailure(bool faceDetected, bool faceRecognized)
+            {
+                try
+                {
+                    _workTimeEventService.AddRecognitionFailure(faceDetected, faceRecognized);
+                }
+                catch (WorkTimeStoppedException)
+                {
+                    return false;
+                }
+                finally
+                {
+                    InProgress = false;
+                }
+
+                return true;
+            }
+
+
+            public async Task Enter(StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
             {
                 InProgress = true;
-                state.CanCapureMouseKeyboard = true;
+                alghorithm._canCapureMouseKeyboard = true;
 
                 _cts = new CancellationTokenSource();
                 _workTimeEventService.StartTempChanges();
@@ -51,12 +71,15 @@ namespace WMAlghorithm.StateMachine
                         await _faceRecognition.RecognizeFace(workTime.User).ConfigureAwait(false);
                     alghorithm.State2Result?.Invoke((faceDetected, faceRecognized));
 
-                    if (!faceDetected && timeMs == _config.FaceDetectionDelayThreshold)
+                    if (!faceDetected && timeMs >= _config.FaceDetectionDelayThreshold)
                     {
-                        state.CanCapureMouseKeyboard = false;
+                        alghorithm._canCapureMouseKeyboard = false;
                         _workTimeEventService.DiscardTempChanges();
-                        _workTimeEventService.AddRecognitionFailure(false, faceRecognized);
-                        InProgress = false;
+                        if (!TryAddRecognitionFailure(false, faceRecognized))
+                        {
+                            sm.Next(Triggers.Stop);
+                            return;
+                        }
                         sm.Next(Triggers.NoFace);
                         return;
                     }
@@ -84,9 +107,12 @@ namespace WMAlghorithm.StateMachine
                 }
 
                 _workTimeEventService.DiscardTempChanges();
-                _workTimeEventService.AddRecognitionFailure(faceDetected, faceRecognized);
-                InProgress = false;
-                sm.Next(WMonitorAlghorithm.Triggers.FaceNotRecog);
+                if (!TryAddRecognitionFailure(faceDetected, faceRecognized))
+                {
+                    sm.Next(Triggers.Stop);
+                    return;
+                }
+                sm.Next(Triggers.FaceNotRecog);
             }
         }
     }

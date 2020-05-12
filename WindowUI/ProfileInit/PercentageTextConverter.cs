@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace WindowUI.FaceInitialization
+namespace WindowUI.ProfileInit
 {
     public class PercentageTextConverter : IValueConverter
     {

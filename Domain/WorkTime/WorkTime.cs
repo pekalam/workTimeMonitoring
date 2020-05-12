@@ -8,6 +8,20 @@ using System.Runtime.CompilerServices;
 
 namespace Domain.WorkTimeAggregate
 {
+    public class WorkTimeStoppedException : Exception
+    {
+        public WorkTimeStoppedException(string? message) : base(message)
+        {
+        }
+    }
+
+    public class WorkTimePausedException : Exception
+    {
+        public WorkTimePausedException(string? message) : base(message)
+        {
+        }
+    }
+
     internal static class InternalTimeService
     {
         public static Func<DateTime> GetCurrentDateTime = () => DateTime.UtcNow;
@@ -86,12 +100,12 @@ namespace Domain.WorkTimeAggregate
         {
             if (Stopped)
             {
-                throw new Exception("WorkTime stopped");
+                throw new WorkTimeStoppedException("WorkTime stopped");
             }
 
             if (Paused)
             {
-                throw new Exception("WorkTime paused");
+                throw new WorkTimePausedException("WorkTime paused");
             }
         }
 
@@ -157,26 +171,38 @@ namespace Domain.WorkTimeAggregate
             Paused = false;
         }
 
-        internal void AddMouseAction(MouseKeyboardEvent mkEvent)
+        internal void IntAddMouseAction(MouseKeyboardEvent mkEvent)
         {
             CheckIsStarted();
-            CheckNotStopped();
-            CheckNotInterrupted();
 
             var ev = new MouseAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
             _mouseActionEvents.Add(ev);
             AddEvent(ev);
         }
 
-        internal void AddKeyboardAction(MouseKeyboardEvent mkEvent)
+        internal void IntAddKeyboardAction(MouseKeyboardEvent mkEvent)
         {
             CheckIsStarted();
-            CheckNotStopped();
-            CheckNotInterrupted();
 
             var ev = new KeyboardAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
             _keyboardActionEvents.Add(ev);
             AddEvent(ev);
+        }
+
+        internal void AddMouseAction(MouseKeyboardEvent mkEvent)
+        {
+            CheckNotStopped();
+            CheckNotInterrupted();
+
+            IntAddMouseAction(mkEvent);
+        }
+
+        internal void AddKeyboardAction(MouseKeyboardEvent mkEvent)
+        {
+            CheckNotStopped();
+            CheckNotInterrupted();
+
+            IntAddKeyboardAction(mkEvent);
         }
 
         internal void ClearEvents()
@@ -203,18 +229,13 @@ namespace Domain.WorkTimeAggregate
             AddEvent(ev);
         }
 
-        internal void AddUserWatchingScreen(DateTime startDate, string executable)
+        internal void AddUserWatchingScreen(DateTime startDate, long timeMs, string executable)
         {
             CheckIsStarted();
             CheckNotStopped();
             CheckNotInterrupted();
 
-            var end = InternalTimeService.GetCurrentDateTime();
-            if (end <= startDate)
-            {
-                throw new Exception();
-            }
-            var ev = new UserWatchingScreen(AggregateId, startDate, end, (long)(end - startDate).TotalMilliseconds, executable);
+            var ev = new UserWatchingScreen(AggregateId, startDate, timeMs, executable);
             _userWatchingScreenEvents.Add(ev);
             AddEvent(ev);
         }

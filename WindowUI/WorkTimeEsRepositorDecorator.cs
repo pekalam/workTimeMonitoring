@@ -1,18 +1,19 @@
-﻿using Domain.Repositories;
+﻿using System;
+using System.Collections.Generic;
+using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
-using System;
-using System.Collections.Generic;
+using WMAlghorithm.Services;
 
-namespace WindowUI.RepoProxy
+namespace WindowUI
 {
     internal class WorkTimeEsRepositorDecorator : IWorkTimeEsRepository
     {
         private readonly IWorkTimeEsRepository _repository;
-        private readonly WorkTimeModuleService _moduleService;
+        private readonly AlgorithmService _moduleService;
 
-        public WorkTimeEsRepositorDecorator(IWorkTimeEsRepository repository, WorkTimeModuleService moduleService)
+        public WorkTimeEsRepositorDecorator(IWorkTimeEsRepository repository, AlgorithmService moduleService)
         {
             _repository = repository;
             _moduleService = moduleService;

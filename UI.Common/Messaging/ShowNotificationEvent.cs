@@ -11,4 +11,6 @@ namespace UI.Common
     }
 
     public class LoadNotificationsModuleEvent : PubSubEvent { }
+
+    public class HideNotificationsEvent : PubSubEvent { }
 }

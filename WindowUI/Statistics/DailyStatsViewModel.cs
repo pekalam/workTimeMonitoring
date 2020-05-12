@@ -4,6 +4,7 @@ using Prism.Regions;
 using System;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Input;
 
 namespace WindowUI.Statistics
 {
@@ -15,8 +16,24 @@ namespace WindowUI.Statistics
         private bool _showAll = true;
         private Visibility _showAllVisibility;
         private SeriesPickerViewModel _seriesPickerViewModel = new SeriesPickerViewModel();
+        private ICommand? _refresh;
+        private IDailyStatsViewController? _controller;
 
-        public IDailyStatsViewController? Controller { get; set; }
+        public IDailyStatsViewController? Controller
+        {
+            get => _controller;
+            set
+            {
+                _controller = value;
+                Refresh = value?.Refresh;
+            }
+        }
+
+        public ICommand? Refresh
+        {
+            get => _refresh;
+            set => SetProperty(ref _refresh, value);
+        }
 
         public DateTime SelectedDate
         {

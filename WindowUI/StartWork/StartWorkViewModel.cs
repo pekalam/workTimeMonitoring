@@ -6,7 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows.Input;
 using System.Windows.Threading;
+using Prism;
 
 namespace WindowUI.StartWork
 {
@@ -20,6 +22,7 @@ namespace WindowUI.StartWork
         private readonly DispatcherTimer _timer = new DispatcherTimer();
         private TimeSpan _timerDate;
         private bool _isPaused;
+        private bool _startCanExec;
 
         public StartWorkViewModel(StartWorkViewController controller)
         {
@@ -33,14 +36,18 @@ namespace WindowUI.StartWork
 
         private void TimerOnTick(object? sender, EventArgs e)
         {
-            TimerDate = TimerDate.Subtract(TimeSpan.FromSeconds(1));
+            TimerDate = EndDate.Value.Subtract(DateTime.Now);
         }
 
         public DelegateCommand StartWork { get; set; }
         public DelegateCommand StopWork { get; }
         public DelegateCommand TogglePauseWork { get; }
 
-        public bool StartCanExec => !HasErrors;
+        public bool StartCanExec
+        {
+            get => _startCanExec;
+            set => SetProperty(ref _startCanExec, value);
+        }
 
         public bool AutoStart
         {
@@ -64,7 +71,6 @@ namespace WindowUI.StartWork
                 if (value)
                 {
                     SetTimerDate(EndDate.Value);
-                    StartTimer();
                 }
             }
         }
@@ -79,10 +85,6 @@ namespace WindowUI.StartWork
             {
                 TimerDate = endDate.Subtract(DateTime.Now);
             }
-        }
-
-        private void StartTimer()
-        {
             _timer.Start();
         }
 
@@ -93,7 +95,7 @@ namespace WindowUI.StartWork
             {
                 var endHad = EndHasError;
                 SetProperty(ref _startDate, value);
-                StartWork.RaiseCanExecuteChanged();
+                StartCanExec = !HasErrors;
                 if (endHad && !EndHasError)
                 {
                     RaisePropertyChanged(nameof(EndDate));
@@ -108,7 +110,7 @@ namespace WindowUI.StartWork
             {
                 var startHad = StartHasError;
                 SetProperty(ref _endDate, value);
-                StartWork.RaiseCanExecuteChanged();
+                StartCanExec = !HasErrors;
                 if (startHad && !StartHasError)
                 {
                     RaisePropertyChanged(nameof(StartDate));
@@ -130,6 +132,7 @@ namespace WindowUI.StartWork
                 {
                     Started = false;
                     _timer.Stop();
+                    _controller.OnTimerStopped();
                 }
             }
         }
@@ -175,5 +178,13 @@ namespace WindowUI.StartWork
         public bool HasErrors => StartHasError || EndHasError;
 
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+
+        public void Validate()
+        {
+            StartDate = StartDate;
+            EndDate = EndDate;
+            //RaisePropertyChanged(nameof(StartDate));
+            //RaisePropertyChanged(nameof(EndDate));
+        }
     }
 }

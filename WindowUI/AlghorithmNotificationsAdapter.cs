@@ -1,38 +1,43 @@
-﻿using Prism.Events;
+﻿using System;
+using System.Net.Mime;
+using System.Windows;
+using Domain.WorkTimeAggregate;
+using Prism.Events;
 using UI.Common;
 using UI.Common.Notifications;
-using WMAlghorithm.StateMachine;
+using WindowUI.Messaging;
+using WMAlghorithm.Services;
 
 namespace WindowUI
 {
-    internal class MonitorAlghorithmNotifications
+
+    internal class AlghorithmNotificationsAdapter : IAlghorithmNotificationsPort
     {
-        private readonly WMonitorAlghorithm _alghorithm;
         private readonly IEventAggregator _ea;
 
         private int _state3Error;
         private int _state2Error;
 
-        public MonitorAlghorithmNotifications(WMonitorAlghorithm alghorithm, IEventAggregator ea)
+        public AlghorithmNotificationsAdapter(IEventAggregator ea)
         {
-            _alghorithm = alghorithm;
             _ea = ea;
-            _alghorithm.State3Result += AlghorithmOnState3Result;
-            _alghorithm.State2Result += AlghorithmOnState2Result;
-            _alghorithm.AlgorithmStopped += OnAlgorithmStopped;
         }
 
-        private void OnAlgorithmStopped()
+        public void OnAlgorithmStopped()
         {
-            _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
+            if (WindowModuleStartupService.ShellWindow.Visibility == Visibility.Visible)
             {
-                Title = "Monitoring stopped",
-                Msg = "",
-                Scenario = NotificationScenario.Information
-            });
+                _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
+                {
+                    Title = "Monitoring stopped",
+                    Msg = "",
+                    Scenario = NotificationScenario.Information
+                });
+            }
+
         }
 
-        private void AlghorithmOnState2Result((bool faceDetected, bool faceRecognized) args)
+        public void AlghorithmOnState2Result((bool faceDetected, bool faceRecognized) args)
         {
             _state2Error += !args.faceDetected || !args.faceRecognized ? 1 : 0;
 
@@ -43,7 +48,7 @@ namespace WindowUI
                     _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                     {
                         Title = "Face recognized",
-                        Msg = "Continue Your work",
+                        Msg = "Continue your work",
                         Scenario = NotificationScenario.Information,
                     });
                 }
@@ -56,14 +61,14 @@ namespace WindowUI
             {
                 _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                 {
-                    Title = !args.faceRecognized ? "Cannot recognize face" : "Cannot detect face",
+                    Title = args.faceDetected ? "Cannot recognize face" : "Cannot detect face",
                     Msg = "Look at front of screen",
                     Scenario = NotificationScenario.Warning,
                 });
             }
         }
 
-        private void AlghorithmOnState3Result((bool faceDetected, bool faceRecognized) args)
+        public void AlghorithmOnState3Result((bool faceDetected, bool faceRecognized) args)
         {
             _state3Error += !args.faceDetected || !args.faceRecognized ? 1 : 0;
 
@@ -75,7 +80,7 @@ namespace WindowUI
                     _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                     {
                         Title = "Face recognized",
-                        Msg = "Continue Your work",
+                        Msg = "Continue your work",
                         Scenario = NotificationScenario.Information,
                     });
                 }
@@ -89,20 +94,22 @@ namespace WindowUI
             {
                 _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                 {
-                    Title = !args.faceRecognized ? "Cannot recognize face" : "Cannot detect face",
+                    Title = args.faceDetected ? "Cannot recognize face" : "Cannot detect face",
                     Msg = "Look at front of screen",
                     Scenario = NotificationScenario.WarningTrigger,
+                    Length = TimeSpan.FromSeconds(20)
                 });
             }
         }
 
         public void Reset()
         {
-            _state2Error = 0;
+            _state2Error = _state3Error = 0;
         }
 
-        public void OnRestored()
+        public void OnRestored(WorkTime workTime)
         {
+            _ea.GetEvent<MonitoringRestored>().Publish(workTime);
             _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
             {
                 Title = "Continuing stopped monitoring",

@@ -10,12 +10,17 @@ namespace WMAlghorithm
 {
     public interface ICaptureService
     {
+        bool IsCapturing { get; }
         Mat CaptureSingleFrame();
         IAsyncEnumerable<Mat> CaptureFrames(CancellationToken ct);
     }
 
     public class CaptureService : ICaptureService
     {
+        private static bool _isCapturing;
+
+        public bool IsCapturing => _isCapturing;
+
         private void ValidateMat(Mat mat)
         {
             if (mat.Empty() || mat.Width <= 0 || mat.Height <= 0)
@@ -38,6 +43,7 @@ namespace WMAlghorithm
 
         public async IAsyncEnumerable<Mat> CaptureFrames([EnumeratorCancellation] CancellationToken ct)
         {
+            _isCapturing = true;
             VideoCapture cap = new VideoCapture(0);
             
             while (!ct.IsCancellationRequested)
@@ -60,6 +66,7 @@ namespace WMAlghorithm
             }
 
             cap.Release();
+            _isCapturing = false;
         }
     }
 }

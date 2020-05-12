@@ -1,17 +1,17 @@
-﻿using OpenCvSharp;
-using Prism.Mvvm;
-using Prism.Regions;
-using System;
+﻿using System;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using OpenCvSharp;
+using Prism.Mvvm;
+using Prism.Regions;
 
-namespace WindowUI.FaceInitialization
+namespace WindowUI.ProfileInit
 {
-    public class FaceInitializationViewModel : BindableBase, INavigationAware
+    public class ProfileInitViewModel : BindableBase, INavigationAware
     {
         private int _progress;
-        private IFaceInitializationController _controller;
+        private IProfileInitController _controller;
 
         public event Action<BitmapSource> OnFrameChanged;
         public event Action<Rect> OnFaceDetected;
@@ -35,7 +35,7 @@ namespace WindowUI.FaceInitialization
         private bool _leftArrowVisible;
         private bool _rightArrowVisible;
 
-        public FaceInitializationViewModel(IFaceInitializationController controller)
+        public ProfileInitViewModel(IProfileInitController controller)
         {
             _controller = controller;
             StepInfoContinueClick = _controller.StepInfoContinueClick;

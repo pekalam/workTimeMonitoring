@@ -8,9 +8,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
+using Prism.Commands;
 using Unity;
-using WindowUI.RepoProxy;
 
 namespace WindowUI.Statistics
 {
@@ -75,6 +76,7 @@ namespace WindowUI.Statistics
     public interface IOverallStatsController
     {
         void Init(OverallStatsViewModel vm);
+        ICommand Refresh { get; }
     }
 
     public class OverallStatsController : IOverallStatsController
@@ -91,7 +93,10 @@ namespace WindowUI.Statistics
         {
             _repository = repository;
             _authenticationService = authenticationService;
+            Refresh = new DelegateCommand(UpdateChart);
         }
+
+        public ICommand Refresh { get; }
 
         private void SetupDateSlider()
         {
@@ -246,6 +251,10 @@ namespace WindowUI.Statistics
                 case nameof(OverallStatsViewModel.SelectedChartType):
                     _vm.ShowAllVisibility = _vm.SelectedChartType == OverallStatsChartTypes.Applications ? Visibility.Visible : Visibility.Hidden;
                     UpdateChart();
+                    if (_vm.SelectedChartType == OverallStatsChartTypes.SingleApplication && _vm.Executables.Count > 0)
+                    {
+                        _vm.SelectedExecutable = _vm.Executables[0];
+                    }
                     break;
                 case nameof(OverallStatsViewModel.SelectedExecutable):
                     UpdateChart();
@@ -273,5 +282,6 @@ namespace WindowUI.Statistics
                 _vm.IsShowingStats = false;
             }
         }
+
     }
 }

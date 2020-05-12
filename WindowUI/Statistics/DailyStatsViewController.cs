@@ -5,14 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows.Input;
+using Prism.Commands;
 using Unity;
-using WindowUI.RepoProxy;
 
 namespace WindowUI.Statistics
 {
     public interface IDailyStatsViewController
     {
         void Init(DailyStatsViewModel vm);
+        ICommand Refresh { get; }
     }
 
     public class DailyStatsViewController : IDailyStatsViewController
@@ -25,6 +27,7 @@ namespace WindowUI.Statistics
         {
             _repository = repository;
             _authenticationService = authenticationService;
+            Refresh = new DelegateCommand(UpdateChart);
         }
 
         public void Init(DailyStatsViewModel vm)
@@ -34,6 +37,8 @@ namespace WindowUI.Statistics
             _vm.PropertyChanged += VmOnPropertyChanged;
             _vm.SeriesPickerViewModel.PropertyChanged += (a, b) => UpdateChart();
         }
+
+        public ICommand Refresh { get; }
 
         public void UpdateChart()
         {

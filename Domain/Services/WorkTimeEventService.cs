@@ -38,13 +38,15 @@ namespace Domain.Services
 
     public class WorkTimeEventService
     {
+        private const string UnknownExecutableName = "Unknown";
         private readonly Dictionary<string, MKEventBuilders> _eventBuilders = new Dictionary<string, MKEventBuilders>();
         private readonly MouseKeyboardEventBuilder _allMouseBuilder;
         private readonly MouseKeyboardEventBuilder _allKeyboardBuilder;
         private readonly IWorkTimeUow _uow;
         private readonly IWorkTimeEsRepository _repository;
         private readonly WorkTimeEventServiceSettings _config;
-        private DateTime? _lastMkEvent;
+        private DateTime? _lastMkEventStart;
+        private DateTime _lastMkEventEnd;
         private DateTime? _recognitionFailureStart;
         private string? _lastActiveWinExecutable;
 
@@ -63,14 +65,6 @@ namespace Domain.Services
 
         public int MouseEventBufferSz { get; set; }
         public int KeyboardEventBufferSz { get; set; }
-
-        public void SetWorkTime(WorkTime workTime)
-        {
-            _lastMkEvent = InternalTimeService.GetCurrentDateTime();
-            //todo current active wind
-            _lastActiveWinExecutable = "Unknown";
-            WorkTime = workTime;
-        }
 
         public WorkTime? WorkTime { get; private set; }
 
@@ -91,6 +85,10 @@ namespace Domain.Services
             }
         }
 
+        public void SetWorkTime(WorkTime workTime)
+        {
+            WorkTime = workTime;
+        }
 
         public void StartRecognitionFailure() => _recognitionFailureStart = InternalTimeService.GetCurrentDateTime();
 
@@ -99,7 +97,7 @@ namespace Domain.Services
         public void ResetLastEvents()
         {
             _lastActiveWinExecutable = null;
-            _lastMkEvent = null;
+            _lastMkEventStart = null;
         }
 
         public void AddRecognitionFailure(bool faceDetected, bool faceRecognized)
@@ -117,28 +115,12 @@ namespace Domain.Services
             _recognitionFailureStart = null;
         }
 
-        private void TryAddUserWatchingScreenEvent(MonitorEvent ev)
-        {
-            if (_lastMkEvent.HasValue)
-            {
-                var diff = InternalTimeService.GetCurrentDateTime() - _lastMkEvent.Value;
-                if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
-                {
-                    Debug.WriteLine("Adding user watching screen");
-                    WorkTime?.AddUserWatchingScreen(_lastMkEvent.Value, _lastActiveWinExecutable);
-                }
-            }
-
-            _lastMkEvent = ev.EventStart;
-            _lastActiveWinExecutable = ev.Executable ?? "Unknown";
-        }
-
         private MKEventBuilders GetEventBuilder(string? executable)
         {
             if (executable == null)
             {
                 Debug.WriteLine("Null executable");
-                executable = "Unknown";
+                executable = UnknownExecutableName;
             }
 
             if (_eventBuilders.TryGetValue(executable, out var builders))
@@ -153,10 +135,42 @@ namespace Domain.Services
             }
         }
 
+        public void SetMkEventStart(DateTime date)
+        {
+            if (!_lastMkEventStart.HasValue)
+            {
+                _lastMkEventStart = date;
+
+                var diff = date - _lastMkEventEnd;
+                if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
+                {
+                    Debug.WriteLine("Adding user watching screen diff: " + diff.TotalMilliseconds);
+                    WorkTime?.AddUserWatchingScreen(_lastMkEventEnd, (long)diff.TotalMilliseconds, _lastActiveWinExecutable);
+                }
+            }
+        }
+
+        public void SetStart()
+        {
+            _lastMkEventEnd = InternalTimeService.GetCurrentDateTime();
+            _lastActiveWinExecutable = UnknownExecutableName;
+        }
+
+        private void SetEventEnd(MonitorEvent ev)
+        {
+            if (_lastMkEventStart.HasValue && ev.EventStart == _lastMkEventStart.Value)
+            {
+                _lastMkEventStart = null;
+            }
+
+            _lastMkEventEnd = ev.EventStart.AddMilliseconds(ev.TotalTimeMs);
+            _lastActiveWinExecutable = ev.Executable ?? UnknownExecutableName;
+        }
+
         public void AddMouseEvent(MonitorEvent ev)
         {
             Debug.Assert(WorkTime != null);
-            TryAddUserWatchingScreenEvent(ev);
+            SetEventEnd(ev);
             if (GetEventBuilder(ev.Executable).MouseEventBuilder.AddEvent(ev, out var created))
             {
                 WorkTime.AddMouseAction(created);
@@ -172,7 +186,7 @@ namespace Domain.Services
         public void AddKeyboardEvent(MonitorEvent ev)
         {
             Debug.Assert(WorkTime != null);
-            TryAddUserWatchingScreenEvent(ev);
+            SetEventEnd(ev);
             if (GetEventBuilder(ev.Executable).KeyboardEventBuilder.AddEvent(ev, out var created))
             {
                 WorkTime.AddKeyboardAction(created);
@@ -185,7 +199,7 @@ namespace Domain.Services
             }
         }
 
-        private void Flush()
+        public void Flush()
         {
             Debug.Assert(WorkTime != null);
             foreach (var builders in _eventBuilders.Values)
@@ -195,12 +209,12 @@ namespace Domain.Services
 
                 if (keyboard != null)
                 {
-                    WorkTime.AddKeyboardAction(keyboard);
+                    WorkTime.IntAddKeyboardAction(keyboard);
                 }
 
                 if (mouse != null)
                 {
-                    WorkTime.AddMouseAction(mouse);
+                    WorkTime.IntAddMouseAction(mouse);
                 }
             }
         }
@@ -255,7 +269,7 @@ namespace Domain.Services
         {
             Debug.Assert(WorkTime != null);
             Debug.WriteLine("Discarding temp changes");
-            _lastMkEvent = null;
+            _lastMkEventStart = null;
             foreach (var builders in _eventBuilders.Values)
             {
                 builders.MouseEventBuilder.Reset();

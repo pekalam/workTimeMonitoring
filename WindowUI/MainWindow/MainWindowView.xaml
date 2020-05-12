@@ -148,5 +148,7 @@
         <Grid Grid.Column="1" Background="White">
             <ContentControl HorizontalAlignment="Stretch" prism:RegionManager.RegionName="{x:Static mainWindow:MainWindowRegions.MainContentRegion}" Margin="5,0,5,5" />
         </Grid>
+        <Grid Grid.Column="1" Background="White" Visibility="{Binding LoadingVisibility}">
+        </Grid>
     </Grid>
 </UserControl>

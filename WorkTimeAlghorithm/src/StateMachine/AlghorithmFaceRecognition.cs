@@ -76,7 +76,7 @@ namespace WMAlghorithm.StateMachine
                 foreach (var mat in excluded)
                 {
                     faceRecognized = _faceRecognition.CompareFaces(
-                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Front).Img, null, frame, null);
+                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Front).Img, null, mat, null);
 
                     if (faceRecognized)
                     {
@@ -84,7 +84,7 @@ namespace WMAlghorithm.StateMachine
                     }
 
                     faceRecognized = _faceRecognition.CompareFaces(
-                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Right).Img, null, frame, null);
+                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Right).Img, null, mat, null);
 
                     if (faceRecognized)
                     {
@@ -92,7 +92,7 @@ namespace WMAlghorithm.StateMachine
                     }
 
                     faceRecognized = _faceRecognition.CompareFaces(
-                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Left).Img, null, frame, null);
+                        ph.First(i => i.HorizontalHeadRotation == HeadRotation.Left).Img, null, mat, null);
                 }
 
                 faceDetected = true;

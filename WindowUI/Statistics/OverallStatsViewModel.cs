@@ -4,6 +4,7 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Input;
 
 namespace WindowUI.Statistics
 {
@@ -34,9 +35,24 @@ namespace WindowUI.Statistics
         private bool _showAll;
         private Visibility _showAllVisibility;
         private SeriesPickerViewModel _seriesPickerViewModel = new SeriesPickerViewModel();
+        private IOverallStatsController _controller;
+        private ICommand _refresh;
 
+        public IOverallStatsController Controller
+        {
+            get => _controller;
+            set
+            {
+                _controller = value;
+                Refresh = value.Refresh;
+            }
+        }
 
-        public IOverallStatsController Controller { get; set; }
+        public ICommand Refresh
+        {
+            get => _refresh;
+            set => SetProperty(ref _refresh, value);
+        }
 
         public SeriesCollection ApplicationsSeries
         {

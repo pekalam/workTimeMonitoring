@@ -2,22 +2,22 @@
 using System.Windows.Media.Imaging;
 using Rect = OpenCvSharp.Rect;
 
-namespace WindowUI.FaceInitialization
+namespace WindowUI.ProfileInit
 {
     /// <summary>
-    /// Interaction logic for FaceInitializationView
+    /// Interaction logic for ProfileInitView
     /// </summary>
-    public partial class FaceInitializationView : UserControl
+    public partial class ProfileInitView : UserControl
     {
         private int orgWidth = 0;
         private int orgHeight = 0;
 
-        public FaceInitializationView()
+        public ProfileInitView()
         {
             InitializeComponent();
 
 
-            var vm = (DataContext as FaceInitializationViewModel);
+            var vm = (DataContext as ProfileInitViewModel);
             vm.OnFrameChanged += OnFrameChanged;
             vm.OnFaceDetected += OnFaceDetected;
             vm.OnNoFaceDetected += OnNoFaceDetected;

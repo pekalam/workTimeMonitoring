@@ -1,23 +1,23 @@
-﻿using Domain.User;
-using OpenCvSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.User;
+using OpenCvSharp;
 
-namespace WMAlghorithm
+namespace WMAlghorithm.Services
 {
-    public class InitFaceProgressArgs
+    public class ProfileInitProgressArgs
     {
         public Mat? Frame { get; set; }
         public Rect? FaceRect { get; set; }
-        public InitFaceProgress ProgressState { get; set; }
+        public ProfileInitProgress ProgressState { get; set; }
         public int ProgressPercentage { get; set; }
         public bool Stoped { get; set; }
     }
 
-    public enum InitFaceProgress
+    public enum ProfileInitProgress
     {
         Progress,
         FaceNotDetected,
@@ -30,7 +30,7 @@ namespace WMAlghorithm
         PhotosTaken,
     }
 
-    public class InitFaceService
+    public class ProfileInitService
     {
         public const int MinImages = 3;
 
@@ -42,7 +42,7 @@ namespace WMAlghorithm
         private double _progress;
         private User _user;
 
-        public InitFaceService(ITestImageRepository testImageRepository, IDnFaceRecognition dnFaceRecognition,
+        public ProfileInitService(ITestImageRepository testImageRepository, IDnFaceRecognition dnFaceRecognition,
             IHcFaceDetection faceDetection,
             IHeadPositionService headPositionService)
         {
@@ -52,13 +52,13 @@ namespace WMAlghorithm
             _headPositionService = headPositionService;
         }
 
-        public IProgress<InitFaceProgressArgs>? InitFaceProgress { get; set; }
+        public IProgress<ProfileInitProgressArgs>? InitFaceProgress { get; set; }
 
         private void ReportInitFaceProgress(Mat? img, Rect? face = null,
-            InitFaceProgress state = WMAlghorithm.InitFaceProgress.Progress,
+            ProfileInitProgress state = Services.ProfileInitProgress.Progress,
             bool stopped = false)
         {
-            InitFaceProgress?.Report(new InitFaceProgressArgs()
+            InitFaceProgress?.Report(new ProfileInitProgressArgs()
             {
                 ProgressState = state,
                 FaceRect = face,
@@ -132,7 +132,7 @@ namespace WMAlghorithm
                     faceRects = _faceDetection.DetectFrontalFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, state: WMAlghorithm.InitFaceProgress.FaceNotDetected);
+                        ReportInitFaceProgress(frame, state: Services.ProfileInitProgress.FaceNotDetected);
                         continue;
                     }
 
@@ -141,7 +141,7 @@ namespace WMAlghorithm
                     if (vRot != HeadRotation.Front || hRot != HeadRotation.Front)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            state: WMAlghorithm.InitFaceProgress.FaceNotStraight);
+                            state: Services.ProfileInitProgress.FaceNotStraight);
                         continue;
                     }
                 }
@@ -150,7 +150,7 @@ namespace WMAlghorithm
                     faceRects = _faceDetection.DetectFrontalThenProfileFaces(frame);
                     if (faceRects.Length != 1)
                     {
-                        ReportInitFaceProgress(frame, state: WMAlghorithm.InitFaceProgress.ProfileFaceNotDetected);
+                        ReportInitFaceProgress(frame, state: Services.ProfileInitProgress.ProfileFaceNotDetected);
 
                         continue;
                     }
@@ -162,7 +162,7 @@ namespace WMAlghorithm
                     if (hRot != hTarget || vRot == vInvalid)
                     {
                         ReportInitFaceProgress(frame, face: faceRects.First(),
-                            state: hTarget == HeadRotation.Left ? WMAlghorithm.InitFaceProgress.FaceNotTurnedLeft : WMAlghorithm.InitFaceProgress.FaceNotTurnedRight);
+                            state: hTarget == HeadRotation.Left ? Services.ProfileInitProgress.FaceNotTurnedLeft : Services.ProfileInitProgress.FaceNotTurnedRight);
                         continue;
                     }
                 }
@@ -193,7 +193,7 @@ namespace WMAlghorithm
                 if (testImages.Count == MinImages)
                 {
                     interrupted = false;
-                    ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.PhotosTaken);
+                    ReportInitFaceProgress(null, state: Services.ProfileInitProgress.PhotosTaken);
                     break;
                 }
             }
@@ -201,7 +201,7 @@ namespace WMAlghorithm
             if (interrupted)
             {
                 Reset();
-                ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.CancelledByUser, stopped: true);
+                ReportInitFaceProgress(null, state: Services.ProfileInitProgress.CancelledByUser, stopped: true);
                 return Task.CompletedTask;
             }
 
@@ -214,7 +214,7 @@ namespace WMAlghorithm
                 if (t.Exception != null)
                 {
                     _progress = 0;
-                    ReportInitFaceProgress(null, state: WMAlghorithm.InitFaceProgress.FaceRecognitionError,
+                    ReportInitFaceProgress(null, state: Services.ProfileInitProgress.FaceRecognitionError,
                         stopped: true);
                     Reset();
                 }

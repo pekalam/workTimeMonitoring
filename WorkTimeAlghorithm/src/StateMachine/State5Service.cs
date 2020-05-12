@@ -6,42 +6,44 @@ using System.Threading.Tasks;
 
 namespace WMAlghorithm.StateMachine
 {
-    internal class State5Service
+    public partial class WMonitorAlghorithm
     {
-        private CancellationTokenSource _cts;
-
-        private int GetRandomDelay()
+        internal class State5Service
         {
-            var rnd = new Random();
-            return rnd.Next(50_000, 120_000);
-        }
+            private CancellationTokenSource _cts;
 
-        public bool InProgress { get; private set; }
-        public void Cancel() => _cts?.Cancel();
-
-        public async Task Enter(WMonitorAlghorithm.State state,
-            StateMachine<WMonitorAlghorithm.Triggers, WMonitorAlghorithm.States> sm)
-        {
-            InProgress = true;
-            _cts = new CancellationTokenSource();
-            state.CanCapureMouseKeyboard = true;
-
-            int timeMs = GetRandomDelay();
-
-            Log.Logger.Debug($"Starting state 5 delay {timeMs}");
-            try
+            private int GetRandomDelay()
             {
-                await Task.Delay(timeMs, _cts.Token);
+                var rnd = new Random();
+                return rnd.Next(50_000, 120_000);
             }
-            catch (TaskCanceledException)
+
+            public bool InProgress { get; private set; }
+            public void Cancel() => _cts?.Cancel();
+
+            public async Task Enter(WMonitorAlghorithm alghorithm, StateMachine<Triggers, States> sm)
             {
+                InProgress = true;
+                _cts = new CancellationTokenSource();
+                alghorithm._canCapureMouseKeyboard = true;
+
+                int timeMs = GetRandomDelay();
+
+                Log.Logger.Debug($"Starting state 5 delay {timeMs}");
+                try
+                {
+                    await Task.Delay(timeMs, _cts.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                    InProgress = false;
+                    return;
+                }
+
                 InProgress = false;
-                return;
+                Log.Logger.Debug("State 5 face compare timeout");
+                sm.Next(WMonitorAlghorithm.Triggers.FaceNotRecog);
             }
-
-            InProgress = false;
-            Log.Logger.Debug("State 5 face compare timeout");
-            sm.Next(WMonitorAlghorithm.Triggers.FaceNotRecog);
         }
     }
 }
