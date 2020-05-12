@@ -1,7 +1,6 @@
 ﻿using Domain.Repositories;
 using Domain.User;
 using Unity;
-using WindowUI.RepoProxy;
 
 namespace WindowUI.Statistics
 {

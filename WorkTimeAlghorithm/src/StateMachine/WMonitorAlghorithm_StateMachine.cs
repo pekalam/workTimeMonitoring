@@ -15,17 +15,10 @@ namespace WMAlghorithm.StateMachine
             s1,s2,s3,s5,MANUAL, PAUSE_STATE, STOP_STATE
         }
 
-        internal class State
-        {
-            public bool CanCapureMouseKeyboard;
-        }
-
         private StateMachine<Triggers, States> _sm;
 #if DEV_MODE
         private StateMachineVis<Triggers, States> _vis;
 #endif
-        private readonly State _state = new State();
-
         private void BuildStateMachine()
         {
             _sm = new StateMachineBuilder<Triggers, States>()
@@ -35,7 +28,7 @@ namespace WMAlghorithm.StateMachine
                 .End()
 
                 .CreateState(States.s2)
-                .EnterAsync((t) => _state2.Enter(_state, _sm, _workTime, this))
+                .EnterAsync((t) => _state2.Enter(_sm, _workTime, this))
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.FaceNotRecog, States.s3)
                 .Transition(Triggers.NoFace, States.s3)
@@ -45,7 +38,7 @@ namespace WMAlghorithm.StateMachine
 
                 .CreateState(States.s3)
                 .Ignoring()
-                .EnterAsync(t => _state3.Enter(_state, _sm, _workTime, this))
+                .EnterAsync(t => _state3.Enter( _sm, _workTime, this))
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.ManualTrigger, States.MANUAL)
                 .End()
@@ -53,7 +46,7 @@ namespace WMAlghorithm.StateMachine
                 .CreateState(States.s5)
                 .Ignoring()
                 .Transition(Triggers.FaceNotRecog, States.s2)
-                .EnterAsync(t => _state5.Enter(_state, _sm))
+                .EnterAsync(t => _state5.Enter(this, _sm))
                 .End()
 
                 .CreateState(States.MANUAL)
@@ -61,13 +54,29 @@ namespace WMAlghorithm.StateMachine
                 .Enter(_ => { })
                 .Transition(Triggers.FaceRecog, States.s5)
                 .Transition(Triggers.ManualCancel, States.s3)
+                .Exit(t =>
+                {
+                    if (t == Triggers.FaceRecog)
+                    {
+                        ManualRecogSuccess?.Invoke();
+                    }
+                })
                 .End()
 
                 .HoldingGlobState(Triggers.Pause, _ => Log.Logger.Debug("PAUSE"), 
                     States.PAUSE_STATE, Triggers.Resume)
 
 
-                .HoldingGlobState(Triggers.Stop, _ => Log.Logger.Debug("STOP"), States.STOP_STATE, Triggers.Stop)
+                .HoldingGlobState(Triggers.Stop, _ =>
+                {
+                    _canCapureMouseKeyboard = false;
+                    _mouseKeyboardMonitor.KeyboardMoveStart -= OnMkStart;
+                    _mouseKeyboardMonitor.MouseMoveStart -= OnMkStart;
+                    _keyboardSub.Dispose();
+                    _mouseSub.Dispose();
+                    _mouseKeyboardMonitor.Stop();
+                    AlgorithmStopped?.Invoke();
+                }, States.STOP_STATE, Triggers.Stop)
 
                 .Build(States.s1);
         }

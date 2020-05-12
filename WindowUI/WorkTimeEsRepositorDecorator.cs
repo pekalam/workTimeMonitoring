@@ -1,12 +1,12 @@
-﻿using Domain.Repositories;
+﻿using System;
+using System.Collections.Generic;
+using Domain.Repositories;
 using Domain.User;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
-using System;
-using System.Collections.Generic;
 using WMAlghorithm.Services;
 
-namespace WindowUI.RepoProxy
+namespace WindowUI
 {
     internal class WorkTimeEsRepositorDecorator : IWorkTimeEsRepository
     {

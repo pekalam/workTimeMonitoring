@@ -60,4 +60,6 @@ namespace UI.Common.Messaging
     {
 
     }
+
+    public class WindowRestored : UiEvent<MetroWindow> { }
 }

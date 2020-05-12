@@ -3,14 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:prism="http://prismlibrary.com/"             
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:faceInitialization="clr-namespace:WindowUI.FaceInitialization"
              xmlns:c="clr-namespace:CalcBinding;assembly=CalcBinding"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-             mc:Ignorable="d" x:Class="WindowUI.FaceInitialization.FaceInitializationView"
+             mc:Ignorable="d" x:Class="WindowUI.ProfileInit.ProfileInitView"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:profileInit="clr-namespace:WindowUI.ProfileInit"
              prism:ViewModelLocator.AutoWireViewModel="True" d:DesignWidth="1200" d:DesignHeight="800">
     <UserControl.Resources>
-        <faceInitialization:PercentageTextConverter x:Key="percentageTextConverter"/>
+        <profileInit:PercentageTextConverter x:Key="percentageTextConverter"/>
         <Style x:Key="AccentCircleButtonStyle"
                BasedOn="{StaticResource MahApps.Styles.Button.Circle}"
                TargetType="{x:Type ButtonBase}">
@@ -34,7 +34,7 @@
                         <TextBlock Margin="0,5,0,0" Text="Press to start" FontSize="14"/>
                     </StackPanel>
                 </Button>
-                <faceInitialization:LoadingRect Visibility="{c:Binding FaceDetected, FalseToVisibility=Hidden}" Panel.ZIndex="99" x:Name="loadingRect" Canvas.Left="120" Canvas.Top="200" Width="200" Height="200" Thickness="4" Progress="{Binding Progress}"/>
+                <profileInit:LoadingRect Visibility="{c:Binding FaceDetected, FalseToVisibility=Hidden}" Panel.ZIndex="99" x:Name="loadingRect" Canvas.Left="120" Canvas.Top="200" Width="200" Height="200" Thickness="4" Progress="{Binding Progress}"/>
 
             </Canvas>
             <Grid>

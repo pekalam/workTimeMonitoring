@@ -1,4 +1,7 @@
-﻿using Domain.WorkTimeAggregate;
+﻿using System;
+using System.Net.Mime;
+using System.Windows;
+using Domain.WorkTimeAggregate;
 using Prism.Events;
 using UI.Common;
 using UI.Common.Notifications;
@@ -22,12 +25,16 @@ namespace WindowUI
 
         public void OnAlgorithmStopped()
         {
-            _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
+            if (WindowModuleStartupService.ShellWindow.Visibility == Visibility.Visible)
             {
-                Title = "Monitoring stopped",
-                Msg = "",
-                Scenario = NotificationScenario.Information
-            });
+                _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
+                {
+                    Title = "Monitoring stopped",
+                    Msg = "",
+                    Scenario = NotificationScenario.Information
+                });
+            }
+
         }
 
         public void AlghorithmOnState2Result((bool faceDetected, bool faceRecognized) args)
@@ -41,7 +48,7 @@ namespace WindowUI
                     _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                     {
                         Title = "Face recognized",
-                        Msg = "Continue Your work",
+                        Msg = "Continue your work",
                         Scenario = NotificationScenario.Information,
                     });
                 }
@@ -54,7 +61,7 @@ namespace WindowUI
             {
                 _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                 {
-                    Title = !args.faceRecognized ? "Cannot recognize face" : "Cannot detect face",
+                    Title = args.faceDetected ? "Cannot recognize face" : "Cannot detect face",
                     Msg = "Look at front of screen",
                     Scenario = NotificationScenario.Warning,
                 });
@@ -73,7 +80,7 @@ namespace WindowUI
                     _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                     {
                         Title = "Face recognized",
-                        Msg = "Continue Your work",
+                        Msg = "Continue your work",
                         Scenario = NotificationScenario.Information,
                     });
                 }
@@ -87,16 +94,17 @@ namespace WindowUI
             {
                 _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()
                 {
-                    Title = !args.faceRecognized ? "Cannot recognize face" : "Cannot detect face",
+                    Title = args.faceDetected ? "Cannot recognize face" : "Cannot detect face",
                     Msg = "Look at front of screen",
                     Scenario = NotificationScenario.WarningTrigger,
+                    Length = TimeSpan.FromSeconds(20)
                 });
             }
         }
 
         public void Reset()
         {
-            _state2Error = 0;
+            _state2Error = _state3Error = 0;
         }
 
         public void OnRestored(WorkTime workTime)

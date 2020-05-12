@@ -15,13 +15,13 @@ using Xunit;
 
 namespace WorkTimeAlghorithm.UnitTests
 {
-    public class InitFaceServiceTests
+    public class ProfileInitServiceTests
     {
         private ImageTestUtils _testUtils = new ImageTestUtils();
         private AutoMocker _mocker = new AutoMocker();
         private readonly Mat _nonEmptyFrame = Mat.Zeros(600, 800, MatType.CV_32FC3);
 
-        public InitFaceServiceTests()
+        public ProfileInitServiceTests()
         {
             TestImageBuilderFactory.Create = () => new TTestImageBuilder();
         }
@@ -62,76 +62,76 @@ namespace WorkTimeAlghorithm.UnitTests
             return mHeadPositionService;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> FaceNotDetected()
+        private Expression<Func<ProfileInitProgressArgs, bool>> FaceNotDetected()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotDetected &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.FaceNotDetected &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> ProfileFaceNotDetected()
+        private Expression<Func<ProfileInitProgressArgs, bool>> ProfileFaceNotDetected()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.ProfileFaceNotDetected &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.ProfileFaceNotDetected &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> PhotosTaken()
+        private Expression<Func<ProfileInitProgressArgs, bool>> PhotosTaken()
         {
             return (args) => args.Frame == null &&
                              args.ProgressPercentage > 0 &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.PhotosTaken &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.PhotosTaken &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> InitFaceProgress()
+        private Expression<Func<ProfileInitProgressArgs, bool>> InitFaceProgress()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
                              args.ProgressPercentage > 0 &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.Progress &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.Progress &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> InitFaceProgress(Mat frame, int progress)
+        private Expression<Func<ProfileInitProgressArgs, bool>> InitFaceProgress(Mat frame, int progress)
         {
             return (args) => args.Frame == frame &&
                              args.ProgressPercentage == progress &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.Progress &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.Progress &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> FaceNotStraight()
+        private Expression<Func<ProfileInitProgressArgs, bool>> FaceNotStraight()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotStraight &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.FaceNotStraight &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> FaceNotLeft()
+        private Expression<Func<ProfileInitProgressArgs, bool>> FaceNotLeft()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotTurnedLeft &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.FaceNotTurnedLeft &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> FaceNotRight()
+        private Expression<Func<ProfileInitProgressArgs, bool>> FaceNotRight()
         {
             return (args) => args.Frame == _nonEmptyFrame &&
-                             args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceNotTurnedRight &&
+                             args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.FaceNotTurnedRight &&
                              !args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> CancelledByUser()
+        private Expression<Func<ProfileInitProgressArgs, bool>> CancelledByUser()
         {
             return (args) =>
-                args.Frame == null && args.ProgressState == WMAlghorithm.Services.InitFaceProgress.CancelledByUser
+                args.Frame == null && args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.CancelledByUser
                                    && args.Stoped;
         }
 
-        private Expression<Func<InitFaceProgressArgs, bool>> FaceRecognitionError()
+        private Expression<Func<ProfileInitProgressArgs, bool>> FaceRecognitionError()
         {
             return (args) =>
-                args.Frame == null && args.ProgressState == WMAlghorithm.Services.InitFaceProgress.FaceRecognitionError
+                args.Frame == null && args.ProgressState == WMAlghorithm.Services.ProfileInitProgress.FaceRecognitionError
                                    && args.Stoped;
         }
 
@@ -139,7 +139,7 @@ namespace WorkTimeAlghorithm.UnitTests
         [Fact]
         public async Task InitFace_when_faces_not_captured_and_interrupted_returns_cancelled_progress()
         {
-            var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
+            var mProgress = new Mock<IProgress<ProfileInitProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
             var mCaptureService = SetupCaptureService();
@@ -158,7 +158,7 @@ namespace WorkTimeAlghorithm.UnitTests
             mCaptureService.Setup(f => f.CaptureFrames(cts.Token)).Returns(InterruptedCapture);
             mTestImageRepository.Setup(f => f.Count(It.IsAny<User>())).Returns(0);
 
-            var initTestService = _mocker.CreateInstance<InitFaceService>();
+            var initTestService = _mocker.CreateInstance<ProfileInitService>();
             initTestService.InitFaceProgress = mProgress.Object;
 
             cts.Cancel();
@@ -175,7 +175,7 @@ namespace WorkTimeAlghorithm.UnitTests
         [Fact]
         public async Task InitFace_when_dn_compare_faces_throws_returns_error_progress()
         {
-            var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
+            var mProgress = new Mock<IProgress<ProfileInitProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
             var mCaptureService = SetupCaptureService();
@@ -188,7 +188,7 @@ namespace WorkTimeAlghorithm.UnitTests
                 .Setup(f => f.CompareFaces(It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>(), It.IsAny<Mat>(), It.IsAny<FaceEncodingData?>()))
                 .Returns(false);
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
-            var initTestService = _mocker.CreateInstance<InitFaceService>();
+            var initTestService = _mocker.CreateInstance<ProfileInitService>();
             initTestService.InitFaceProgress = mProgress.Object;
             await await initTestService.InitFace(UserTestUtils.CreateTestUser(1)
                 ,mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
@@ -204,7 +204,7 @@ namespace WorkTimeAlghorithm.UnitTests
         [Fact]
         public async Task InitFace_when_gen_encoding_throws_returns_error_progress()
         {
-            var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
+            var mProgress = new Mock<IProgress<ProfileInitProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
             var mCaptureService = SetupCaptureService();
@@ -212,7 +212,7 @@ namespace WorkTimeAlghorithm.UnitTests
             var mHeadPositionService = SetupHeadPositionService();
 
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
-            var initTestService = _mocker.CreateInstance<InitFaceService>();
+            var initTestService = _mocker.CreateInstance<ProfileInitService>();
             initTestService.InitFaceProgress = mProgress.Object;
             await await initTestService.InitFace(UserTestUtils.CreateTestUser(1),
                 mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
@@ -229,7 +229,7 @@ namespace WorkTimeAlghorithm.UnitTests
         [Fact]
         public async Task InitFace_when_invalid_frames_returns_valid_progress_states()
         {
-            var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
+            var mProgress = new Mock<IProgress<ProfileInitProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
             var mCaptureService = SetupCaptureService();
@@ -307,7 +307,7 @@ namespace WorkTimeAlghorithm.UnitTests
                 .Returns(true);
 
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(InvalidCapture);
-            var initTestService = _mocker.CreateInstance<InitFaceService>();
+            var initTestService = _mocker.CreateInstance<ProfileInitService>();
             initTestService.InitFaceProgress = mProgress.Object;
             await await initTestService.InitFace(
                 UserTestUtils.CreateTestUser(1), mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
@@ -316,7 +316,7 @@ namespace WorkTimeAlghorithm.UnitTests
             mTestImageRepository.Verify(f => f.Clear(It.IsAny<User>()), Times.Exactly(2));
         }
 
-        private IAsyncEnumerable<Mat> SuccessfulFaceCapturingScenario(Mock<IHcFaceDetection> mHcFaceDetection, Mock<IProgress<InitFaceProgressArgs>> mProgress, Mock<IHeadPositionService> mHeadPositionService)
+        private IAsyncEnumerable<Mat> SuccessfulFaceCapturingScenario(Mock<IHcFaceDetection> mHcFaceDetection, Mock<IProgress<ProfileInitProgressArgs>> mProgress, Mock<IHeadPositionService> mHeadPositionService)
         {
             async IAsyncEnumerable<Mat> SuccessfulCapture()
             {
@@ -348,7 +348,7 @@ namespace WorkTimeAlghorithm.UnitTests
         [Fact]
         public async Task InitFace_when_faces_captured_returns_valid_reports()
         {
-            var mProgress = new Mock<IProgress<InitFaceProgressArgs>>();
+            var mProgress = new Mock<IProgress<ProfileInitProgressArgs>>();
             var mHcFaceDetection = SetupHcFaceDetection();
             var mTestImageRepository = SetupTestImageRepository();
             var mCaptureService = SetupCaptureService();
@@ -364,7 +364,7 @@ namespace WorkTimeAlghorithm.UnitTests
             mCaptureService.Setup(f => f.CaptureFrames(It.IsAny<CancellationToken>())).Returns(SuccessfulFaceCapturingScenario(mHcFaceDetection, mProgress, mHeadPositionService));
             mTestImageRepository.Setup(f => f.Count(It.IsAny<User>())).Returns(0);
 
-            var initTestService = _mocker.CreateInstance<InitFaceService>();
+            var initTestService = _mocker.CreateInstance<ProfileInitService>();
             initTestService.InitFaceProgress = mProgress.Object;
             await await initTestService.InitFace(UserTestUtils.CreateTestUser(1),mCaptureService.Object.CaptureFrames(CancellationToken.None).GetAsyncEnumerator(),
                 CancellationToken.None);

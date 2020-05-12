@@ -22,10 +22,11 @@ namespace WindowUI.StartWork
         {
             var date = (TimeSpan) value;
 
+            string d = date.Days > 0 ? date.Days + " d " : "";
             string h = date.Hours < 10 ? "0" +date.Hours : date.Hours.ToString();
             string m = date.Minutes < 10 ? "0" + date.Minutes : date.Minutes.ToString();
             string s = date.Seconds < 10 ? "0" + date.Seconds: date.Seconds.ToString();
-            return $"{h}:{m}:{s}";
+            return $"{d}{h}:{m}:{s}";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

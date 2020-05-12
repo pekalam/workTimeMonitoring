@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Windows.Input;
 using Prism.Commands;
 using Unity;
-using WindowUI.RepoProxy;
 
 namespace WindowUI.Statistics
 {

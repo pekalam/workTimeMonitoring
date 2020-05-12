@@ -109,7 +109,7 @@ namespace WMAlghorithm.Services
                         _progress.Report(new ManualRecogProgress() { State = ManualRecogState.RecogFinished });
                         if (detected && recognized)
                         {
-                            _algService.Alghorithm.SetFaceRecog();
+                            _algService.Alghorithm.SetManualRecogSuccess();
                             _camCts.Cancel();
                         }
                         else if (!recognized)

@@ -32,12 +32,26 @@ namespace WMAlghorithm.StateMachine
             public bool InProgress { get; private set; }
             public void Cancel() => _cts?.Cancel();
 
-            public async Task Enter(State state,
-                StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
+
+            private bool TryAddRecognitionFailure(bool faceDetected, bool faceRecognized)
+            {
+                try
+                {
+                    _workTimeEventService.AddRecognitionFailure(faceDetected, faceRecognized);
+                }
+                catch (WorkTimeStoppedException)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+
+            public async Task Enter(StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
             {
                 InProgress = true;
                 _cts = new CancellationTokenSource();
-                state.CanCapureMouseKeyboard = true;
+                alghorithm._canCapureMouseKeyboard = true;
                 bool faceDetected = false;
                 bool faceRecognized = false;
 
@@ -68,7 +82,12 @@ namespace WMAlghorithm.StateMachine
                     if (!faceRecognized || !faceDetected)
                     {
                         _workTimeEventService.DiscardTempChanges();
-                        _workTimeEventService.AddRecognitionFailure(faceDetected, faceRecognized);
+                        if (!TryAddRecognitionFailure(faceDetected, faceRecognized))
+                        {
+                            InProgress = false;
+                            sm.Next(Triggers.Stop);
+                            return;
+                        }
                     }
                     else
                     {
@@ -79,7 +98,7 @@ namespace WMAlghorithm.StateMachine
                     InProgress = false;
                 }
 
-                sm.Next(WMonitorAlghorithm.Triggers.FaceRecog);
+                sm.Next(Triggers.FaceRecog);
             }
         }
     }

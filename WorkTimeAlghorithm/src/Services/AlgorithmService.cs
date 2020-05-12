@@ -25,9 +25,11 @@ namespace WMAlghorithm.Services
         private readonly WorkTimeRestoreService _restoreService;
         private readonly IWorkTimeEsRepository _repository;
         private readonly IAlghorithmNotificationsPort _alghorithmNotifications;
+        private bool _algStopped = false;
 
         public AlgorithmService(IAuthenticationService authenticationService, WorkTimeBuildService buildService,
-            WMonitorAlghorithm alghorithm, IWorkTimeEsRepository repository, WorkTimeRestoreService restoreService, IAlghorithmNotificationsPort alghorithmNotifications)
+            WMonitorAlghorithm alghorithm, IWorkTimeEsRepository repository, WorkTimeRestoreService restoreService,
+            IAlghorithmNotificationsPort alghorithmNotifications)
         {
             _authenticationService = authenticationService;
             _buildService = buildService;
@@ -36,9 +38,26 @@ namespace WMAlghorithm.Services
             _restoreService = restoreService;
             _alghorithmNotifications = alghorithmNotifications;
 
-            _alghorithm.State3Result += _alghorithmNotifications.AlghorithmOnState3Result;
-            _alghorithm.State2Result += _alghorithmNotifications.AlghorithmOnState2Result;
+            _alghorithm.State3Result += arg =>
+            {
+                _alghorithmNotifications.AlghorithmOnState3Result(arg);
+                if (arg.faceDetected && arg.faceRecognized)
+                {
+                    _alghorithmNotifications.Reset();
+                }
+            };
+            _alghorithm.State2Result += arg =>
+            {
+                _alghorithmNotifications.AlghorithmOnState2Result(arg);
+                if (arg.faceDetected && arg.faceRecognized)
+                {
+                    _alghorithmNotifications.Reset();
+                }
+            };
             _alghorithm.AlgorithmStopped += _alghorithmNotifications.OnAlgorithmStopped;
+            _alghorithm.ManualRecogSuccess += () => _alghorithmNotifications.Reset();
+            _alghorithm.AlgorithmStopped += () => _algStopped = true;
+            _alghorithm.StopInvoked += AlgStopInvoked;
         }
 
         public WorkTime? CurrentWorkTime { get; private set; }
@@ -53,6 +72,7 @@ namespace WMAlghorithm.Services
 
         private void StartAlgorithm(WorkTime workTime)
         {
+            _algStopped = false;
             CurrentWorkTime = workTime;
             _alghorithm.SetWorkTime(workTime);
             _alghorithm.Start();
@@ -73,7 +93,14 @@ namespace WMAlghorithm.Services
         public async Task Stop()
         {
             await _alghorithm.Stop();
-            CurrentWorkTime.Stop();
+        }
+
+        private void AlgStopInvoked()
+        {
+            if (!CurrentWorkTime.Stopped)
+            {
+                CurrentWorkTime.Stop();
+            }
             _alghorithmNotifications.Reset();
             _repository.Save(CurrentWorkTime);
             CurrentWorkTime.MarkPendingEventsAsHandled();
@@ -82,10 +109,9 @@ namespace WMAlghorithm.Services
         public bool TryRestore()
         {
             var user = _authenticationService.User;
-            if (_restoreService.Restore(user, out var restored))
+            if (user != null && _restoreService.Restore(user, out var restored))
             {
                 StartAlgorithm(restored);
-                //_ea.GetEvent<MonitoringRestored>().Publish(this);
                 _alghorithmNotifications.OnRestored(restored);
                 return true;
             }
@@ -93,9 +119,20 @@ namespace WMAlghorithm.Services
             return false;
         }
 
-        public void Shutdown()
+        public async void Shutdown()
         {
-            _restoreService.SetInterrupted(CurrentWorkTime);
+            if (CurrentWorkTime == null)
+            {
+                return;
+            }
+            if (!_algStopped && CurrentWorkTime.Stopped)
+            {
+                await _alghorithm.Stop();
+            }
+            else if(!CurrentWorkTime.Stopped)
+            {
+                _restoreService.SetInterrupted(CurrentWorkTime);
+            }
         }
     }
 }

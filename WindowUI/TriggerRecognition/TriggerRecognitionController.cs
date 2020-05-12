@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using MahApps.Metro.Controls;
 using Prism.Events;
 using Serilog;
 using UI.Common;
@@ -114,6 +115,7 @@ namespace WindowUI.TriggerRecognition
                 {
                     Application.Current.Dispatcher.InvokeAsync(() => WindowModuleStartupService.ShellWindow.Hide());
                 }
+
             }
 
             _ea.GetEvent<HideNotificationsEvent>().Publish();
@@ -134,8 +136,8 @@ namespace WindowUI.TriggerRecognition
                     }
                     catch (CamLockedException e)
                     {
-                        Log.Logger.Debug(e, "TriggerRecog exception");
-                        RestoreWindowState();
+                        Log.Logger.Fatal(e, "TriggerRecog exception");
+                        Application.Current.Invoke(RestoreWindowState);
                         return;
                     }
                     if (!recognized)
@@ -153,15 +155,8 @@ namespace WindowUI.TriggerRecognition
                 }
             });
 
-            await Task.Delay(1000).ContinueWith(_ =>
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    RestoreWindowState();
-                });
-
-            });
-
+            await Task.Delay(1000);
+            RestoreWindowState();
         }
     }
 }

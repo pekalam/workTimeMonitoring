@@ -85,7 +85,7 @@ namespace NotificationsWpf
                             Message = config.Msg,
                             Type = GetNotificationType(config)
                         }
-                    }, expirationTime:TimeSpan.FromHours(38));
+                    }, expirationTime: config.Length);
             }
             else
             {
@@ -94,7 +94,7 @@ namespace NotificationsWpf
                     Title = config.Title,
                     Message = config.Msg,
                     Type = GetNotificationType(config)
-                }, expirationTime: TimeSpan.FromHours(38));
+                }, expirationTime: config.Length);
             }
         }
     }

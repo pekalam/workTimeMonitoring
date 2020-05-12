@@ -60,6 +60,7 @@ namespace Application
         {
             this.Show();
             this.WindowState = WindowState.Normal;
+            ServiceLocator.Current.GetInstance<IEventAggregator>().GetEvent<WindowRestored>().Publish(this);
         }
         
         protected override void OnClosing(CancelEventArgs e)

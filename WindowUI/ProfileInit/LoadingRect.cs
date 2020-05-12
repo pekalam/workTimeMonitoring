@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace WindowUI.FaceInitialization
+namespace WindowUI.ProfileInit
 {
     public class LoadingRect : Image
     {

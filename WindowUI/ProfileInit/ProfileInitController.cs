@@ -1,51 +1,51 @@
-﻿using Domain.User;
-using Prism.Commands;
-using Prism.Regions;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Domain.User;
+using Prism.Commands;
+using Prism.Regions;
 using UI.Common;
 using UI.Common.Extensions;
 using WindowUI.MainWindow;
 using WMAlghorithm;
 using WMAlghorithm.Services;
 
-namespace WindowUI.FaceInitialization
+namespace WindowUI.ProfileInit
 {
-    public interface IFaceInitializationController
+    public interface IProfileInitController
     {
-        Task Init(FaceInitializationViewModel vm);
+        Task Init(ProfileInitViewModel vm);
         ICommand StepInfoContinueClick { get; }
         ICommand StepInfoRetryClick { get; }
         ICommand StartFaceInitCommand { get; }
         ICommand BackCommand { get; }
     }
     //todo time init 3s
-    public class FaceInitializationController : IFaceInitializationController
+    public class ProfileInitController : IProfileInitController
     {
         private ICommand _userPanelNavigation;
-        private FaceInitializationViewModel _vm;
+        private ProfileInitViewModel _vm;
         private readonly ICaptureService _captureService;
         private readonly IHcFaceDetection _faceDetection;
         private readonly ITestImageRepository _testImageRepository;
         private readonly IAuthenticationService _authenticationService;
         private readonly IRegionManager _regionManager;
-        private readonly InitFaceService _initFaceService;
+        private readonly ProfileInitService _profileInitService;
         private bool _startStep;
         private bool _stepCompleted;
         private CancellationTokenSource _camCts;
 
-        public FaceInitializationController(ICaptureService captureService, IHcFaceDetection faceDetection,
-            InitFaceService initFaceService, ITestImageRepository testImageRepository,
+        public ProfileInitController(ICaptureService captureService, IHcFaceDetection faceDetection,
+            ProfileInitService profileInitService, ITestImageRepository testImageRepository,
             IAuthenticationService authenticationService, IRegionManager regionManager)
         {
             _captureService = captureService;
             _faceDetection = faceDetection;
-            _initFaceService = initFaceService;
+            _profileInitService = profileInitService;
             _testImageRepository = testImageRepository;
             _authenticationService = authenticationService;
             _regionManager = regionManager;
@@ -53,7 +53,7 @@ namespace WindowUI.FaceInitialization
             StepInfoRetryClick = new DelegateCommand(StepInfoRetryExecute);
             StartFaceInitCommand = new DelegateCommand(StartFaceInitExecute);
             BackCommand = new DelegateCommand(BackExecute);
-            _initFaceService.InitFaceProgress = new Progress<InitFaceProgressArgs>(OnInitFaceProgress);
+            _profileInitService.InitFaceProgress = new Progress<ProfileInitProgressArgs>(OnInitFaceProgress);
         }
 
         private void BackExecute()
@@ -71,7 +71,7 @@ namespace WindowUI.FaceInitialization
 
         private void StepInfoRetryExecute()
         {
-            _initFaceService.Reset();
+            _profileInitService.Reset();
             _vm.Progress = 0;
             _vm.HidePhotoPreview();
             _vm.HideStepInfo();
@@ -85,7 +85,7 @@ namespace WindowUI.FaceInitialization
             WindowUiModuleCommands.NavigateProfile.RegisterCommand(_userPanelNavigation);
         }
 
-        public async Task Init(FaceInitializationViewModel vm)
+        public async Task Init(ProfileInitViewModel vm)
         {
             _vm = vm;
             _vm.ShowOverlay("Initializing camera...");
@@ -126,14 +126,14 @@ namespace WindowUI.FaceInitialization
                             _vm.StepStarted = true;
                         });
                        
-                        stepEndTask = await _initFaceService.InitFace(_authenticationService.User, camEnumerator,
+                        stepEndTask = await _profileInitService.InitFace(_authenticationService.User, camEnumerator,
                             _camCts.Token);
 
                         _startStep = false;
                     }
                     else
                     {
-                        Application.Current.Dispatcher.Invoke(() => _vm.ShowOverlay("Waiting for face..."));
+                        Application.Current.Dispatcher.Invoke(() => _vm.ShowOverlay(rects.Length > 1 ? "More than 1 face detected" : "Face not detected"));
                     }
                 }
 
@@ -153,7 +153,7 @@ namespace WindowUI.FaceInitialization
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            _vm.ShowOverlay("Waiting for face...");
+                            _vm.ShowOverlay(rects.Length > 1 ? "More than 1 face detected" : "Face not detected");
                             _vm.CallOnNoFaceDetected();
                         });
                         
@@ -167,29 +167,29 @@ namespace WindowUI.FaceInitialization
             }
         }
 
-        private void HandleFaceProgress(InitFaceProgressArgs obj)
+        private void HandleFaceProgress(ProfileInitProgressArgs obj)
         {
             switch (obj.ProgressState)
             {
-                case InitFaceProgress.FaceNotDetected:
+                case ProfileInitProgress.FaceNotDetected:
                     _vm.ShowErrorStepInfo("Face not detected");
                     break;
-                case InitFaceProgress.FaceNotStraight:
-                    _vm.ShowInstructions("Look at front of cam");
+                case ProfileInitProgress.FaceNotStraight:
+                    _vm.ShowInstructions("Look at the front of cam");
                     break;
-                case InitFaceProgress.FaceNotTurnedLeft:
-                    _vm.ShowInstructions("Look in following direction", rightArrow: true);
+                case ProfileInitProgress.FaceNotTurnedLeft:
+                    _vm.ShowInstructions("Look in the following direction", rightArrow: true);
                     break;
-                case InitFaceProgress.FaceNotTurnedRight:
-                    _vm.ShowInstructions("Look in following direction", leftArrow: true);
+                case ProfileInitProgress.FaceNotTurnedRight:
+                    _vm.ShowInstructions("Look in the following direction", leftArrow: true);
                     break;
-                case InitFaceProgress.FaceRecognitionError:
-                    _vm.ShowErrorStepInfo("Invalid face");
+                case ProfileInitProgress.FaceRecognitionError:
+                    _vm.ShowErrorStepInfo("Invalid photos");
                     break;
-                case InitFaceProgress.PhotosTaken:
+                case ProfileInitProgress.PhotosTaken:
                     _vm.HideInstructions();
                     break;
-                case InitFaceProgress.Progress:
+                case ProfileInitProgress.Progress:
                     _vm.HideStepInfo();
                     if (obj.ProgressPercentage == 100)
                     {
@@ -204,7 +204,7 @@ namespace WindowUI.FaceInitialization
             }
         }
 
-        private void OnInitFaceProgress(InitFaceProgressArgs obj)
+        private void OnInitFaceProgress(ProfileInitProgressArgs obj)
         {
             Debug.WriteLine(obj.ProgressState);
             Debug.WriteLine(obj.ProgressPercentage);

@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Prism.Events;
 using UI.Common;
-using WindowUI.FaceInitialization;
+using WindowUI.ProfileInit;
 using WMAlghorithm;
 using WMAlghorithm.Services;
 
@@ -43,28 +43,26 @@ namespace WindowUI.MainWindow
             //todo
             if (!_algorithmService.TryRestore())
             {
-                Dispatcher.CurrentDispatcher.InvokeAsync(() =>
+                if (ShouldStartInitFaceStep())
                 {
-                    if (ShouldStartInitFaceStep())
+                    if (ShowInitFaceStepDialog())
                     {
-                        if (ShowInitFaceStepDialog())
-                        {
-                            _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
-                        }
-                        else
-                        {
-                            Application.Current.Shutdown();
-                        }
+                        _regionManager.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(ProfileInitView));
                     }
-                });
+                    else
+                    {
+                        Application.Current.Shutdown();
+                    }
+                }
             }
 
+            _vm.LoadingVisibility = Visibility.Collapsed;
         }
 
         private bool ShouldStartInitFaceStep()
         {
             var user = _authenticationService.User;
-            if (_testImageRepository.GetReferenceImages(user).Count >= InitFaceService.MinImages)
+            if (_testImageRepository.GetReferenceImages(user).Count >= ProfileInitService.MinImages)
             {
                 return false;
             }

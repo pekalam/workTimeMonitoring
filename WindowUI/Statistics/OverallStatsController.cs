@@ -12,7 +12,6 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Prism.Commands;
 using Unity;
-using WindowUI.RepoProxy;
 
 namespace WindowUI.Statistics
 {
@@ -252,6 +251,10 @@ namespace WindowUI.Statistics
                 case nameof(OverallStatsViewModel.SelectedChartType):
                     _vm.ShowAllVisibility = _vm.SelectedChartType == OverallStatsChartTypes.Applications ? Visibility.Visible : Visibility.Hidden;
                     UpdateChart();
+                    if (_vm.SelectedChartType == OverallStatsChartTypes.SingleApplication && _vm.Executables.Count > 0)
+                    {
+                        _vm.SelectedExecutable = _vm.Executables[0];
+                    }
                     break;
                 case nameof(OverallStatsViewModel.SelectedExecutable):
                     UpdateChart();

@@ -4,7 +4,7 @@ using Prism.Regions;
 using System.Linq;
 using UI.Common;
 using UI.Common.Extensions;
-using WindowUI.FaceInitialization;
+using WindowUI.ProfileInit;
 using WMAlghorithm;
 using WMAlghorithm.Services;
 
@@ -26,7 +26,7 @@ namespace WindowUI.Profile
             _moduleService = moduleService;
             RestartInit = new DelegateCommand(() =>
             {
-                _rm.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(FaceInitializationView));
+                _rm.Regions[ShellRegions.MainRegion].RequestNavigate(nameof(ProfileInitView));
             }, () => !_moduleService.Alghorithm.Started);
 
 

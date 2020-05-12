@@ -8,11 +8,10 @@ using Prism.Unity;
 using UI.Common;
 using UI.Common.Messaging;
 using Unity;
-using WindowUI.FaceInitialization;
 using WindowUI.LoginWindow;
 using WindowUI.MainWindow;
 using WindowUI.Profile;
-using WindowUI.RepoProxy;
+using WindowUI.ProfileInit;
 using WindowUI.Settings;
 using WindowUI.SplashScreen;
 using WindowUI.StartWork;
@@ -55,7 +54,7 @@ namespace WindowUI
         {
             containerRegistry.RegisterForNavigation<LoginView>();
             containerRegistry.RegisterForNavigation<MainWindowView>();
-            containerRegistry.RegisterForNavigation<FaceInitializationView>();
+            containerRegistry.RegisterForNavigation<ProfileInitView>();
             containerRegistry.RegisterForNavigation<StartWorkView>();
             containerRegistry.RegisterForNavigation<StatisticsView>();
             containerRegistry.RegisterForNavigation<ProfileView>();
@@ -70,7 +69,7 @@ namespace WindowUI
                 .RegisterType<IDailyStatsViewController, DailyStatsViewController>();
 
             containerRegistry.GetContainer()
-                .RegisterType<IFaceInitializationController, FaceInitializationController>();
+                .RegisterType<IProfileInitController, ProfileInitController>();
 
             containerRegistry.GetContainer()
                 .RegisterType<IMainViewController, MainViewController>();

@@ -1,6 +1,9 @@
 ﻿using Prism.Commands;
 using Prism.Events;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UI.Common.Messaging;
 using WindowUI.Messaging;
 using WMAlghorithm.Services;
 
@@ -9,24 +12,29 @@ namespace WindowUI.StartWork
     public interface IStartWorkViewController
     {
         DelegateCommand StartWork { get; }
-        public DelegateCommand StopWork { get; }
-        public DelegateCommand TogglePauseWork { get; }
+        DelegateCommand StopWork { get; }
+        DelegateCommand TogglePauseWork { get; }
+        void OnTimerStopped();
     }
 
-    public class StartWorkViewController : IStartWorkViewController
+    public class StartWorkViewController : IStartWorkViewController, IDisposable
     {
         private StartWorkViewModel _vm;
+        private SubscriptionToken _monRestoredToken;
+        private SubscriptionToken _windowRestoredToken;
         private readonly IEventAggregator _ea;
         private readonly AlgorithmService _algorithmService;
         private bool _stopRequested = false;
         private bool _pauseRequested = false;
+
 
         public StartWorkViewController(AlgorithmService algorithmService, IEventAggregator ea)
         {
             _algorithmService = algorithmService;
             _ea = ea;
             StartWork = new DelegateCommand(OnStartWorkExecute);
-            StopWork = new DelegateCommand(OnStopWorkExecute, () => !_pauseRequested && !_stopRequested && (!_vm?.IsPaused ?? true));
+            StopWork = new DelegateCommand(OnStopWorkExecute,
+                () => !_pauseRequested && !_stopRequested && (!_vm?.IsPaused ?? true));
             TogglePauseWork = new DelegateCommand(TogglePauseExecute, () => !_pauseRequested && !_stopRequested);
         }
 
@@ -48,6 +56,7 @@ namespace WindowUI.StartWork
             {
                 await _algorithmService.Pause();
             }
+
             _pauseRequested = false;
             RaiseCanExecChanged();
         }
@@ -58,6 +67,7 @@ namespace WindowUI.StartWork
             {
                 _algorithmService.Resume();
             }
+
             _stopRequested = true;
             RaiseCanExecChanged();
             await _algorithmService.Stop();
@@ -69,6 +79,7 @@ namespace WindowUI.StartWork
         {
             if (_vm.HasErrors)
             {
+                _vm.Validate();
                 return;
             }
 
@@ -86,6 +97,7 @@ namespace WindowUI.StartWork
             {
                 start = _vm.StartDate?.ToUniversalTime();
             }
+
             DateTime? end = _vm.EndDate?.ToUniversalTime();
 
             _algorithmService.StartNew(start, end.Value);
@@ -94,7 +106,7 @@ namespace WindowUI.StartWork
 
         private void SetAlgorithmStarted()
         {
-            _vm.EndDate = _algorithmService.CurrentWorkTime.EndDate.ToLocalTime();
+            _vm.EndDate = _algorithmService.CurrentWorkTime?.EndDate.ToLocalTime();
             _vm.Started = true;
         }
 
@@ -102,6 +114,24 @@ namespace WindowUI.StartWork
         {
             _vm = vm;
             _ea.GetEvent<MonitoringRestored>().Subscribe(_ => SetAlgorithmStarted(), true);
+            _ea.GetEvent<WindowRestored>().Subscribe(_ =>
+            {
+                if (_algorithmService.CurrentWorkTime != null && _vm.TimerDate.TotalMilliseconds > 0)
+                {
+                    _vm.SetTimerDate(_algorithmService.CurrentWorkTime.EndDate.ToLocalTime());
+                }
+            }, true);
+        }
+
+        public async void OnTimerStopped()
+        {
+            await _algorithmService.Stop();
+        }
+
+        public void Dispose()
+        {
+            _ea.GetEvent<MonitoringRestored>().Unsubscribe(_monRestoredToken);
+            _ea.GetEvent<WindowRestored>().Unsubscribe(_windowRestoredToken);
         }
 
         public DelegateCommand StartWork { get; private set; }
