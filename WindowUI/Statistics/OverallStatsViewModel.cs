@@ -29,7 +29,7 @@ namespace WindowUI.Statistics
         private List<WorkTimeViewModel> _monitorings = new List<WorkTimeViewModel>();
         private DateTime _selectedMinDate = DateTime.Now;
         private DateTime _selectedMaxDate = DateTime.Now;
-        private List<string> _executables;
+        private List<string> _executables = new List<string>();
         private string _selectedExecutable;
         private bool _isShowingStats = true;
         private bool _showAll;
