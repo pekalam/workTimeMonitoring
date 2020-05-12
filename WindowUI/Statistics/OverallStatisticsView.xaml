@@ -74,6 +74,11 @@
                     <local:ApplicationChartLegend Margin="0,50,0,0" />
                 </wpf:PieChart.ChartLegend>
             </wpf:PieChart>
+            <Grid Grid.Column="1" Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999"
+                  Background="White">
+                <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Grid>
         </Grid>
 
 
@@ -82,10 +87,18 @@
 
         <!--Screen 2-->
 
-        <wpf:PieChart Grid.Row="1"
-                      Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.Summary', FalseToVisibility=Collapsed}"
-                      Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
-                      DataTooltip="{x:Null}" Series="{Binding SummarySeries}" />
+        <Grid Grid.Row="1"
+              Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.Summary', FalseToVisibility=Collapsed}">
+            <wpf:PieChart 
+                Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
+                DataTooltip="{x:Null}" Series="{Binding SummarySeries}" />
+            <Grid Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999"
+                  Background="White">
+                <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Grid>
+        </Grid>
+
 
 
         <!---->
@@ -93,10 +106,18 @@
 
         <!--Screen 3-->
 
-        <wpf:PieChart Grid.Row="1"
-                      Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.SingleApplication', FalseToVisibility=Collapsed}"
-                      Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
-                      DataTooltip="{x:Null}" Series="{Binding SingleApplicationSeries}" />
+        <Grid Grid.Row="1"
+              Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.SingleApplication', FalseToVisibility=Collapsed}">
+            <wpf:PieChart 
+                Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
+                DataTooltip="{x:Null}" Series="{Binding SingleApplicationSeries}" />
+            <Grid Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999"
+                  Background="White">
+                <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Grid>
+        </Grid>
+
 
 
         <!---->
@@ -104,35 +125,39 @@
 
         <!--Screen 4-->
 
-        <DataGrid Grid.Row="1"
-                  Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.Monitorings', FalseToVisibility=Collapsed}"
-                  ItemsSource="{Binding Monitorings}" AutoGenerateColumns="False">
-            <DataGrid.Columns>
-                <DataGridTextColumn IsReadOnly="True" Header="Start" Binding="{Binding Start}" />
-                <DataGridTextColumn IsReadOnly="True" Header="End" Binding="{Binding End}" />
-                <DataGridCheckBoxColumn IsReadOnly="True" Header="In progress" Binding="{Binding InProgress}" />
-            </DataGrid.Columns>
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding InProgress}" Value="True">
-                            <Setter Property="Background" Value="Yellow" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </DataGrid.CellStyle>
-        </DataGrid>
+        <Grid Grid.Row="1"
+              Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.Monitorings', FalseToVisibility=Collapsed}">
+
+            <DataGrid ItemsSource="{Binding Monitorings}" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn IsReadOnly="True" Header="Start" Binding="{Binding Start}" />
+                    <DataGridTextColumn IsReadOnly="True" Header="End" Binding="{Binding End}" />
+                    <DataGridCheckBoxColumn IsReadOnly="True" Header="In progress" Binding="{Binding InProgress}" />
+                </DataGrid.Columns>
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding InProgress}" Value="True">
+                                <Setter Property="Background" Value="Yellow" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.CellStyle>
+            </DataGrid>
+            <Grid Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999"
+                  Background="White">
+                <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center"
+                           HorizontalAlignment="Center" />
+            </Grid>
+        </Grid>
+
 
         <!---->
 
 
         <!--Date slider-->
 
-        <Grid Grid.Row="1" Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999"
-              Background="White">
-            <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center"
-                       HorizontalAlignment="Center" />
-        </Grid>
+
         <Grid Grid.Row="2" Margin="0,10,0,10" VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
