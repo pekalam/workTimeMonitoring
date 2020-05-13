@@ -49,9 +49,22 @@ namespace WMAlghorithm.StateMachine
                                _sm.CurrentState.Name != States.PAUSE_STATE &&
                                _sm.CurrentState.Name != States.STOP_STATE;
 
-        
-        private void OnMouseStart(DateTime d) => _workTimeEventService.SetMkEventStart(d, true);
-        private void OnKbdStart(DateTime d) => _workTimeEventService.SetMkEventStart(d, false);
+
+        private void OnMouseStart(DateTime d)
+        {
+            if (_canCapureMouseKeyboard && !_workTime.Paused && !_workTime.Stopped)
+            {
+                _workTimeEventService.SetMkEventStart(d, true);
+            }
+        }
+
+        private void OnKbdStart(DateTime d)
+        {
+            if (_canCapureMouseKeyboard && !_workTime.Paused && !_workTime.Stopped)
+            {
+                _workTimeEventService.SetMkEventStart(d, false);
+            }
+        }
 
 
         private void InitSubscriptions()

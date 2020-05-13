@@ -46,7 +46,7 @@ namespace Domain.Services
         private readonly IWorkTimeEsRepository _repository;
         private readonly WorkTimeEventServiceSettings _config;
         private DateTime? _lastMkEventStart;
-        private DateTime _lastMkEventEnd;
+        private DateTime? _lastMkEventEnd;
         private DateTime? _recognitionFailureStart;
         private string? _lastActiveWinExecutable;
         private bool? _lastMouseOrKey;
@@ -99,6 +99,7 @@ namespace Domain.Services
             _lastActiveWinExecutable = null;
             _lastMkEventStart = null;
             _lastMouseOrKey = null;
+            _lastMkEventEnd = null;
         }
 
         public void AddRecognitionFailure(bool faceDetected, bool faceRecognized)
@@ -143,12 +144,16 @@ namespace Domain.Services
                 _lastMkEventStart = date;
                 _lastMouseOrKey = isMouseEvent;
 
-                var diff = date - _lastMkEventEnd;
-                if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
+                if (_lastMkEventEnd.HasValue)
                 {
-                    Debug.WriteLine("Adding user watching screen diff: " + diff.TotalMilliseconds);
-                    WorkTime?.AddUserWatchingScreen(_lastMkEventEnd, (long)diff.TotalMilliseconds, _lastActiveWinExecutable);
+                    var diff = date - _lastMkEventEnd.Value;
+                    if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
+                    {
+                        Debug.WriteLine("Adding user watching screen diff: " + diff.TotalMilliseconds);
+                        WorkTime?.AddUserWatchingScreen(_lastMkEventEnd.Value, (long)diff.TotalMilliseconds, _lastActiveWinExecutable);
+                    }
                 }
+                
             }
         }
 
@@ -272,7 +277,7 @@ namespace Domain.Services
         {
             Debug.Assert(WorkTime != null);
             Debug.WriteLine("Discarding temp changes");
-            _lastMkEventStart = null;
+            ResetLastEvents();
             foreach (var builders in _eventBuilders.Values)
             {
                 builders.MouseEventBuilder.Reset();
@@ -286,6 +291,7 @@ namespace Domain.Services
         {
             Debug.Assert(WorkTime != null);
             Debug.WriteLine("Commiting temp changes");
+            ResetLastEvents();
             _uow.Commit();
             _uow.Unregister(WorkTime);
         }

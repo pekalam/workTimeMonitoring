@@ -61,7 +61,7 @@ namespace Infrastructure.Repositories
             using var conn = CreateConnection(false);
             using var trans = conn.BeginTransaction();
 
-            foreach (var ev in workTime.PendingEvents)
+            foreach (var ev in workTime.PendingEvents.ToList())
             {
                 var dbEvent = _mapper.Map<DbEvent>(ev);
                 conn.Execute(sql, dbEvent, trans);
