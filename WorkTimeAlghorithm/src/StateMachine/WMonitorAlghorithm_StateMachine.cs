@@ -70,8 +70,8 @@ namespace WMAlghorithm.StateMachine
                 .HoldingGlobState(Triggers.Stop, _ =>
                 {
                     _canCapureMouseKeyboard = false;
-                    _mouseKeyboardMonitor.KeyboardMoveStart -= OnMkStart;
-                    _mouseKeyboardMonitor.MouseMoveStart -= OnMkStart;
+                    _mouseKeyboardMonitor.KeyboardMoveStart -= OnKbdStart;
+                    _mouseKeyboardMonitor.MouseMoveStart -= OnMouseStart;
                     _keyboardSub.Dispose();
                     _mouseSub.Dispose();
                     _mouseKeyboardMonitor.Stop();
