@@ -50,12 +50,14 @@ namespace WMAlghorithm.StateMachine
                                _sm.CurrentState.Name != States.STOP_STATE;
 
         
-        private void OnMkStart(DateTime d) => _workTimeEventService.SetMkEventStart(d);
+        private void OnMouseStart(DateTime d) => _workTimeEventService.SetMkEventStart(d, true);
+        private void OnKbdStart(DateTime d) => _workTimeEventService.SetMkEventStart(d, false);
+
 
         private void InitSubscriptions()
         {
-            _mouseKeyboardMonitor.KeyboardMoveStart += OnMkStart;
-            _mouseKeyboardMonitor.MouseMoveStart += OnMkStart;
+            _mouseKeyboardMonitor.KeyboardMoveStart += OnKbdStart;
+            _mouseKeyboardMonitor.MouseMoveStart += OnMouseStart;
             _keyboardSub = _mouseKeyboardMonitor.KeyboardAction.Subscribe(OnKeyboardAction);
             _mouseSub = _mouseKeyboardMonitor.MouseMoveAction.Subscribe(OnMouseAction);
         }

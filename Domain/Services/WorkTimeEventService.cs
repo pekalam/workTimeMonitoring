@@ -49,7 +49,7 @@ namespace Domain.Services
         private DateTime _lastMkEventEnd;
         private DateTime? _recognitionFailureStart;
         private string? _lastActiveWinExecutable;
-
+        private bool? _lastMouseOrKey;
 
         public WorkTimeEventService(IWorkTimeUow uow, IWorkTimeEsRepository repository, IConfigurationService configurationService)
         {
@@ -98,6 +98,7 @@ namespace Domain.Services
         {
             _lastActiveWinExecutable = null;
             _lastMkEventStart = null;
+            _lastMouseOrKey = null;
         }
 
         public void AddRecognitionFailure(bool faceDetected, bool faceRecognized)
@@ -135,11 +136,12 @@ namespace Domain.Services
             }
         }
 
-        public void SetMkEventStart(DateTime date)
+        public void SetMkEventStart(DateTime date, bool isMouseEvent)
         {
-            if (!_lastMkEventStart.HasValue)
+            if (!_lastMkEventStart.HasValue || (_lastMouseOrKey.HasValue && _lastMouseOrKey == isMouseEvent))
             {
                 _lastMkEventStart = date;
+                _lastMouseOrKey = isMouseEvent;
 
                 var diff = date - _lastMkEventEnd;
                 if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
@@ -161,6 +163,7 @@ namespace Domain.Services
             if (_lastMkEventStart.HasValue && ev.EventStart == _lastMkEventStart.Value)
             {
                 _lastMkEventStart = null;
+                _lastMouseOrKey = null;
             }
 
             _lastMkEventEnd = ev.EventStart.AddMilliseconds(ev.TotalTimeMs);
