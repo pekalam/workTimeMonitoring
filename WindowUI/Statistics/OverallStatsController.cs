@@ -179,11 +179,16 @@ namespace WindowUI.Statistics
             _vm.IsShowingStats = selected.Count > 0;
         }
 
+        private void LoadItems()
+        {
+            _workTimes = _repository.FindAll(_authenticationService.User, null, null);
+        }
+
         public void UpdateChart()
         {
             Debug.Assert(_authenticationService.User != null);
             //todo
-            _workTimes = _repository.FindAll(_authenticationService.User, null, null);
+            LoadItems();
             var selected = _workTimes.Where(w => _vm.SelectedMinDate <= w.DateCreated && _vm.SelectedMaxDate >= w.EndDate).ToList();
 
             if (selected.Count == 0)
@@ -269,18 +274,33 @@ namespace WindowUI.Statistics
         {
             _vm = vm;
 
-            _vm.PropertyChanged += VmOnPropertyChanged;
-            _vm.SeriesPickerViewModel.PropertyChanged += (a,b) => UpdateChart();
-            UpdateChart();
+            _vm.SeriesPickerViewModel.PropertyChanged += (sender, args) =>
+            {
+                if (_vm.IsDirty)
+                {
+                    UpdateChart();
+                }
+            };
+
+            LoadItems();
 
             if (_workTimes.Count > 0)
             {
                 SetupDateSlider();
+                UpdateChart();
             }
             else
             {
                 _vm.IsShowingStats = false;
             }
+
+            _vm.PropertyChanged += (s,e) =>
+            {
+                if (_vm.IsDirty)
+                {
+                    VmOnPropertyChanged(s, e);
+                }
+            };
         }
 
     }

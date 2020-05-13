@@ -63,6 +63,10 @@ namespace WindowUI.Statistics
 
         private void VmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (!_vm.IsDirty)
+            {
+                return;
+            }
             switch (e.PropertyName)
             {
                 case nameof(DailyStatsViewModel.SelectedDate):

@@ -8,7 +8,8 @@ namespace WindowUI.Statistics
     {
         private readonly StatisticsViewController _controller;
 
-        public event Action<int> TabChanged; 
+        public event Action<int> TabChanged;
+        private int _selectedInd;
 
         public StatisticsViewModel(StatisticsViewController controller, OverallStatsViewModel overallStatsViewModel, DailyStatsViewModel dailyStatsViewModel)
         {
@@ -23,6 +24,7 @@ namespace WindowUI.Statistics
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            TabChanged = delegate{};
             _controller.Init(this);
             OverallStatsViewModel.OnNavigatedTo(navigationContext);
             DailyStatsViewModel.OnNavigatedTo(navigationContext);
@@ -39,7 +41,11 @@ namespace WindowUI.Statistics
 
         public void RaiseTabChanged(int index)
         {
-            TabChanged?.Invoke(index);
+            if (index != _selectedInd)
+            {
+                TabChanged?.Invoke(index);
+                _selectedInd = index;
+            }
         }
     }
 }
