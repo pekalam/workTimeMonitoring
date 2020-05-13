@@ -25,6 +25,7 @@ namespace WindowUI
 
         public void OnAlgorithmStopped()
         {
+            _ea.GetEvent<HideNotificationsEvent>().Publish();
             if (WindowModuleStartupService.ShellWindow.Visibility == Visibility.Visible)
             {
                 _ea.GetEvent<ShowNotificationEvent>().Publish(new NotificationConfig()

@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Net.Http.Headers;
+using System.Windows.Controls;
 
 namespace WindowUI.Statistics
 {

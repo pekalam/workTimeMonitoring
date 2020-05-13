@@ -113,14 +113,14 @@ namespace WindowUI.StartWork
         public void Init(StartWorkViewModel vm)
         {
             _vm = vm;
-            _ea.GetEvent<MonitoringRestored>().Subscribe(_ => SetAlgorithmStarted(), true);
+            _ea.GetEvent<MonitoringRestored>().Subscribe(_ => SetAlgorithmStarted());
             _ea.GetEvent<WindowRestored>().Subscribe(_ =>
             {
                 if (_algorithmService.CurrentWorkTime != null && _vm.TimerDate.TotalMilliseconds > 0)
                 {
                     _vm.SetTimerDate(_algorithmService.CurrentWorkTime.EndDate.ToLocalTime());
                 }
-            }, true);
+            });
         }
 
         public async void OnTimerStopped()

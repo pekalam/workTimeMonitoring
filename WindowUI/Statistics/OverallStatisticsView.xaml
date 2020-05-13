@@ -11,7 +11,8 @@
              xmlns:designer="clr-namespace:WindowUI.__Designer"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800"
-             d:DataContext="{Binding Source={d:DesignInstance Type=designer:OverallViewModelDesign, IsDesignTimeCreatable=True}}">
+             d:DataContext="{Binding Source={d:DesignInstance Type=designer:OverallViewModelDesign, IsDesignTimeCreatable=True}}"
+             Loaded="UserControl_Loaded">
     <UserControl.Resources>
         <local:DateTimeRangeConverter x:Key="dateTimeRangeConverter" />
     </UserControl.Resources>

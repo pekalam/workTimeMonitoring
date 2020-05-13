@@ -63,7 +63,7 @@
                     <TextBlock HorizontalAlignment="Left" Margin="20,0,0,0" Grid.Column="1" Text="{Binding TimerDate, Converter={StaticResource timerConverter}}" FontSize="16"/>
                 </Grid>
                 <StackPanel Margin="0,30,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Name="StopBtn" Content="Stop" Command="{Binding StopWork}" FontSize="16" Width="60">
+                    <Button Name="StopBtn" Command="{Binding StopWork}" FontSize="16" Width="80">
                         <Button.Style>
                             <Style BasedOn="{StaticResource MahApps.Styles.Button.Flat}" TargetType="{x:Type Button}">
                                 <Setter Property="Foreground" Value="White"/>
@@ -83,11 +83,98 @@
                             </Style>
 
                         </Button.Style>
+                        <Grid>
+                            <TextBlock Text="Stop">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=Button,Mode=FindAncestor}}" Value="False">
+                                                <Setter Property="Visibility" Value="Hidden"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <mah:ProgressRing Height="5" Width="5" Foreground="White">
+                                <mah:ProgressRing.Style>
+                                    <Style TargetType="{x:Type mah:ProgressRing}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=Button,Mode=FindAncestor}}" Value="True">
+                                                <Setter Property="IsActive" Value="False"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=Button,Mode=FindAncestor}}" Value="False">
+                                                <Setter Property="IsActive" Value="True"/>
+                                            </DataTrigger>
+
+
+                                            <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                                <Setter Property="IsActive" Value="False"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </mah:ProgressRing.Style>
+                            </mah:ProgressRing>
+                        </Grid>
                     </Button>
-                    <ToggleButton Name="PauseBtn" Content="Pause" FontSize="16" Width="60" Margin="20,0,0,0" 
+                    <ToggleButton x:Name="PauseBtn" FontSize="16" Width="80" Margin="20,0,0,0" 
                                   Style="{DynamicResource MahApps.Styles.ToggleButton.Flat}"
                                   IsChecked="{Binding IsPaused}" 
-                                  Command="{Binding TogglePauseWork}"/>
+                                  Command="{Binding TogglePauseWork}">
+                        <Grid>
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=IsPressed, RelativeSource={RelativeSource AncestorType=ToggleButton,Mode=FindAncestor}}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+
+
+                                            <DataTrigger Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=ToggleButton,Mode=FindAncestor}}" Value="False">
+                                                <Setter Property="Visibility" Value="Hidden"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding Path=IsPaused}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Setter Property="Text" Value="Pause"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding Path=IsPaused}" Value="True">
+                                                <Setter Property="Text" Value="Resume"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <mah:ProgressRing Height="5" Width="5" Foreground="White">
+                                <mah:ProgressRing.Style>
+                                    <Style TargetType="{x:Type mah:ProgressRing}">
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=ToggleButton,Mode=FindAncestor}}" Value="True">
+                                                <Setter Property="IsActive" Value="False"/>
+                                            </DataTrigger>
+
+
+                                            <DataTrigger Binding="{Binding Path=IsEnabled, RelativeSource={RelativeSource AncestorType=ToggleButton,Mode=FindAncestor}}" Value="False">
+                                                <Setter Property="IsActive" Value="True"/>
+                                            </DataTrigger>
+
+                                            <DataTrigger Binding="{Binding Path=IsPaused}" Value="False">
+                                                <Setter Property="IsActive" Value="False"/>
+                                            </DataTrigger>
+                                            
+                                        </Style.Triggers>
+                                    </Style>
+                                </mah:ProgressRing.Style>
+                            </mah:ProgressRing>
+                        </Grid>
+                    </ToggleButton>
                 </StackPanel>
             </StackPanel>
         </Border>

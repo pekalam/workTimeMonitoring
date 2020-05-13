@@ -1,11 +1,12 @@
-﻿using Domain.Repositories;
+﻿using System;
+using Domain.Repositories;
 using Domain.User;
 using Unity;
 
 namespace WindowUI.Statistics
 {
 
-    public class StatisticsViewController
+    public class StatisticsViewController : IDisposable
     {
         private StatisticsViewModel _vm;
         private IAuthenticationService _authenticationService;
@@ -38,6 +39,10 @@ namespace WindowUI.Statistics
             {
                 _dailyStatsViewController.UpdateChart();
             }
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

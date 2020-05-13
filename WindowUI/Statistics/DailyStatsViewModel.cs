@@ -29,6 +29,8 @@ namespace WindowUI.Statistics
             }
         }
 
+        public bool IsDirty { get; set; }
+
         public ICommand? Refresh
         {
             get => _refresh;

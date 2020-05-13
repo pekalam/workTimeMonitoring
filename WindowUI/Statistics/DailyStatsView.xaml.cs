@@ -11,5 +11,10 @@ namespace WindowUI.Statistics
         {
             InitializeComponent();
         }
+
+        private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            (DataContext as DailyStatsViewModel).IsDirty = true;
+        }
     }
 }
