@@ -97,6 +97,8 @@ namespace WMAlghorithm.StateMachine
                     Debug.WriteLine("Stopping algorithm on mouse action");
                 }
 
+                _workTimeEventService.ResetLastEvents();
+
                 Debug.WriteLine("Ignoring mouse action");
             }
         }
@@ -116,6 +118,8 @@ namespace WMAlghorithm.StateMachine
                     await Stop();
                     Debug.WriteLine("Stopping algorithm on keyboard action");
                 }
+
+                _workTimeEventService.ResetLastEvents();
 
                 Debug.WriteLine("Ignoring keyboard action");
             }
@@ -181,7 +185,7 @@ namespace WMAlghorithm.StateMachine
 
             await task;
 
-            _workTimeEventService.Flush();
+            _workTimeEventService.TryAddWatchingScreen();
 
             StopInvoked?.Invoke();
 

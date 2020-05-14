@@ -183,8 +183,8 @@ namespace WindowUI.StartWork
         {
             StartDate = StartDate;
             EndDate = EndDate;
-            //RaisePropertyChanged(nameof(StartDate));
-            //RaisePropertyChanged(nameof(EndDate));
+            RaisePropertyChanged(nameof(StartDate));
+            RaisePropertyChanged(nameof(EndDate));
         }
     }
 }

@@ -11,29 +11,28 @@ namespace WindowUI.Statistics
     public static class StatsPieSeriesExtensions
     {
         private const int MsThreshold = 1000;
-        private const int d = 36_000 * 60 * 24;
-        private const int h = 36_000 * 60;
+        private const int d = 60_000 * 60 * 24;
+        private const int h = 60_000 * 60;
 
         private static string TimeStr(long ms)
         {
-            string part(long ms, long t, float max)
+            string part(long t)
             {
-                var t2 = (ms % t) / (float)t * max / 100.0;
-                return t2.ToString("f").Split('.')[1];
+                return t < 10 ? "0" + t : t.ToString();
             }
 
             if (ms >= d)
             {
                 return ms / (d) +
-                       (ms % (d) > 0 ? ":" + part(ms, (d), 24.0f) : "") + " d";
+                       (ms % (d) > 0 ? ":" + part(ms % d / h) : "") + " d";
             }
             if (ms >= h)
             {
-                return ms / (h) + (ms % (h) > 0 ? ":" + part(ms, h, 60.0f) : "") + " h";
+                return ms / (h) + (ms % (h) > 0 ? ":" + part(ms % h / 60_000) : "") + " h";
             }
-            if (ms >= 36_000)
+            if (ms >= 60_000)
             {
-                return ms / 36_000 + (ms % 36_000 > 0 ? " m " + part(ms, 36_000, 60.0f) + " s" : " m");
+                return ms / 60_000 + (ms % 60_000 > 0 ? " m " + part(ms % 60_000 / 1000) + " s" : " m");
             }
             return (ms / 1000.0).ToString("f") + " s";
         }

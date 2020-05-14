@@ -133,7 +133,11 @@ namespace WindowUI.ProfileInit
                     }
                     else
                     {
-                        Application.Current.Dispatcher.Invoke(() => _vm.ShowOverlay(rects.Length > 1 ? "More than 1 face detected" : "Face not detected"));
+                        if (!_stepCompleted)
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                                _vm.ShowOverlay(rects.Length > 1 ? "More than 1 face detected" : "Face not detected"));
+                        }
                     }
                 }
 

@@ -22,6 +22,11 @@ namespace WindowUI.StartWork
         {
             var date = (TimeSpan) value;
 
+            if (date.TotalMilliseconds < 0)
+            {
+                return "00:00:00";
+            }
+
             string d = date.Days > 0 ? date.Days + " d " : "";
             string h = date.Hours < 10 ? "0" +date.Hours : date.Hours.ToString();
             string m = date.Minutes < 10 ? "0" + date.Minutes : date.Minutes.ToString();
