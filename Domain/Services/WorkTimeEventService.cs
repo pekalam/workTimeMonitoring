@@ -1,4 +1,4 @@
-﻿using Domain.Repositories;
+using Domain.Repositories;
 using Domain.WorkTimeAggregate;
 using Domain.WorkTimeAggregate.Events;
 using System;
@@ -48,7 +48,7 @@ namespace Domain.Services
         private DateTime? _lastMkEventStart;
         private DateTime? _lastMkEventEnd;
         private DateTime? _recognitionFailureStart;
-        private string? _lastActiveWinExecutable;
+        private string _lastActiveWinExecutable;
         private bool? _lastMouseOrKey;
 
         public WorkTimeEventService(IWorkTimeUow uow, IWorkTimeEsRepository repository, IConfigurationService configurationService)
@@ -94,9 +94,18 @@ namespace Domain.Services
 
         public void StopRecognitionFailure() => _recognitionFailureStart = null;
 
+        public void TryStartWatchingScreen()
+        {
+            if (_lastMkEventEnd == null)
+            {
+                _lastMkEventEnd = InternalTimeService.GetCurrentDateTime();
+            }
+        }
+    
+
         public void ResetLastEvents()
         {
-            _lastActiveWinExecutable = null;
+            _lastActiveWinExecutable = UnknownExecutableName;
             _lastMkEventStart = null;
             _lastMouseOrKey = null;
             _lastMkEventEnd = null;
@@ -112,7 +121,6 @@ namespace Domain.Services
             ValidateRecognitionFailureEvent();
 
             Debug.WriteLine("Adding recognition failure");
-
             WorkTime.AddRecognitionFailure(_recognitionFailureStart.Value, faceDetected, faceRecognized);
             _recognitionFailureStart = null;
         }
@@ -152,8 +160,25 @@ namespace Domain.Services
                         Debug.WriteLine("Adding user watching screen diff: " + diff.TotalMilliseconds);
                         WorkTime?.AddUserWatchingScreen(_lastMkEventEnd.Value, (long)diff.TotalMilliseconds, _lastActiveWinExecutable);
                     }
+
+                    _lastMkEventEnd = null;
                 }
                 
+            }
+        }
+
+        public void TryAddWatchingScreen()
+        {
+            if (_lastMkEventEnd.HasValue)
+            {
+                var diff = InternalTimeService.GetCurrentDateTime() - _lastMkEventEnd.Value;
+                if (diff.TotalMilliseconds > _config.WatchingScreenThreshold)
+                {
+                    Debug.WriteLine("Adding user watching screen diff: " + diff.TotalMilliseconds);
+                    WorkTime?.AddUserWatchingScreen(_lastMkEventEnd.Value, (long)diff.TotalMilliseconds, _lastActiveWinExecutable);
+                }
+
+                _lastMkEventEnd = null;
             }
         }
 
@@ -165,14 +190,14 @@ namespace Domain.Services
 
         private void SetEventEnd(MonitorEvent ev)
         {
+            _lastMkEventEnd = ev.EventStart.AddMilliseconds(ev.TotalTimeMs);
+            _lastActiveWinExecutable = ev.Executable ?? UnknownExecutableName;
+
             if (_lastMkEventStart.HasValue && ev.EventStart == _lastMkEventStart.Value)
             {
                 _lastMkEventStart = null;
                 _lastMouseOrKey = null;
             }
-
-            _lastMkEventEnd = ev.EventStart.AddMilliseconds(ev.TotalTimeMs);
-            _lastActiveWinExecutable = ev.Executable ?? UnknownExecutableName;
         }
 
         public void AddMouseEvent(MonitorEvent ev)
@@ -207,7 +232,7 @@ namespace Domain.Services
             }
         }
 
-        public void Flush()
+        private void Flush()
         {
             Debug.Assert(WorkTime != null);
             foreach (var builders in _eventBuilders.Values)
@@ -259,6 +284,12 @@ namespace Domain.Services
                 Debug.WriteLine($"Mouse events count ({WorkTime.MouseActionEvents.Count}) exceeded buffer sz {MouseEventBufferSz}");
                 SavePendingEvents();
             }
+            //TODO watching screen window
+            else if (WorkTime.UserWatchingScreen.Count > 10)
+            {
+                Debug.WriteLine($"UserWatchingScreen events count ({WorkTime.UserWatchingScreen.Count}) exceeded buffer sz {10}");
+                SavePendingEvents();
+            }
 
         }
 
@@ -283,6 +314,8 @@ namespace Domain.Services
                 builders.MouseEventBuilder.Reset();
                 builders.KeyboardEventBuilder.Reset();
             }
+            _allKeyboardBuilder.Reset();
+            _allMouseBuilder.Reset();
             _uow.Rollback();
             _uow.Unregister(WorkTime);
         }
@@ -291,7 +324,6 @@ namespace Domain.Services
         {
             Debug.Assert(WorkTime != null);
             Debug.WriteLine("Commiting temp changes");
-            ResetLastEvents();
             _uow.Commit();
             _uow.Unregister(WorkTime);
         }

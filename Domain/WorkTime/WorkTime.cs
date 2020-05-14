@@ -210,7 +210,9 @@ namespace Domain.WorkTimeAggregate
             _keyboardActionEvents.Clear();
             _mouseActionEvents.Clear();
             _recognitionFailureEvents.Clear();
+            _userWatchingScreenEvents.Clear();
         }
+
 
         internal void AddRecognitionFailure(DateTime startDate, bool faceDetected, bool faceRecognized)
         {
@@ -229,15 +231,22 @@ namespace Domain.WorkTimeAggregate
             AddEvent(ev);
         }
 
-        internal void AddUserWatchingScreen(DateTime startDate, long timeMs, string executable)
+        internal void IntAddUserWatchingScreen(DateTime startDate, long timeMs, string executable)
         {
             CheckIsStarted();
-            CheckNotStopped();
             CheckNotInterrupted();
 
             var ev = new UserWatchingScreen(AggregateId, startDate, timeMs, executable);
             _userWatchingScreenEvents.Add(ev);
             AddEvent(ev);
+        }
+
+
+        internal void AddUserWatchingScreen(DateTime startDate, long timeMs, string executable)
+        {
+            CheckNotStopped();
+
+            IntAddUserWatchingScreen(startDate, timeMs, executable);
         }
 
         internal void SetInterrupted()

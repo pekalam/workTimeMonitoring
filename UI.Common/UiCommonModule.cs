@@ -17,7 +17,6 @@ namespace UI.Common
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             UnityBootstraper.Init(containerRegistry.GetContainer());
-            containerRegistry.GetContainer().RegisterSingleton<WorkTimeEventService>();
         }
     }
 }

@@ -15,7 +15,8 @@ namespace WMAlghorithm.StateMachine
             private int GetRandomDelay()
             {
                 var rnd = new Random();
-                return rnd.Next(50_000, 120_000);
+                return rnd.Next(5_000, 6_000);
+                //return rnd.Next(50_000, 120_000);
             }
 
             public bool InProgress { get; private set; }
@@ -25,6 +26,8 @@ namespace WMAlghorithm.StateMachine
             {
                 InProgress = true;
                 _cts = new CancellationTokenSource();
+                alghorithm._workTimeEventService.TryStartWatchingScreen();
+
                 alghorithm._canCapureMouseKeyboard = true;
 
                 int timeMs = GetRandomDelay();
@@ -39,6 +42,8 @@ namespace WMAlghorithm.StateMachine
                     InProgress = false;
                     return;
                 }
+
+                alghorithm._workTimeEventService.TryAddWatchingScreen();
 
                 InProgress = false;
                 Log.Logger.Debug("State 5 face compare timeout");

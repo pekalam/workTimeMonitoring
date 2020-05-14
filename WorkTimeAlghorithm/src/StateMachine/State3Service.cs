@@ -1,4 +1,4 @@
-﻿using Domain.Services;
+using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Serilog;
 using StateMachineLib;
@@ -59,6 +59,7 @@ namespace WMAlghorithm.StateMachine
                 while (!faceRecognized || !faceDetected)
                 {
                     _workTimeEventService.StartTempChanges();
+                    _workTimeEventService.TryStartWatchingScreen();
                     _workTimeEventService.StartRecognitionFailure();
 
                     Log.Logger.Debug($"Starting {_config.Delay} state 3 delay");
@@ -91,13 +92,14 @@ namespace WMAlghorithm.StateMachine
                     }
                     else
                     {
+                        _workTimeEventService.TryAddWatchingScreen();
                         _workTimeEventService.StopRecognitionFailure();
                         _workTimeEventService.CommitTempChanges();
                     }
 
-                    InProgress = false;
                 }
 
+                InProgress = false;
                 sm.Next(Triggers.FaceRecog);
             }
         }

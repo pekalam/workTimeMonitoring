@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Domain.Services;
 using Domain.WorkTimeAggregate;
 using Serilog;
@@ -56,11 +56,13 @@ namespace WMAlghorithm.StateMachine
 
             public async Task Enter(StateMachine<Triggers, States> sm, WorkTime workTime, WMonitorAlghorithm alghorithm)
             {
+                _cts = new CancellationTokenSource();
                 InProgress = true;
+
                 alghorithm._canCapureMouseKeyboard = true;
 
-                _cts = new CancellationTokenSource();
                 _workTimeEventService.StartTempChanges();
+                _workTimeEventService.TryStartWatchingScreen();
                 _workTimeEventService.StartRecognitionFailure();
 
                 bool faceDetected = false, faceRecognized = false;
@@ -87,6 +89,7 @@ namespace WMAlghorithm.StateMachine
                     if (faceRecognized && faceDetected)
                     {
                         _workTimeEventService.StopRecognitionFailure();
+                        _workTimeEventService.TryAddWatchingScreen();
                         _workTimeEventService.CommitTempChanges();
                         InProgress = false;
                         sm.Next(Triggers.FaceRecog);
