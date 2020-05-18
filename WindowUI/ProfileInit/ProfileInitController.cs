@@ -175,25 +175,36 @@ namespace WindowUI.ProfileInit
         {
             switch (obj.ProgressState)
             {
+                case ProfileInitProgress.ProfileFaceNotDetected:
+                    _vm.HideInstructions();
+                    _vm.ShowOverlay("Face not detected");
+                    break;
                 case ProfileInitProgress.FaceNotDetected:
-                    _vm.ShowErrorStepInfo("Face not detected");
+                    _vm.HideInstructions();
+                    _vm.ShowOverlay("Face not detected");
                     break;
                 case ProfileInitProgress.FaceNotStraight:
+                    _vm.HideOverlay();
                     _vm.ShowInstructions("Look at the front of cam");
                     break;
                 case ProfileInitProgress.FaceNotTurnedLeft:
+                    _vm.HideOverlay();
                     _vm.ShowInstructions("Look in the following direction", rightArrow: true);
                     break;
                 case ProfileInitProgress.FaceNotTurnedRight:
+                    _vm.HideOverlay();
                     _vm.ShowInstructions("Look in the following direction", leftArrow: true);
                     break;
                 case ProfileInitProgress.FaceRecognitionError:
+                    _vm.HideOverlay();
                     _vm.ShowErrorStepInfo("Invalid photos");
                     break;
                 case ProfileInitProgress.PhotosTaken:
+                    _vm.HideOverlay();
                     _vm.HideInstructions();
                     break;
                 case ProfileInitProgress.Progress:
+                    _vm.HideOverlay();
                     _vm.HideStepInfo();
                     if (obj.ProgressPercentage == 100)
                     {
