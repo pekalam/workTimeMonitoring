@@ -1,15 +1,17 @@
 ﻿using Prism.Mvvm;
 using Prism.Regions;
 using System;
+using Prism;
 
 namespace WindowUI.Statistics
 {
-    public class StatisticsViewModel : BindableBase, INavigationAware
+    public class StatisticsViewModel : BindableBase, INavigationAware, IActiveAware
     {
         private readonly StatisticsViewController _controller;
 
         public event Action<int> TabChanged;
         private int _selectedInd;
+        private bool _isActive;
 
         public StatisticsViewModel(StatisticsViewController controller, OverallStatsViewModel overallStatsViewModel, DailyStatsViewModel dailyStatsViewModel)
         {
@@ -47,5 +49,21 @@ namespace WindowUI.Statistics
                 _selectedInd = index;
             }
         }
+
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                _isActive = value;
+                if (value)
+                {
+                    DailyStatsViewModel.OnActivated();
+                    OverallStatsViewModel.OnActivated();
+                }
+            }
+        }
+
+        public event EventHandler IsActiveChanged;
     }
 }

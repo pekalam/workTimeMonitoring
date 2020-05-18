@@ -15,6 +15,7 @@ namespace WindowUI.Statistics
     {
         void Init(DailyStatsViewModel vm);
         ICommand Refresh { get; }
+        void Activated();
     }
 
     public class DailyStatsViewController : IDailyStatsViewController
@@ -38,7 +39,12 @@ namespace WindowUI.Statistics
             _vm.SeriesPickerViewModel.PropertyChanged += (a, b) => UpdateChart();
         }
 
+        public void Activated()
+        {
+        }
+
         public ICommand Refresh { get; }
+
 
         public void UpdateChart()
         {
