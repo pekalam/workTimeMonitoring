@@ -15,8 +15,7 @@ namespace WMAlghorithm.StateMachine
             private int GetRandomDelay()
             {
                 var rnd = new Random();
-                return rnd.Next(5_000, 6_000);
-                //return rnd.Next(50_000, 120_000);
+                return rnd.Next(50_000, 120_000);
             }
 
             public bool InProgress { get; private set; }
