@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Prism;
 
 namespace WindowUI.Statistics
 {
@@ -98,16 +99,34 @@ namespace WindowUI.Statistics
             set => SetProperty(ref _upperDays, value);
         }
 
-        public int MaxDays
+
+
+    public int MaxDays
         {
             get => _maxDays;
-            set => SetProperty(ref _maxDays, value);
+            set
+            {
+                SetProperty(ref _maxDays, value);
+                if (_maxDays == 0 && _minDays == 0)
+                {
+                    _lowerDays = 0;
+                    _upperDays = 0;
+                }
+            }
         }
 
         public int MinDays
         {
             get => _minDays;
-            set => SetProperty(ref _minDays, value);
+            set
+            {
+                SetProperty(ref _minDays, value);
+                if (_maxDays == 0 && _minDays == 0)
+                {
+                    _lowerDays = 0;
+                    _upperDays = 0;
+                }
+            }
         }
 
         public DateTime MaxDate
@@ -188,6 +207,11 @@ namespace WindowUI.Statistics
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+        }
+
+        public void OnActivated()
+        {
+            Controller?.Activated();
         }
     }
 }

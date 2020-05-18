@@ -87,6 +87,12 @@ namespace WindowUI.Statistics
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
         }
+
+
+        public void OnActivated()
+        {
+            Controller?.Activated();
+        }
     }
 
 

@@ -77,12 +77,13 @@ namespace WindowUI.Statistics
     {
         void Init(OverallStatsViewModel vm);
         ICommand Refresh { get; }
+        void Activated();
     }
 
     public class OverallStatsController : IOverallStatsController
     {
         private OverallStatsViewModel _vm;
-        private List<WorkTime> _workTimes;
+        private List<WorkTime> _workTimes = new List<WorkTime>();
         private readonly IWorkTimeEsRepository _repository;
         private readonly IAuthenticationService _authenticationService;
         private DateTime _startDate;
@@ -218,7 +219,12 @@ namespace WindowUI.Statistics
         private void UpdateDates()
         {
             _vm.SelectedMinDate = _startDate.AddDays(_vm.LowerDays - _vm.MinDays);
-            _vm.SelectedMaxDate = _endDate.AddDays(-(_vm.MaxDays - _vm.UpperDays));
+            _vm.SelectedMaxDate = _endDate.AddDays(_vm.MaxDays >= _vm.UpperDays ? -(_vm.MaxDays - _vm.UpperDays) : 0);
+
+            if (_vm.UpperDays < _vm.MaxDays)
+            {
+                _vm.SelectedMaxDate = new DateTime(_vm.SelectedMaxDate.Year, _vm.SelectedMaxDate.Month, _vm.SelectedMaxDate.Day, 23, 59, 59);
+            }
         }
 
         private void UpdateDateRange()
@@ -270,6 +276,26 @@ namespace WindowUI.Statistics
             }
         }
 
+        private void LoadScreenData()
+        {
+            _vm.PropertyChanged -= PropertyChangedHandler;
+            if (_workTimes.Count == 0)
+            {
+                LoadItems();
+
+                if (_workTimes.Count > 0)
+                {
+                    SetupDateSlider();
+                    UpdateChart();
+                }
+                else
+                {
+                    _vm.IsShowingStats = false;
+                }
+            }
+            _vm.PropertyChanged += PropertyChangedHandler;
+        }
+
         public void Init(OverallStatsViewModel vm)
         {
             _vm = vm;
@@ -282,25 +308,20 @@ namespace WindowUI.Statistics
                 }
             };
 
-            LoadItems();
+            LoadScreenData();
+        }
 
-            if (_workTimes.Count > 0)
+        private void PropertyChangedHandler(object sender, PropertyChangedEventArgs e)
+        {
+            if (_vm.IsDirty)
             {
-                SetupDateSlider();
-                UpdateChart();
+                VmOnPropertyChanged(sender, e);
             }
-            else
-            {
-                _vm.IsShowingStats = false;
-            }
+        }
 
-            _vm.PropertyChanged += (s,e) =>
-            {
-                if (_vm.IsDirty)
-                {
-                    VmOnPropertyChanged(s, e);
-                }
-            };
+        public void Activated()
+        {
+            LoadScreenData();
         }
 
     }

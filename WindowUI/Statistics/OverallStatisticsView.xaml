@@ -63,7 +63,7 @@
             <local:SeriesPickerView DataContext="{Binding SeriesPickerViewModel}"/>
             <wpf:PieChart Grid.Column="1"
                 Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800" DataTooltip="{x:Null}"
-                Series="{Binding ApplicationsSeries}">
+                Series="{Binding ApplicationsSeries}" Visibility="{c:Binding 'IsShowingStats', FalseToVisibility=Hidden}">
                 <wpf:PieChart.Resources>
                     <Style TargetType="wpf:PieSeries">
                         <Setter Property="DataLabels" Value="True" />
@@ -92,7 +92,7 @@
               Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.Summary', FalseToVisibility=Collapsed}">
             <wpf:PieChart 
                 Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
-                DataTooltip="{x:Null}" Series="{Binding SummarySeries}" />
+                DataTooltip="{x:Null}" Series="{Binding SummarySeries}" Visibility="{c:Binding 'IsShowingStats', FalseToVisibility=Hidden}"/>
             <Grid Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999"
                   Background="White">
                 <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center"
@@ -111,7 +111,7 @@
               Visibility="{c:Binding 'SelectedChartType == local:OverallStatsChartTypes.SingleApplication', FalseToVisibility=Collapsed}">
             <wpf:PieChart 
                 Margin="20" LegendLocation="Bottom" Hoverable="True" MaxHeight="800"
-                DataTooltip="{x:Null}" Series="{Binding SingleApplicationSeries}" />
+                DataTooltip="{x:Null}" Series="{Binding SingleApplicationSeries}" Visibility="{c:Binding 'IsShowingStats', FalseToVisibility=Hidden}"/>
             <Grid Visibility="{c:Binding '!IsShowingStats', FalseToVisibility=Hidden}" Panel.ZIndex="999"
                   Background="White">
                 <TextBlock Text="No statistics available" FontSize="30" VerticalAlignment="Center"
@@ -165,10 +165,10 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <TextBlock
-                Text="{Binding SelectedMinDate, Converter={StaticResource ResourceKey=dateTimeRangeConverter}, ConverterParameter=True}"
+                Text="{Binding SelectedMinDate, Mode=OneWay, Converter={StaticResource ResourceKey=dateTimeRangeConverter}, ConverterParameter=True}"
                 FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" FontSize="18" />
             <TextBlock
-                Text="{Binding SelectedMaxDate, Converter={StaticResource ResourceKey=dateTimeRangeConverter}, ConverterParameter=False}"
+                Text="{Binding SelectedMaxDate , Mode=OneWay, Converter={StaticResource ResourceKey=dateTimeRangeConverter}, ConverterParameter=False}"
                 Grid.Column="1" HorizontalAlignment="Center" TextAlignment="Center" FontWeight="Bold" FontSize="18" />
         </Grid>
         <Grid Grid.Row="3">
