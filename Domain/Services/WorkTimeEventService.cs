@@ -232,7 +232,7 @@ namespace Domain.Services
             }
         }
 
-        private void Flush()
+        public void Flush()
         {
             Debug.Assert(WorkTime != null);
             foreach (var builders in _eventBuilders.Values)
