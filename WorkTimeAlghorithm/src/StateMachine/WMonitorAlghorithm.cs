@@ -183,10 +183,8 @@ namespace WMAlghorithm.StateMachine
 
             await task;
 
-            if (!_workTime.Stopped)
-            {
-                _workTimeEventService.TryAddWatchingScreen();
-            }
+            _workTimeEventService.TryAddWatchingScreen();
+            _workTimeEventService.Flush();
 
             StopInvoked?.Invoke();
 

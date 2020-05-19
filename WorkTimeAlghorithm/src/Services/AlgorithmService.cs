@@ -97,10 +97,7 @@ namespace WMAlghorithm.Services
 
         private void AlgStopInvoked()
         {
-            if (!CurrentWorkTime.Stopped)
-            {
-                CurrentWorkTime.Stop();
-            }
+            CurrentWorkTime.Stop();
             _alghorithmNotifications.Reset();
             _repository.Save(CurrentWorkTime);
             CurrentWorkTime.MarkPendingEventsAsHandled();
