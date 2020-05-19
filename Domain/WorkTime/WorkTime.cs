@@ -98,15 +98,16 @@ namespace Domain.WorkTimeAggregate
 
         private void CheckNotStopped()
         {
-            if (Stopped)
-            {
-                throw new WorkTimeStoppedException("WorkTime stopped");
-            }
+            //todo stop event / pause
+            // if (Stopped)
+            // {
+            //     throw new WorkTimeStoppedException("WorkTime stopped");
+            // }
 
-            if (Paused)
-            {
-                throw new WorkTimePausedException("WorkTime paused");
-            }
+            // if (Paused)
+            // {
+            //     throw new WorkTimePausedException("WorkTime paused");
+            // }
         }
 
         private void CheckNotInterrupted()
@@ -171,8 +172,10 @@ namespace Domain.WorkTimeAggregate
             Paused = false;
         }
 
-        internal void IntAddMouseAction(MouseKeyboardEvent mkEvent)
+        internal void AddMouseAction(MouseKeyboardEvent mkEvent)
         {
+            CheckNotStopped();
+            CheckNotInterrupted();
             CheckIsStarted();
 
             var ev = new MouseAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
@@ -180,29 +183,15 @@ namespace Domain.WorkTimeAggregate
             AddEvent(ev);
         }
 
-        internal void IntAddKeyboardAction(MouseKeyboardEvent mkEvent)
+        internal void AddKeyboardAction(MouseKeyboardEvent mkEvent)
         {
+            CheckNotStopped();
+            CheckNotInterrupted();
             CheckIsStarted();
 
             var ev = new KeyboardAction(AggregateId, InternalTimeService.GetCurrentDateTime(), mkEvent);
             _keyboardActionEvents.Add(ev);
             AddEvent(ev);
-        }
-
-        internal void AddMouseAction(MouseKeyboardEvent mkEvent)
-        {
-            CheckNotStopped();
-            CheckNotInterrupted();
-
-            IntAddMouseAction(mkEvent);
-        }
-
-        internal void AddKeyboardAction(MouseKeyboardEvent mkEvent)
-        {
-            CheckNotStopped();
-            CheckNotInterrupted();
-
-            IntAddKeyboardAction(mkEvent);
         }
 
         internal void ClearEvents()
@@ -231,22 +220,16 @@ namespace Domain.WorkTimeAggregate
             AddEvent(ev);
         }
 
-        internal void IntAddUserWatchingScreen(DateTime startDate, long timeMs, string executable)
+
+        internal void AddUserWatchingScreen(DateTime startDate, long timeMs, string executable)
         {
+            CheckNotStopped();
             CheckIsStarted();
             CheckNotInterrupted();
 
             var ev = new UserWatchingScreen(AggregateId, startDate, timeMs, executable);
             _userWatchingScreenEvents.Add(ev);
             AddEvent(ev);
-        }
-
-
-        internal void AddUserWatchingScreen(DateTime startDate, long timeMs, string executable)
-        {
-            CheckNotStopped();
-
-            IntAddUserWatchingScreen(startDate, timeMs, executable);
         }
 
         internal void SetInterrupted()
