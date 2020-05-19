@@ -242,12 +242,12 @@ namespace Domain.Services
 
                 if (keyboard != null)
                 {
-                    WorkTime.IntAddKeyboardAction(keyboard);
+                    WorkTime.AddKeyboardAction(keyboard);
                 }
 
                 if (mouse != null)
                 {
-                    WorkTime.IntAddMouseAction(mouse);
+                    WorkTime.AddMouseAction(mouse);
                 }
             }
         }

@@ -87,7 +87,6 @@ namespace WMAlghorithm.StateMachine
             {
                 Debug.WriteLine("Captured mouse action");
                 _workTimeEventService.AddMouseEvent(ev);
-                _sm.Next(Triggers.MouseMv);
             }
             else
             {
@@ -109,7 +108,6 @@ namespace WMAlghorithm.StateMachine
             {
                 Debug.WriteLine("Captured keyboard action");
                 _workTimeEventService.AddKeyboardEvent(ev);
-                _sm.Next(Triggers.KeyboardMv);
             }
             else
             {
@@ -185,7 +183,10 @@ namespace WMAlghorithm.StateMachine
 
             await task;
 
-            _workTimeEventService.TryAddWatchingScreen();
+            if (!_workTime.Stopped)
+            {
+                _workTimeEventService.TryAddWatchingScreen();
+            }
 
             StopInvoked?.Invoke();
 

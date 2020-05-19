@@ -7,7 +7,7 @@ namespace WMAlghorithm.StateMachine
     {
         internal enum Triggers
         {
-            Start, NoFace, FaceNotRecog, FaceRecog, MouseMv, KeyboardMv, Pause, Resume, ManualTrigger, ManualCancel, Stop
+            Start, NoFace, FaceNotRecog, FaceRecog, Pause, Resume, ManualTrigger, ManualCancel, Stop
         }
 
         internal enum States
