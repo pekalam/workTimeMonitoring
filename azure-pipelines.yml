@@ -13,6 +13,7 @@ pool:
 
 variables:
   testImgDir: '$(System.DefaultWorkingDirectory)\FaceRecogTestFixtures'
+  isMaster: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
 
 stages:
 - stage: ReleaseStage
@@ -89,14 +90,25 @@ stages:
           publishWebProjects: false
           projects: 'Application\Application.csproj'
           arguments: '-c Release -r win-x64 -o AppRelease'
-      - task: ZipAndDropBox@0
-        displayName: 'Send to dropbox'
+      - task: ArchiveFiles@2
         inputs:
-          sourceDir: '$(System.DefaultWorkingDirectory)\AppRelease'
-          zipPath: 'Application.zip'
-          dropboxtoken: '$(DropboxToken)'
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)\AppRelease'
+          includeRootFolder: false
+          archiveType: 'zip'
+          archiveFile: '$(Build.ArtifactStagingDirectory)/AppRelease.zip'
+          replaceExistingArchive: true
       - task: PublishBuildArtifacts@1
         inputs:
-          PathtoPublish: '$(System.DefaultWorkingDirectory)\AppRelease'
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/AppRelease.zip'
           ArtifactName: 'drop'
           publishLocation: 'Container'
+      - task: GitHubRelease@1
+        condition: eq(variables.isMaster, 'true')
+        inputs:
+          gitHubConnection: 'github.com_pekalam'
+          repositoryName: 'pekalam/workTimeMonitoring'
+          action: 'create'
+          target: '$(Build.SourceVersion)'
+          tagSource: 'gitTag'
+          assets: '$(Build.ArtifactStagingDirectory)/*.zip'
+          addChangeLog: false
