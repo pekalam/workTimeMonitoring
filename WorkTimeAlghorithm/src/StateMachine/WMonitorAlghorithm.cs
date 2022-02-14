@@ -134,7 +134,7 @@ namespace WMAlghorithm.StateMachine
             InitStateMachine();
             _mouseKeyboardMonitor.Start();
             _workTimeEventService.SetStart();
-            await _sm.NextAsync(Triggers.Start);
+            _sm.NextAsync(Triggers.Start);
             AlgorithmStarted?.Invoke();
         }
 
