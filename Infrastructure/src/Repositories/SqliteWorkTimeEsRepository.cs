@@ -9,6 +9,7 @@ using Infrastructure.Db;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 
 namespace Infrastructure.Repositories
@@ -41,7 +42,7 @@ namespace Infrastructure.Repositories
             if (loadExt)
             {
                 c.EnableExtensions(true);
-                c.LoadExtension("json1.dll");
+                c.LoadExtension(Path.Join(Directory.GetCurrentDirectory(), "json1.dll"), "sqlite3_json_init");
             }
             return c;
         }
