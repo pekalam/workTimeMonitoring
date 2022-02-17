@@ -29,12 +29,16 @@ namespace Infrastructure.Tests
             var parts = fileName.Split('_', StringSplitOptions.RemoveEmptyEntries);
             parts[^1] = parts[^1].Split('.', StringSplitOptions.RemoveEmptyEntries).First();
 
-            if (parts.Length != 5)
+            Rect rect;
+            try
+            {
+                rect = new Rect(parts[1].AsInt(), parts[2].AsInt(), parts[3].AsInt(), parts[4].AsInt());
+            }
+            catch (Exception e)
             {
                 throw new Exception($"Invalid filename: {fileName}");
             }
-
-            var rect = new Rect(parts[1].AsInt(), parts[2].AsInt(), parts[3].AsInt(), parts[4].AsInt());
+            
             var faceImg = Cv2.ImRead(fileName);
 
             return (rect, faceImg);
