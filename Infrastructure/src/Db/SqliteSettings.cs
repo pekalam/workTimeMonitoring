@@ -2,6 +2,6 @@
 {
     public class SqliteSettings
     {
-        public string ConnectionString { get; set; } = "Data Source=.\\appdb.db;";
+        public string ConnectionString { get; set; } = "Data Source=appdb.db;";
     }
 }
