@@ -56,7 +56,7 @@ namespace WMAlghorithm.StateMachine
                 .Transition(Triggers.ManualCancel, States.s3)
                 .Exit(t =>
                 {
-                    if (t == Triggers.FaceRecog)
+                    if (t.Trigger == Triggers.FaceRecog)
                     {
                         ManualRecogSuccess?.Invoke();
                     }
@@ -86,7 +86,7 @@ namespace WMAlghorithm.StateMachine
         {
             BuildStateMachine();
 #if DEV_MODE
-            _vis = new StateMachineVis<Triggers, States>(_sm, pipeName: "graphViz", loggingEnabled: false);
+            _vis = new StateMachineVis<Triggers, States>(_sm, name: "graphViz");
             _vis.Start(@"StateMachineLibVis.exe", "-c graphViz -l 970");
 #endif
         }
